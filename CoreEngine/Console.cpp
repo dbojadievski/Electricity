@@ -194,7 +194,7 @@ Console::Init()
 
 
 void
-Console::Update(CORE_REAL dT)
+Console::Update(CORE_DOUBLE dT)
 {
 	size_t numCommandsQueued = this->m_Queue.size();
 

@@ -20,6 +20,8 @@
 class DirectX11Renderer : IEngineSystem
 {
 private:
+	CORE_DOUBLE m_PrevFrameAt = 0;
+
 	D3D_FEATURE_LEVEL m_featureLevel;
 
 	IDXGISwapChain * m_pSwapChain;
@@ -88,10 +90,10 @@ private:
 
 	void CloseDirectX11Device();
 
-	void RenderAll();
+	void RenderAll(CORE_DOUBLE dT);
 	void RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShaderSwitches, size_t &numTextureSwitches, size_t &numRenderableInstances, const FASTMAT4 &cameraViewProjectionMatrix);
 public:
 	void Init();
-	void Update(float dT);
+	void Update(CORE_DOUBLE dT);
 	void ShutDown();
 };

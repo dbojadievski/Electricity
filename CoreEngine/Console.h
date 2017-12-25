@@ -30,6 +30,6 @@ public:
 	virtual CORE_BOOLEAN IConsole::VSetCVar(const CVar * const pCVar);
 
 	virtual void IEngineSystem::Init(void);
-	virtual void IEngineSystem::Update(CORE_REAL dT);
+	virtual void IEngineSystem::Update(CORE_DOUBLE dT);
 	virtual void IEngineSystem::ShutDown();
 };

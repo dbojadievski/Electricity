@@ -1,4 +1,5 @@
 #include "DirectX11Renderer.h"
+#include <sstream>
 
 // include the Direct3D Library file
 #pragma comment (lib, "d3d11.lib")
@@ -449,12 +450,12 @@ DirectX11Renderer::CloseDirectX11Device()
 }
 
 void
-DirectX11Renderer::Update(float dT)
+DirectX11Renderer::Update(CORE_DOUBLE dT)
 {
-	RenderAll();
+	RenderAll(dT);
 }
 
-void DirectX11Renderer::RenderAll()
+void DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 {
 	size_t numShaderSwitches = 0;
 	size_t numTextureSwitches = 0;
@@ -483,6 +484,12 @@ void DirectX11Renderer::RenderAll()
 	this->m_pDeviceContext->RSSetState(this->m_pClockWiseCullMode);
 	RenderAllInSet(&this->m_RenderSet.m_TransparentRenderables, numShaderSwitches, numTextureSwitches, numRenderableInstances, cameraViewProjectionMatrix);
 	this->ResetBlendState();
+	
+	wstringstream wss;
+	wss.precision(15);
+	wss << dT;
+	const wstring ws(wss.str());
+	this->m_pTextRenderer->SetText(ws.c_str());
 	this->m_pTextRenderer->Render();
 	this->m_pSwapChain->Present(0, 0);
 }

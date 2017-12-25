@@ -6,10 +6,12 @@ DirectX11TextRenderer::SetText(const wchar_t * pText)
 {
 	HRESULT errCode = S_OK;
 
+	//if (this->m_pTextLayout)
+		//this->m_pTextLayout->Release();
 	size_t len = wcslen(pText);
 	errCode = this->m_pDWriteFactory->CreateTextLayout(pText, len, this->m_pTextFormatFPS, 640, 480, &m_pTextLayout);
+	
 	assert(errCode == S_OK);
-
 }
 
 DirectX11TextRenderer::~DirectX11TextRenderer()
@@ -124,4 +126,4 @@ DirectX11TextRenderer::Render()
 	this->m_pDeviceContext->BeginDraw();
 	this->m_pDeviceContext->DrawTextLayout(D2D1::Point2F(2.0f, 5.0f), this->m_pTextLayout, this->m_pYellowBrush);
 	this->m_pDeviceContext->EndDraw();
-}
+} 

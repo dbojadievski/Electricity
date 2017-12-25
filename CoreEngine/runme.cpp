@@ -209,20 +209,30 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	printf("Hello, world!\n");
 	g_Engine.Init();
+	g_Engine.Start();
 
 	// this struct holds Windows event messages
 	MSG msg;
 
-	// wait for the next message in the queue, store the result in 'msg'
-	while (GetMessage(&msg, NULL, 0, 0))
+
+	while (true)
 	{
-		// translate keystroke messages into the right format
-		TranslateMessage(&msg);
-
-		// send the message to the WindowProc function
-		DispatchMessage(&msg);
-
 		g_Engine.Update();
+		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+		{
+			if (msg.message == WM_QUIT || msg.message == WM_CLOSE ||
+				msg.message == WM_DESTROY)
+			{
+				g_Engine.ShutDown();
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+			else
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+		}
 	}
 
 	// return this part of the WM_QUIT message to Windows
