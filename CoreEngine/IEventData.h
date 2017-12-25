@@ -3,7 +3,13 @@
 #include "FastDelegate.h"
 
 #include <ostream>
-typedef unsigned long EventType;
+enum EventType
+{
+	EVENT_TYPE_UNUSED = 0,
+	EVENT_TYPE_TEST,
+	EVENT_TYPE_RESOLUTION_CHANGED = 2
+};
+
 
 class IEventData
 {

@@ -3,10 +3,12 @@
 #include "GameObject.h"
 #include "IComponent.h"
 #include "Console.h"
-#include <assert.h>
+#include "EventManager.h"
 #include "DirectX11Renderer.h"
-#include <vector>
 #include "TimeUtils.h"
+
+#include <assert.h>
+#include <vector>
 class CoreEngine
 {
 private:
@@ -17,6 +19,7 @@ private:
 	CORE_REAL m_totalTimeRunning;
 
 	const IConsole * m_pConsole;
+	IEventManager * m_pEventManager;
 
 	Timer * m_pTimer;
 public:
@@ -32,4 +35,5 @@ public:
 #pragma endregion
 	
 	IConsole * GetConsole();
+	IEventManager * GetEventManager();
 };

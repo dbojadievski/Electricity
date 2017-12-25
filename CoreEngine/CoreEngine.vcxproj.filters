@@ -70,6 +70,9 @@
     <Filter Include="Source Files\Rendering">
       <UniqueIdentifier>{deff54ba-3d5e-44e7-980e-cf58d762cb9b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Infrastructure\Event\EventTypes">
+      <UniqueIdentifier>{edc636e7-d7d6-4edd-927f-644744b8cd4b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TimeUtils.h">
@@ -176,6 +179,9 @@
     </ClInclude>
     <ClInclude Include="DirectX11TextRenderer.h">
       <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="ResolutionChangedEventData.h">
+      <Filter>Header Files\Infrastructure\Event\EventTypes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

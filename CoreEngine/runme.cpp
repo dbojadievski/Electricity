@@ -20,6 +20,7 @@
 #include <fcntl.h>
 
 #include "Engine.h"
+#include "ResolutionChangedEventData.h"
 
 #include <iostream>
 #include <filesystem>
@@ -35,7 +36,6 @@ CoreEngine g_Engine;
 HWND g_Window;
 
 EventManager manager("EVENT_MANAGER_MAIN", true);
-EventType EVENT_TYPE_TEST = 1;
 class TestEventData : public EventDataBase
 {
 public:
@@ -74,7 +74,6 @@ public:
 	void TestDelegateHandler(IEventData * pEvent)
 	{
 		printf("%s\n", pEvent->VGetName());
-		EventType EVENT_TYPE_TEST = 1;
 	}
 
 	void TestEventSystem()
@@ -187,6 +186,12 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	// register the window class
 	RegisterClassEx(&wc);
 
+	HMONITOR activeMonitor = MonitorFromWindow(GetActiveWindow(), MONITOR_DEFAULTTONEAREST);
+	MONITORINFOEX monitorInfo;
+	ZeroMemory(&monitorInfo, sizeof(monitorInfo));
+	monitorInfo.cbSize = sizeof(MONITORINFOEX);
+	GetMonitorInfo(activeMonitor, &monitorInfo);
+
 	// create the window and use the result as the handle
 	hWnd = CreateWindowEx(NULL,
 		"WindowClass1",    // name of the window class
@@ -194,8 +199,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		WS_OVERLAPPEDWINDOW,    // window style
 		0,    // x-position of the window
 		0,    // y-position of the window
-		800,    // width of the window
-		600,    // height of the window
+		monitorInfo.rcWork.right,    // width of the window
+		monitorInfo.rcWork.bottom,    // height of the window
 		NULL,    // we have no parent window, NULL
 		NULL,    // we aren't using menus, NULL
 		hInstance,    // application handle
@@ -206,6 +211,18 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	ShowWindow(hWnd, nCmdShow);
 
 	g_Engine.Init();
+
+	ConsoleCommandParameter<CORE_DWORD> paramDisplayWidth("display_resolution_width", EConsoleCommandParameterType::PARAM_DWORD32, monitorInfo.rcWork.right);
+	g_Engine.GetConsole()->VSetCVar((const CVar *) &paramDisplayWidth);
+
+	ConsoleCommandParameter<CORE_DWORD> paramDisplayHeight("display_resolution_height", EConsoleCommandParameterType::PARAM_DWORD32, monitorInfo.rcWork.bottom);
+	g_Engine.GetConsole()->VSetCVar((const CVar *) &paramDisplayHeight);
+
+	ResolutionChangedEventData resChangedData;
+	resChangedData.m_Width = monitorInfo.rcWork.right;
+	resChangedData.m_Height = monitorInfo.rcWork.bottom;
+	g_Engine.GetEventManager()->VTriggerEvent(&resChangedData);
+
 	g_Engine.Start();
 
 	// this struct holds Windows event messages

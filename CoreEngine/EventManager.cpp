@@ -64,7 +64,8 @@ EventManager::VTriggerEvent(const IEventData * pEvent) const
 
 	CORE_BOOLEAN wasProcessed = false;
 
-	auto findIt = this->m_Listeners.find(pEvent->VGetEventType());
+	EventType eType = pEvent->VGetEventType();
+	auto findIt = this->m_Listeners.find(eType);
 	if (findIt != this->m_Listeners.end())
 	{
 		const EventListenerList& typeListeners = findIt->second;

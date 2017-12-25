@@ -9,7 +9,7 @@ DirectX11TextRenderer::SetText(const wchar_t * pText)
 	//if (this->m_pTextLayout)
 		//this->m_pTextLayout->Release();
 	size_t len = wcslen(pText);
-	errCode = this->m_pDWriteFactory->CreateTextLayout(pText, len, this->m_pTextFormatFPS, 640, 480, &m_pTextLayout);
+	errCode = this->m_pDWriteFactory->CreateTextLayout(pText, len, this->m_pTextFormatFPS, 2560, 1440, &m_pTextLayout);
 	
 	assert(errCode == S_OK);
 }

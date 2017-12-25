@@ -11,9 +11,11 @@ void
 CoreEngine::Init()
 {
 	IConsole * pConsole = new Console();
+	this->m_pEventManager = new EventManager("EVENT_MANAGER_MAIN", true);
 	IEngineSystem * pConsoleSystem = (IEngineSystem *)pConsole;
-	DirectX11Renderer * pRenderer = new DirectX11Renderer();
+	DirectX11Renderer * pRenderer = new DirectX11Renderer(this->m_pEventManager);
 	IEngineSystem * pRendererSystem = (IEngineSystem *)pRenderer;
+	
 	this->m_pTimer = new Timer();
 
 	this->m_Systems.push_back(pConsoleSystem);
@@ -83,4 +85,10 @@ IConsole *
 CoreEngine::GetConsole()
 {
 	return (IConsole *)this->m_pConsole;
+}
+
+IEventManager *
+CoreEngine::GetEventManager()
+{
+	return this->m_pEventManager;
 }

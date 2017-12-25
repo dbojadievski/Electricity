@@ -1,22 +1,34 @@
 #include "DirectX11Renderer.h"
 #include <sstream>
 
+
+#include "FastDelegate.h"
+#include "FastDelegateBind.h"
+
+#include "ResolutionChangedEventData.h"
+
 // include the Direct3D Library file
 #pragma comment (lib, "d3d11.lib")
 
 #define VIEWPORT_DEPTH_MIN 0.0f
 #define VIEWPORT_DEPTH_MAX 1.0f
 
-#define VIEWPORT_WIDTH 800
-#define VIEWPORT_HEIGHT 600
-
 #define VIEW_NEAR 1.0f
 #define VIEW_FAR 1000.0f
 extern HWND g_Window;
 
+using namespace fastdelegate;
+
 void
 DirectX11Renderer::Init()
 {
+	/*Init event handlers. */
+	{
+		EventListenerDelegate eDelegate;// MakeDelegate(this, &this->OnResolutionChanged);
+		eDelegate = MakeDelegate(this, &DirectX11Renderer::OnResolutionChanged);
+		this->m_pEventManager->VAddListener(eDelegate, EventType::EVENT_TYPE_RESOLUTION_CHANGED);
+	}
+
 	InitDirect3D();
 }
 
@@ -72,8 +84,8 @@ DirectX11Renderer::InitDirect3D()
 	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	viewport.Width = VIEWPORT_WIDTH;
-	viewport.Height = VIEWPORT_HEIGHT;
+	viewport.Width = 2560,
+	viewport.Height = 1440,
 	viewport.MinDepth = VIEWPORT_DEPTH_MIN;
 	viewport.MaxDepth = VIEWPORT_DEPTH_MAX;
 
@@ -183,8 +195,8 @@ DirectX11Renderer::InitDepthBuffer()
 	HRESULT result = S_OK;
 
 	D3D11_TEXTURE2D_DESC depthStencilDesc;
-	depthStencilDesc.Width = VIEWPORT_WIDTH;
-	depthStencilDesc.Height = VIEWPORT_HEIGHT;
+	depthStencilDesc.Width = 2560;
+	depthStencilDesc.Height = 1440;
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.ArraySize = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -388,7 +400,7 @@ DirectX11Renderer::InitTransformationPipeline()
 	this->m_CameraUp = FASTVEC_SET(0.0f, 1.0f, 0.0, 0.0f);
 
 	this->m_CameraView = XMMatrixLookAtLH(this->m_CameraPosition, this->m_CameraTarget, this->m_CameraUp);
-	this->m_CameraProjection = XMMatrixPerspectiveFovLH(0.4f*3.14f, (float)VIEWPORT_WIDTH / VIEWPORT_HEIGHT, VIEW_NEAR, VIEW_FAR);
+	this->m_CameraProjection = XMMatrixPerspectiveFovLH(0.4f*3.14f, (float)2560 / 1440, VIEW_NEAR, VIEW_FAR);
 
 	/*NOTE(Dino): 'tis only an example world matrix, so the equation pans out. It will need to be modified for every object, of course. */
 	this->m_World = FASTMAT_IDENTITY();
@@ -591,4 +603,27 @@ DirectX11Renderer::DeRegisterTexture(CORE_ID textureId)
 {
 	assert(textureId);
 	this->m_TextureMap.erase(textureId);
+}
+
+DirectX11Renderer::DirectX11Renderer(IEventManager * pManager)
+{
+	assert(pManager);
+	this->m_pEventManager = pManager;
+}
+
+
+void
+DirectX11Renderer::OnResolutionChanged(IEventData * pEvent)
+{
+	assert(pEvent);
+	ResolutionChangedEventData * pEventData = (ResolutionChangedEventData *)pEvent;
+	this->ChangeResolution(pEventData->m_Width, pEventData->m_Height);
+}
+
+void
+DirectX11Renderer::ChangeResolution(CORE_DWORD width, CORE_DWORD height)
+{
+	this->m_Width = width;
+	this->m_Height = height;
+	/*NOTE(Dino): Changing the actual resolution is very, very hard. */
 }

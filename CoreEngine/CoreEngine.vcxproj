@@ -156,6 +156,7 @@
     <ClInclude Include="Math.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="RenderableInstance.h" />
+    <ClInclude Include="ResolutionChangedEventData.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="runme.h" />
     <ClInclude Include="ShaderBase.h" />

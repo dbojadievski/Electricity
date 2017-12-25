@@ -2,7 +2,8 @@
 
 #include "CoreTypes.h"
 #include "IEngineSystem.h"
-
+#include "IEventManager.h"
+#include "EventManager.h"
 #include <windows.h>
 #include <windowsx.h>
 #include <d3d11.h>
@@ -20,6 +21,9 @@
 class DirectX11Renderer : IEngineSystem
 {
 private:
+
+	IEventManager * m_pEventManager;
+
 	CORE_DOUBLE m_PrevFrameAt = 0;
 
 	D3D_FEATURE_LEVEL m_featureLevel;
@@ -60,6 +64,9 @@ private:
 	FASTVEC m_CameraTarget;
 	FASTVEC m_CameraUp;
 
+	CORE_DWORD m_Width;
+	CORE_DWORD m_Height;
+
 	struct InstanceUniformDescriptor
 	{
 		FASTMAT4 WorldViewProjection;
@@ -92,8 +99,14 @@ private:
 
 	void RenderAll(CORE_DOUBLE dT);
 	void RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShaderSwitches, size_t &numTextureSwitches, size_t &numRenderableInstances, const FASTMAT4 &cameraViewProjectionMatrix);
+	
+	/*Event handlers. */
+	void OnResolutionChanged(IEventData * pData);
 public:
+	DirectX11Renderer(IEventManager * pEventManager);
 	void Init();
 	void Update(CORE_DOUBLE dT);
 	void ShutDown();
+	
+	void ChangeResolution(CORE_DWORD width, CORE_DWORD height);
 };
