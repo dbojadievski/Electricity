@@ -205,9 +205,6 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	g_Window = hWnd;
 	ShowWindow(hWnd, nCmdShow);
 
-	// enter the main loop:
-
-	printf("Hello, world!\n");
 	g_Engine.Init();
 	g_Engine.Start();
 
