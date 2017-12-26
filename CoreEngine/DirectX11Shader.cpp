@@ -27,7 +27,6 @@ DirectX11Shader::Compile()
 	ID3DBlob * pErrMsg;
 
 	errCode = D3DCompileFromFile(pathShader, NULL, NULL, "VShader", "vs_4_0", 0, 0, &this->m_pVertexShaderBlob, &pErrMsg);
-	assert(!pErrMsg);
 	if (errCode)
 	{
 		OutputDebugStringA((char*)pErrMsg->GetBufferPointer());
@@ -35,9 +34,9 @@ DirectX11Shader::Compile()
 		wasCompiled = false;
 		goto end;
 	}
+	assert(errCode == S_OK);
 
 	errCode = D3DCompileFromFile(pathShader, NULL, NULL, "PShader", "ps_4_0", 0, 0, &this->m_pPixelShaderBlob, &pErrMsg);
-	assert(!pErrMsg);
 	if (errCode)
 	{
 		OutputDebugStringA((char*)pErrMsg->GetBufferPointer());
@@ -45,6 +44,7 @@ DirectX11Shader::Compile()
 		wasCompiled = false;
 		goto end;
 	}
+	assert(errCode == S_OK);
 
 end:
 	return wasCompiled;

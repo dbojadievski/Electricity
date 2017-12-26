@@ -22,14 +22,27 @@ using namespace fastdelegate;
 void
 DirectX11Renderer::Init()
 {
-	/*Init event handlers. */
-	{
-		EventListenerDelegate eDelegate;// MakeDelegate(this, &this->OnResolutionChanged);
-		eDelegate = MakeDelegate(this, &DirectX11Renderer::OnResolutionChanged);
-		this->m_pEventManager->VAddListener(eDelegate, EventType::EVENT_TYPE_RESOLUTION_CHANGED);
-	}
-
+	InitEventHandlers();
 	InitDirect3D();
+
+	/*Init lights. */
+	InitLights();
+}
+
+void 
+DirectX11Renderer::InitLights()
+{
+	this->m_Light.m_Direction = FLOAT3(0.25f, 0.5f, -1.0f);
+	this->m_Light.m_ColourAmbient = FLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	this->m_Light.m_ColourDiffuse = FLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+}
+
+void 
+DirectX11Renderer::InitEventHandlers()
+{
+	EventListenerDelegate eDelegate;// MakeDelegate(this, &this->OnResolutionChanged);
+	eDelegate = MakeDelegate(this, &DirectX11Renderer::OnResolutionChanged);
+	this->m_pEventManager->VAddListener(eDelegate, EventType::EVENT_TYPE_RESOLUTION_CHANGED);
 }
 
 void 
@@ -97,7 +110,7 @@ DirectX11Renderer::InitDirect3D()
 	this->m_pDeviceContext->RSSetState(NULL);
 
 	this->m_pDeviceContext->RSSetViewports(1, &viewport);
-	this->m_ClearColour = { 0.0f, 0.2f, 0.4f, 1.0f };
+	this->m_ClearColour = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 	InitDepthBuffer();
 	InitShader();
@@ -256,83 +269,83 @@ DirectX11Renderer::InitVertexBuffer()
 	Mesh *  pMesh = new Mesh();
 	Vertex * pCurrVertex = NULL;
 	
-	pCurrVertex = new Vertex(-1.0f, -1.0f, -1.0f, 0.0f, 1.0f);
+	pCurrVertex = new Vertex(-1.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, -1.0f, -1.0f);
 	pMesh->AddVertex(pCurrVertex);
 	
-	pCurrVertex = new Vertex(-1.0f, +1.0f, -1.0f, 0.0f, 0.0f);
+	pCurrVertex = new Vertex(-1.0f, +1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, -1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex(+1.0f, +1.0f, -1.0f, 1.0f, 0.0f);
+	pCurrVertex = new Vertex(+1.0f, +1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex(+1.0f, -1.0f, -1.0f, 1.0f, 1.0f);
+	pCurrVertex = new Vertex(+1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
 
 	/* PART 2. */
-	pCurrVertex = new Vertex(-1.0f, -1.0f, +1.0f, 1.0f, 1.0f);
+	pCurrVertex = new Vertex(-1.0f, -1.0f, +1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex(1.0f, -1.0f, 1.0f, 0.0f, 1.0f);
+	pCurrVertex = new Vertex(1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f, 1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex(1.0f, 1.0f, 1.0f, 0.0f, 0.0f);
+	pCurrVertex = new Vertex(1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex (-1.0f, 1.0f, 1.0f, 1.0f, 0.0f);
+	pCurrVertex = new Vertex (-1.0f, 1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 1.0f);
 	pMesh->AddVertex(pCurrVertex);
 	
 	/* Part 3. */
-	pCurrVertex = new Vertex(-1.0f, 1.0f, -1.0f, 0.0f, 1.0f);
+	pCurrVertex = new Vertex(-1.0f, 1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 1.0f, -1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex(-1.0f, 1.0f, 1.0f, 0.0f, 0.0f);
+	pCurrVertex = new Vertex(-1.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex(1.0f, 1.0f, 1.0f, 1.0f, 0.0f);
+	pCurrVertex = new Vertex(1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex(1.0f, 1.0f, -1.0f, 1.0f, 1.0f);
+	pCurrVertex = new Vertex(1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
 	/* Part 4. */
-	pCurrVertex = new Vertex(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f);
+	pCurrVertex = new Vertex(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex(1.0f, -1.0f, -1.0f, 0.0f, 1.0f);
+	pCurrVertex = new Vertex(1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, -1.0f, -1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex(1.0f, -1.0f, 1.0f, 0.0f, 0.0f);
+	pCurrVertex = new Vertex(1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex(-1.0f, -1.0f, 1.0f, 1.0f, 0.0f);
+	pCurrVertex = new Vertex(-1.0f, -1.0f, 1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
 	/* Part 5. */
-	pCurrVertex = new Vertex(-1.0f, -1.0f, 1.0f, 0.0f, 1.0f);
+	pCurrVertex = new Vertex(-1.0f, -1.0f, 1.0f, 0.0f, 1.0f, -1.0f, -1.0f, 1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex(-1.0f, 1.0f, 1.0f, 0.0f, 0.0f);
+	pCurrVertex = new Vertex(-1.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f);
+	pCurrVertex = new Vertex(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 1.0f, -1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f);
+	pCurrVertex = new Vertex(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
 
 	/* Part 6. */
-	pCurrVertex = new Vertex(1.0f, -1.0f, -1.0f, 0.0f, 1.0f);
+	pCurrVertex = new Vertex(1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, -1.0f, -1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex(1.0f, 1.0f, -1.0f, 0.0f, 0.0f);
+	pCurrVertex = new Vertex(1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, -1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex(1.0f, 1.0f, 1.0f, 1.0f, 0.0f);
+	pCurrVertex = new Vertex(1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex(1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
+	pCurrVertex = new Vertex(1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
 
@@ -362,11 +375,12 @@ DirectX11Renderer::InitVertexBuffer()
 	D3D11_INPUT_ELEMENT_DESC inputElementDescriptor[] =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"TEXCOORD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 
 	DirectXShaderBufferDescriptor descriptor = this->m_pActiveShader->GetVertexShaderBufferPointer();
-	this->m_pDevice->CreateInputLayout(inputElementDescriptor, 2, descriptor.m_pBuffer, descriptor.m_size, &this->m_pInputLayout);
+	this->m_pDevice->CreateInputLayout(inputElementDescriptor, ARRAYSIZE(inputElementDescriptor), descriptor.m_pBuffer, descriptor.m_size, &this->m_pInputLayout);
 	this->m_pDeviceContext->IASetInputLayout(this->m_pInputLayout);
 
 	DirectX11RenderableInstance * pFirstInstance = pRenderable->Instantiate(1, XMMatrixTranslation(5, 0, 0), NULL);
@@ -410,11 +424,24 @@ DirectX11Renderer::InitTransformationPipeline()
 	{
 		/*NOTE(Dino): Sets the uniform buffer. */
 		auto var = this->m_pUniformBuffer->GetRawPointer();
-		this->m_pDeviceContext->UpdateSubresource(var, 0, NULL, &this->m_PerObjectBuffer, 0, 0);
+		this->m_pDeviceContext->UpdateSubresource(var, 0, NULL, &this->m_FrameUniforms, 0, 0);
 		this->m_pDeviceContext->VSSetConstantBuffers(0, 1, &var);
+
 	}
 
+	this->m_pFrameUniformBuffer = DirectX11Buffer::CreateConstantBuffer(this->m_pDevice, sizeof(FrameUniformDescriptor), true, false, NULL);
+	assert(this->m_pFrameUniformBuffer);
+	UpdateFrameUniforms();
+
 	return wasInitted;
+}
+
+void 
+DirectX11Renderer::UpdateFrameUniforms()
+{
+	auto pUniformBuffer = this->m_pFrameUniformBuffer->GetRawPointer();
+	this->m_pDeviceContext->UpdateSubresource(pUniformBuffer, 0, NULL, &this->m_FrameUniforms, 0, 0);
+	this->m_pDeviceContext->PSSetConstantBuffers(0, 1, &pUniformBuffer);
 }
 
 
@@ -446,6 +473,7 @@ DirectX11Renderer::CloseDirectX11Device()
 	this->m_pDepthStencilView->Release();
 	this->m_pDepthStencilBuffer->Release();
 	delete this->m_pUniformBuffer;
+	delete this->m_pFrameUniformBuffer;
 	this->m_pRasterizerStateWireframe->Release();
 
 	this->m_pSwapChain->Release();
@@ -467,7 +495,8 @@ DirectX11Renderer::Update(CORE_DOUBLE dT)
 	RenderAll(dT);
 }
 
-void DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
+void 
+DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 {
 	size_t numShaderSwitches = 0;
 	size_t numTextureSwitches = 0;
@@ -485,6 +514,10 @@ void DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 	this->ResetBlendState();
 	RenderAllInSet(&this->m_RenderSet.m_OpaqueRenderables, numTextureSwitches, numRenderableInstances, numRenderableInstances, cameraViewProjectionMatrix);
 	this->SetBlendStateTransparent();
+
+	/*NOTE(Dino): Update per-frame uniform buffer. */
+	this->m_FrameUniforms.light = this->m_Light;
+	this->UpdateFrameUniforms();
 
 	/*
 	 * NOTE(Dino): 
@@ -506,7 +539,8 @@ void DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 	this->m_pSwapChain->Present(0, 0);
 }
 
-void DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShaderSwitches, size_t &numTextureSwitches, size_t &numRenderableInstances, const FASTMAT4 &cameraViewProjectionMatrix)
+void 
+DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShaderSwitches, size_t &numTextureSwitches, size_t &numRenderableInstances, const FASTMAT4 &cameraViewProjectionMatrix)
 {
 	auto perShaderIterator = pMap->begin();
 	while (perShaderIterator != pMap->end())
@@ -552,9 +586,10 @@ void DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &nu
 					++numRenderableInstances;
 					DirectX11RenderableInstance * pRenderableInstance = *instanceIterator;
 					const FASTMAT4 * const  pInstanceTransform = pRenderableInstance->GetCachedTransform();
+					const FASTMAT4 * const pInstanceWorldTransform = pRenderableInstance->GetTransform();
 					FASTMAT4 modelViewProjectionMatrix = *pInstanceTransform * cameraViewProjectionMatrix;
 					this->m_PerObjectBuffer.WorldViewProjection = FASTMAT_TRANSPOSE(modelViewProjectionMatrix);
-
+					this->m_PerObjectBuffer.World = FASTMAT_TRANSPOSE(*pInstanceWorldTransform);
 					ID3D11Buffer * pUniformBufferPointer = this->m_pUniformBuffer->GetRawPointer();
 					this->m_pDeviceContext->UpdateSubresource(pUniformBufferPointer, 0, NULL, &this->m_PerObjectBuffer, 0, 0);
 					this->m_pDeviceContext->VSSetConstantBuffers(0, 1, &pUniformBufferPointer);

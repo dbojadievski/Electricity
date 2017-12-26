@@ -4,7 +4,7 @@
 class Timer
 {
 private:
-	float m_TicksPerSecond;
+	CORE_DOUBLE m_TicksPerSecond;
 	__int64 m_FirstTickAt;
 
 public:

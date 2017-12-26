@@ -73,6 +73,12 @@
     <Filter Include="Header Files\Infrastructure\Event\EventTypes">
       <UniqueIdentifier>{edc636e7-d7d6-4edd-927f-644744b8cd4b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Rendering\Lights">
+      <UniqueIdentifier>{b0e6d595-4827-40af-8c05-5b41c5840f75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Rendering\Lights">
+      <UniqueIdentifier>{29b5dff2-03c8-4a14-a4b7-97df2c0aa4d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TimeUtils.h">
@@ -183,6 +189,9 @@
     <ClInclude Include="ResolutionChangedEventData.h">
       <Filter>Header Files\Infrastructure\Event\EventTypes</Filter>
     </ClInclude>
+    <ClInclude Include="BasicLight.h">
+      <Filter>Header Files\Rendering\Lights</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TimeUtils.cpp">
@@ -250,6 +259,9 @@
     </ClCompile>
     <ClCompile Include="Engine.cpp">
       <Filter>Source Files\Component Model</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicLight.cpp">
+      <Filter>Source Files\Rendering\Lights</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

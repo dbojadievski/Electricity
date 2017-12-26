@@ -18,6 +18,8 @@
 #include "Mesh.h"
 #include "Math.h"
 
+#include "BasicLight.h"
+
 class DirectX11Renderer : IEngineSystem
 {
 private:
@@ -70,18 +72,30 @@ private:
 	struct InstanceUniformDescriptor
 	{
 		FASTMAT4 WorldViewProjection;
+		FASTMAT4 World;
 	};
 
+	struct FrameUniformDescriptor
+	{
+		BasicLight light;
+	};
+
+	BasicLight m_Light;
+	FrameUniformDescriptor m_FrameUniforms;
 	InstanceUniformDescriptor m_PerObjectBuffer;
 	DirectX11Buffer * m_pUniformBuffer;
+	DirectX11Buffer * m_pFrameUniformBuffer;
 
+	void InitEventHandlers();
 	void InitDirect3D();
 	void InitTextRenderer();
 	void InitBlendStates();
 	void SetRasterizerToWireFrame();
 	void InitShader();
 	void InitVertexBuffer();
+	void InitLights();
 	CORE_BOOLEAN InitTransformationPipeline();
+	void UpdateFrameUniforms();
 	CORE_BOOLEAN InitDepthBuffer();
 	
 	void SetTexture(DirectX11Texture2D * pTex);

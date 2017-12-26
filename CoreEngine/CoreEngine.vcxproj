@@ -129,6 +129,7 @@
   <ItemGroup>
     <ClInclude Include="ArrayUtils.h" />
     <ClInclude Include="AssetLoader.h" />
+    <ClInclude Include="BasicLight.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="ConsoleCommand.h" />
     <ClInclude Include="ConsoleCommandParameter.h" />
@@ -166,6 +167,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ArrayUtils.cpp" />
+    <ClCompile Include="BasicLight.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="ConsoleCommand.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
