@@ -320,6 +320,9 @@
     <ClCompile Include="MouseEvents.cpp">
       <Filter>Source Files\Infrastructure\Event\EventType</Filter>
     </ClCompile>
+    <ClCompile Include="ResolutionChangedEventData.cpp">
+      <Filter>Source Files\Infrastructure\Event\EventType</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -195,6 +195,7 @@
     <ClCompile Include="MouseEvents.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="DirectX11RenderableInstance.cpp" />
+    <ClCompile Include="ResolutionChangedEventData.cpp" />
     <ClCompile Include="runme.cpp" />
     <ClCompile Include="StringUtils.cpp" />
     <ClCompile Include="TimeUtils.cpp" />
