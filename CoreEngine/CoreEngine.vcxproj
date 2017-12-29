@@ -137,7 +137,6 @@
     <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="DirectX11Buffer.h" />
-    <ClInclude Include="DirectX11IndexBuffer.h" />
     <ClInclude Include="DirectX11Renderable.h" />
     <ClInclude Include="DirectX11Renderer.h" />
     <ClInclude Include="DirectX11RenderSet.h" />
@@ -179,7 +178,6 @@
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="DirectInput.cpp" />
     <ClCompile Include="DirectX11Buffer.cpp" />
-    <ClCompile Include="DirectX11IndexBuffer.cpp" />
     <ClCompile Include="DirectX11Renderable.cpp" />
     <ClCompile Include="DirectX11Renderer.cpp" />
     <ClCompile Include="DirectX11RenderSet.cpp" />

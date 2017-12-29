@@ -38,7 +38,9 @@ DirectX11Renderable::Buffer(ID3D11Device * pDevice, ID3D11DeviceContext * pDevic
 
 		size_t numIndices = this->m_pMesh->GetIndiceCount();
 		unsigned int * pIndices = this->m_pMesh->GetIndicesRaw();
-		this->m_pIndexBuffer = new DirectX11IndexBuffer(pDevice, pDeviceContext, sizeof(unsigned int) * numIndices, pIndices);
+		D3D11_SUBRESOURCE_DATA instanceData;
+		instanceData.pSysMem = pIndices;
+		this->m_pIndexBuffer = DirectX11Buffer::CreateIndexBuffer(pDevice, sizeof(unsigned int) * numIndices, false, &instanceData);
 	}
 }
 
@@ -51,8 +53,10 @@ DirectX11Renderable::ActivateBuffers(ID3D11DeviceContext * pDeviceContext)
 	UINT stride = this->m_pMesh->GetVertexSize();
 
 	ID3D11Buffer * pVertexBuffer = this->m_pVertexBuffer->GetRawPointer();
+	ID3D11Buffer * pIndexBuffer = this->m_pIndexBuffer->GetRawPointer();
 
 	pDeviceContext->IASetVertexBuffers(0, 1, &	pVertexBuffer, &stride, &offset);
+	pDeviceContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 }
 
 DirectX11Renderable::DirectX11Renderable(Mesh * pMesh, DirectX11Texture2D * pTexture, DirectX11Shader * pShader, CORE_BOOLEAN isTransparent)

@@ -7,7 +7,6 @@
 #include "Mesh.h"
 
 #include "DirectX11Buffer.h"
-#include "DirectX11IndexBuffer.h"
 #include "DirectX11Shader.h"
 #include "DirectX11Texture2D.h"
 
@@ -30,7 +29,7 @@ private:
 
 	DirectX11Buffer * m_pVertexBuffer;
 	DirectX11Buffer * m_pInstanceBuffer;
-	DirectX11IndexBuffer * m_pIndexBuffer;	
+	DirectX11Buffer * m_pIndexBuffer;
 	D3D11_SUBRESOURCE_DATA m_InstanceData;
 
 	vector<DirectX11RenderableInstance *> m_pInstances;

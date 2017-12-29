@@ -19,9 +19,9 @@ public:
 
 #pragma region Buffer factory methods.
 	static DirectX11Buffer * CreateVertexBuffer(ID3D11Device * pDevice, UINT size, CORE_BOOLEAN isDynamic, CORE_BOOLEAN isStreamout, const D3D11_SUBRESOURCE_DATA * pInitialData);
-	static DirectX11Buffer * CreateConstantBuffer(ID3D11Device * pDevice, UINT size, CORE_BOOLEAN isDynamic, CORE_BOOLEAN willCpuUpdate, const D3D11_SUBRESOURCE_DATA * pInitialData);
+	static DirectX11Buffer * CreateIndexBuffer(ID3D11Device * pDevice, UINT size, CORE_BOOLEAN isDynamic, D3D11_SUBRESOURCE_DATA * pInitialData);
 	static DirectX11Buffer * CreateInstanceBuffer(ID3D11Device * pDevice, size_t instanceWidth, size_t instanceCount, CORE_BOOLEAN willCpuUpdate, const D3D11_SUBRESOURCE_DATA * pInitialData);
+	static DirectX11Buffer * CreateConstantBuffer(ID3D11Device * pDevice, UINT size, CORE_BOOLEAN isDynamic, CORE_BOOLEAN willCpuUpdate, const D3D11_SUBRESOURCE_DATA * pInitialData);
 	static DirectX11Buffer * CreateStructuredBuffer(ID3D11Device * pDevice, UINT count, UINT structSize, CORE_BOOLEAN canCpuWrite, CORE_BOOLEAN canGpuWrite, D3D11_SUBRESOURCE_DATA * pData);
-
 #pragma endregion
 };

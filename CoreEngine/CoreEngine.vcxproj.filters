@@ -198,9 +198,6 @@
     <ClInclude Include="DirectX11Buffer.h">
       <Filter>Header Files\Rendering\DirectX11</Filter>
     </ClInclude>
-    <ClInclude Include="DirectX11IndexBuffer.h">
-      <Filter>Header Files\Rendering\DirectX11</Filter>
-    </ClInclude>
     <ClInclude Include="DirectX11Renderable.h">
       <Filter>Header Files\Rendering\DirectX11</Filter>
     </ClInclude>
@@ -285,9 +282,6 @@
       <Filter>Source Files\Rendering\Cross-Platform\Lights</Filter>
     </ClCompile>
     <ClCompile Include="DirectX11Buffer.cpp">
-      <Filter>Source Files\Rendering\DirectX11</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectX11IndexBuffer.cpp">
       <Filter>Source Files\Rendering\DirectX11</Filter>
     </ClCompile>
     <ClCompile Include="DirectX11Renderable.cpp">
