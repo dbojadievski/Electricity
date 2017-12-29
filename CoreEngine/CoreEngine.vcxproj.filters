@@ -317,6 +317,9 @@
     <ClCompile Include="KeyEvents.cpp">
       <Filter>Source Files\Infrastructure\Event\EventType</Filter>
     </ClCompile>
+    <ClCompile Include="MouseEvents.cpp">
+      <Filter>Source Files\Infrastructure\Event\EventType</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

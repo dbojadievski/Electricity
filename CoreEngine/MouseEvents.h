@@ -9,107 +9,40 @@ struct MouseButtonPressedEventData : EventDataBase
 {
 	MouseButton m_Button;
 
-	virtual IEventData * VCopy(void) const
-	{
-		MouseButtonPressedEventData * pData = new MouseButtonPressedEventData();
-		pData->m_Button = this->m_Button;
+	virtual IEventData * VCopy(void) const;
 
-		return (IEventData *)pData;
-	}
+	virtual const char * VGetName() const;
+	float EventDataBase::VGetTimeStamp(void) const;
+	virtual const EventType& VGetEventType(void) const;
 
-	virtual const char * VGetName() const
-	{
-		return "MouseButtonPressed";
-	}
-
-	float EventDataBase::VGetTimeStamp(void) const
-	{
-		return this->m_timeStamp;
-	}
-
-	virtual const EventType& VGetEventType(void) const
-	{
-		return EventType::EVENT_TYPE_MOUSE_BUTTON_PRESSED;
-	}
-
-	virtual ~MouseButtonPressedEventData()
-	{
-	}
-
-	virtual void EventDataBase::VSerialize(std::ostream & out) const
-	{
-		out << "MOUSE_BUTTON_PRESSED  " << this->m_Button;
-	}
+	virtual ~MouseButtonPressedEventData();
+	virtual void EventDataBase::VSerialize(std::ostream & out) const;
 };
 struct MouseButtonDownEventData : EventDataBase
 {
 	MouseButton m_Button;
 
-	virtual IEventData * VCopy(void) const
-	{
-		MouseButtonDownEventData * pData = new MouseButtonDownEventData();
-		pData->m_Button = this->m_Button;
+	virtual IEventData * VCopy(void) const;
+	virtual void EventDataBase::VSerialize(std::ostream & out) const;
 
-		return (IEventData *)pData;
-	}
+	virtual const char * VGetName() const;
+	float EventDataBase::VGetTimeStamp(void) const;
+	virtual const EventType& VGetEventType(void) const;
 
-	virtual const char * VGetName() const
-	{
-		return "MouseButtonDown";
-	}
+	virtual ~MouseButtonDownEventData();
 
-	float EventDataBase::VGetTimeStamp(void) const
-	{
-		return this->m_timeStamp;
-	}
-
-	virtual const EventType& VGetEventType(void) const
-	{
-		return EventType::EVENT_TYPE_MOUSE_BUTTON_DOWN;
-	}
-
-	virtual ~MouseButtonDownEventData()
-	{
-	}
-
-	virtual void EventDataBase::VSerialize(std::ostream & out) const
-	{
-		out << "MOUSE_BUTTON_DOWN  " << this->m_Button;
-	}
 };
 struct MouseButtonReleasedEventData : EventDataBase
 {
 	MouseButton m_Button;
 
-	virtual IEventData * VCopy(void) const
-	{
-		MouseButtonReleasedEventData * pData = new MouseButtonReleasedEventData();
-		pData->m_Button = this->m_Button;
+	virtual IEventData * VCopy(void) const;
+	virtual void EventDataBase::VSerialize(std::ostream & out) const;
 
-		return (IEventData *)pData;
-	}
+	virtual const char * VGetName() const;
+	float EventDataBase::VGetTimeStamp(void) const;
+	virtual const EventType& VGetEventType(void) const;
 
-	virtual const char * VGetName() const
-	{
-		return "MouseButtonUp";
-	}
+	virtual ~MouseButtonReleasedEventData();
 
-	float EventDataBase::VGetTimeStamp(void) const
-	{
-		return this->m_timeStamp;
-	}
-
-	virtual const EventType& VGetEventType(void) const
-	{
-		return EventType::EVENT_TYPE_MOUSE_BUTTON_UP;
-	}
-
-	virtual ~MouseButtonReleasedEventData()
-	{
-	}
-
-	virtual void EventDataBase::VSerialize(std::ostream & out) const
-	{
-		out << "MOUSE_BUTTON_UP  " << this->m_Button;
-	}
 };
