@@ -26,6 +26,7 @@ InputBase::Init()
 	this->m_RotationXM = XMMatrixIdentity();
 	this->m_RotationZM = XMMatrixIdentity();
 
+	ZeroMemory(&this->m_PrevMouseState, sizeof(this->m_PrevMouseState));
 	HRESULT errCode = S_OK;
 
 	errCode = DirectInput8Create(g_hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&this->m_pDirectInput, NULL);
@@ -111,28 +112,31 @@ InputBase::UpdateMouseState()
 	size_t numButtonsOnMouse = ARRAYSIZE(currMouseState.rgbButtons);
 	for (size_t currMouseButtonIdx = 0; currMouseButtonIdx < numButtonsOnMouse; currMouseButtonIdx++)
 	{
-		if (currMouseState.rgbButtons[currMouseButtonIdx] != this->m_PrevMouseState.rgbButtons[currMouseButtonIdx] && currMouseState.rgbButtons[currMouseButtonIdx])
+		if (currMouseState.rgbButtons[currMouseButtonIdx] != this->m_PrevMouseState.rgbButtons[currMouseButtonIdx])
 		{
-			MouseButtonPressedEventData * pEventData = new MouseButtonPressedEventData();
-			pEventData->m_Button = (MouseButton)currMouseButtonIdx;
-			this->m_pEventManager->VQueueEvent(pEventData);
+			if (currMouseState.rgbButtons[currMouseButtonIdx])
+			{
+				MouseButtonPressedEventData * pEventData = new MouseButtonPressedEventData();
+				pEventData->m_Button = (MouseButton)currMouseButtonIdx;
+				this->m_pEventManager->VQueueEvent(pEventData);
+			}
+			else
+			{
+				MouseButtonReleasedEventData * pEventData = new MouseButtonReleasedEventData();
+				pEventData->m_Button = (MouseButton)currMouseButtonIdx;
+				this->m_pEventManager->VQueueEvent(pEventData);
+
+			}
 		}
-		else if (currMouseState.rgbButtons[currMouseButtonIdx] != this->m_PrevMouseState.rgbButtons[currMouseButtonIdx] && !currMouseState.rgbButtons[currMouseButtonIdx])
+		else
 		{
-			/* LMB up / released. */
-			MouseButtonReleasedEventData * pEventData = new MouseButtonReleasedEventData();
-			pEventData->m_Button = (MouseButton)currMouseButtonIdx;
-			this->m_pEventManager->VQueueEvent(pEventData);
-		}
-		else if (currMouseState.rgbButtons[currMouseButtonIdx] == this->m_PrevMouseState.rgbButtons[currMouseButtonIdx] && currMouseState.rgbButtons[currMouseButtonIdx])
-		{
-			/* Mouse down. */
 			MouseButtonDownEventData * pEventData = new MouseButtonDownEventData();
 			pEventData->m_Button = (MouseButton)currMouseButtonIdx;
 			this->m_pEventManager->VQueueEvent(pEventData);
 		}
 	}
 
+	memcpy(&this->m_PrevMouseState, &currMouseState, sizeof(this->m_PrevMouseState));
 	this->m_PrevMouseState = currMouseState;
 }
 

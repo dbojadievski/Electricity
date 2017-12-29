@@ -93,9 +93,11 @@ EventManager::VQueueEvent(const IEventData * pEvent)
 	
 	if (findIt != this->m_Listeners.end())
 	{
-		this->m_Queues[this->m_activeQueueIdx].push_back( (IEventData *)pEvent);
+		this->m_Queues[this->m_activeQueueIdx].push_back((IEventData *)pEvent);
 		wasEnqueued = true;
 	}
+	else
+		delete pEvent;
 	
 	return wasEnqueued;
 }

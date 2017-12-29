@@ -54,7 +54,7 @@ CoreEngine::Update()
 		this->m_totalTimeRunning += timeSinceUpdate;
 
 		this->m_TickCount++;
-		printf("Finished tick %l at %d.", this->m_TickCount, this->m_totalTimeRunning);
+		printf("Finished tick %l at %f.", this->m_TickCount, this->m_totalTimeRunning);
 	}
 
 end:
