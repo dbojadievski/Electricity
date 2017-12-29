@@ -185,6 +185,7 @@
     <ClCompile Include="DirectX11RenderSet.cpp" />
     <ClCompile Include="DirectX11Shader.cpp" />
     <ClCompile Include="DirectX11TextRenderer.cpp" />
+    <ClCompile Include="DirectX11Texture2D.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="GameObject.cpp" />
