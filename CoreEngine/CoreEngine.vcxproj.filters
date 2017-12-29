@@ -103,6 +103,9 @@
     <Filter Include="Source Files\Input\DirectInput">
       <UniqueIdentifier>{3698c015-f788-422a-8549-7742e9223b3b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Infrastructure\Event\EventType">
+      <UniqueIdentifier>{94cc7efc-757f-466b-b2b7-940ad8bf3d8e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TimeUtils.h">
@@ -310,6 +313,9 @@
     </ClCompile>
     <ClCompile Include="DirectInput.cpp">
       <Filter>Source Files\Input\DirectInput</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyEvents.cpp">
+      <Filter>Source Files\Infrastructure\Event\EventType</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

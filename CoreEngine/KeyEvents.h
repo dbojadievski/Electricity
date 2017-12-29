@@ -7,109 +7,46 @@ struct KeyDownEventData : EventDataBase
 {
 	KEYCODE m_KeyCode;
 
-	virtual IEventData * VCopy(void) const
-	{
-		KeyDownEventData * pData = new KeyDownEventData();
-		pData->m_KeyCode = this->m_KeyCode;
+	virtual IEventData * VCopy(void) const;
+	virtual const char * VGetName() const;
+	float EventDataBase::VGetTimeStamp(void) const;
 
-		return (IEventData *)pData;
-	}
+	virtual const EventType& VGetEventType(void) const;
 
-	virtual const char * VGetName() const
-	{
-		return "KeyEventData";
-	}
+	virtual ~KeyDownEventData();
 
-	float EventDataBase::VGetTimeStamp(void) const
-	{
-		return this->m_timeStamp;
-	}
-
-	virtual const EventType& VGetEventType(void) const
-	{
-		return EventType::EVENT_TYPE_KEYDOWN;
-	}
-
-	virtual ~KeyDownEventData()
-	{
-	}
-
-	virtual void EventDataBase::VSerialize(std::ostream & out) const
-	{
-		out << "KEYDOWN  " <<  this->m_KeyCode;
-	}
+	virtual void EventDataBase::VSerialize(std::ostream & out) const;
 };
 
 struct KeyUpEventData : EventDataBase
 {
 	KEYCODE m_KeyCode;
 
-	virtual IEventData * VCopy(void) const
-	{
-		KeyUpEventData * pData = new KeyUpEventData();
-		pData->m_KeyCode = this->m_KeyCode;
+	virtual IEventData * VCopy(void) const;
 
-		return (IEventData *)pData;
-	}
+	virtual const char * VGetName() const;
 
-	virtual const char * VGetName() const
-	{
-		return "KeyEventData";
-	}
+	float EventDataBase::VGetTimeStamp(void) const;
 
-	float EventDataBase::VGetTimeStamp(void) const
-	{
-		return this->m_timeStamp;
-	}
+	virtual const EventType& VGetEventType(void) const;
 
-	virtual const EventType& VGetEventType(void) const
-	{
-		return EventType::EVENT_TYPE_KEYUP;
-	}
+	virtual ~KeyUpEventData();
 
-	virtual ~KeyUpEventData()
-	{
-	}
-
-	virtual void EventDataBase::VSerialize(std::ostream & out) const
-	{
-		out << "KEYPRESS " << this->m_KeyCode;
-	}
+	virtual void EventDataBase::VSerialize(std::ostream & out) const;
 };
 
 struct KeyPressEventData : EventDataBase
 {
 	KEYCODE m_KeyCode;
 
-	virtual IEventData * VCopy(void) const
-	{
-		KeyPressEventData * pData = new KeyPressEventData();
-		pData->m_KeyCode = this->m_KeyCode;
+	virtual IEventData * VCopy(void) const;
+	virtual const char * VGetName() const;
 
-		return (IEventData *)pData;
-	}
+	float EventDataBase::VGetTimeStamp(void) const;
 
-	virtual const char * VGetName() const
-	{
-		return "KeyEventData";
-	}
+	virtual const EventType& VGetEventType(void) const;
 
-	float EventDataBase::VGetTimeStamp(void) const
-	{
-		return this->m_timeStamp;
-	}
+	virtual ~KeyPressEventData();
 
-	virtual const EventType& VGetEventType(void) const
-	{
-		return EventType::EVENT_TYPE_KEYPRESS;
-	}
-
-	virtual ~KeyPressEventData()
-	{
-	}
-
-	virtual void EventDataBase::VSerialize(std::ostream & out) const
-	{
-		out << "KEYPRESS " << this->m_KeyCode;
-	}
+	virtual void EventDataBase::VSerialize(std::ostream & out) const;
 };
