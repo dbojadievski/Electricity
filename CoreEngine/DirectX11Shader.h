@@ -3,7 +3,6 @@
 
 #include "CoreTypes.h"
 #include <d3d11.h>
-#include "ShaderBase.h"
 
 #include <map>
 
@@ -14,7 +13,7 @@ public:
 	size_t m_size;
 };
 
-class DirectX11Shader : public ShaderBase
+class DirectX11Shader
 {
 	ID3D11VertexShader *m_pVertexShader;
 	ID3D11PixelShader *m_pPixelShader;
@@ -24,7 +23,7 @@ class DirectX11Shader : public ShaderBase
 	ID3D10Blob * m_pVertexShaderBlob;
 	ID3D10Blob * m_pPixelShaderBlob;
 
-	CORE_BOOLEAN ShaderBase::Compile();
+	CORE_BOOLEAN Compile();
 
 public:
 	DirectX11Shader(CORE_STRING pStrVertexShader, CORE_STRING pStrFragmentShader, CORE_ID shaderId);

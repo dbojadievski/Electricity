@@ -167,7 +167,6 @@
     <ClInclude Include="ResolutionChangedEventData.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="runme.h" />
-    <ClInclude Include="ShaderBase.h" />
     <ClInclude Include="StringUtils.h" />
     <ClInclude Include="TimeUtils.h" />
     <ClInclude Include="Vertex.h" />

@@ -195,9 +195,6 @@
     <ClInclude Include="DirectionalLight.h">
       <Filter>Header Files\Rendering\Cross-Platform\Lights</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderBase.h">
-      <Filter>Header Files\Rendering\Cross-Platform</Filter>
-    </ClInclude>
     <ClInclude Include="DirectX11Buffer.h">
       <Filter>Header Files\Rendering\DirectX11</Filter>
     </ClInclude>

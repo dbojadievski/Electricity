@@ -4,7 +4,7 @@
 //#include <d3d11.h>
 #include <d3dcompiler.h>
 
-DirectX11Shader::DirectX11Shader(CORE_STRING pStrVertexShader, CORE_STRING pStrFragmentShader, CORE_ID shaderId) : ShaderBase(pStrVertexShader, pStrFragmentShader)
+DirectX11Shader::DirectX11Shader(CORE_STRING pStrVertexShader, CORE_STRING pStrFragmentShader, CORE_ID shaderId)
 {
 	this->Compile();
 	this->m_Identifier = shaderId;
