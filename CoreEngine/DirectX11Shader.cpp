@@ -26,7 +26,7 @@ DirectX11Shader::Compile()
 	LPCWSTR pathShader = L"Assets\\Shaders\\shaders.shader";
 	ID3DBlob * pErrMsg;
 
-	errCode = D3DCompileFromFile(pathShader, NULL, NULL, "VShader", "vs_4_0", 0, 0, &this->m_pVertexShaderBlob, &pErrMsg);
+	errCode = D3DCompileFromFile(pathShader, NULL, NULL, "VShader", "vs_5_0", 0, 0, &this->m_pVertexShaderBlob, &pErrMsg);
 	if (errCode)
 	{
 		OutputDebugStringA((char*)pErrMsg->GetBufferPointer());
@@ -36,7 +36,7 @@ DirectX11Shader::Compile()
 	}
 	assert(errCode == S_OK);
 
-	errCode = D3DCompileFromFile(pathShader, NULL, NULL, "PShader", "ps_4_0", 0, 0, &this->m_pPixelShaderBlob, &pErrMsg);
+	errCode = D3DCompileFromFile(pathShader, NULL, NULL, "PShader", "ps_5_0", 0, 0, &this->m_pPixelShaderBlob, &pErrMsg);
 	if (errCode)
 	{
 		OutputDebugStringA((char*)pErrMsg->GetBufferPointer());
@@ -49,7 +49,6 @@ DirectX11Shader::Compile()
 end:
 	return wasCompiled;
 }
-
 
 DirectXShaderBufferDescriptor 
 DirectX11Shader::GetVertexShaderBufferPointer()
@@ -78,8 +77,6 @@ DirectX11Shader::GetVertexShader()
 {
 	ID3D11VertexShader const * pRetVal = this->m_pVertexShader;
 	return pRetVal;
-
-
 }
 
 ID3D11PixelShader const *

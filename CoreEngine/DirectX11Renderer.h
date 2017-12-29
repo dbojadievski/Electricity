@@ -19,6 +19,8 @@
 #include "Math.h"
 
 #include "BasicLight.h"
+#include "DirectionalLight.h"
+#include "LightManager.h"
 
 class DirectX11Renderer : IEngineSystem
 {
@@ -56,6 +58,8 @@ private:
 	DirectX11RenderSet m_RenderSet;
 
 	VEC4 m_ClearColour;
+	vector<DirectionalLight> m_Lights;
+	LightManager m_LightManager;
 
 	FASTMAT4 m_World;
 	FASTMAT4 m_WorldViewProjection;
@@ -77,14 +81,17 @@ private:
 
 	struct FrameUniformDescriptor
 	{
-		BasicLight light;
+		DirectionalLight light;
 	};
 
-	BasicLight m_Light;
+
+	DirectionalLight m_Light;
 	FrameUniformDescriptor m_FrameUniforms;
 	InstanceUniformDescriptor m_PerObjectBuffer;
 	DirectX11Buffer * m_pUniformBuffer;
 	DirectX11Buffer * m_pFrameUniformBuffer;
+	DirectX11Buffer * m_pFrameUniformStructuredBuffer;
+	DirectX11Buffer * m_pRgbBuffer;
 
 	void InitEventHandlers();
 	void InitDirect3D();
@@ -94,6 +101,7 @@ private:
 	void InitShader();
 	void InitVertexBuffer();
 	void InitLights();
+	void ReloadLightBuffer();
 	CORE_BOOLEAN InitTransformationPipeline();
 	void UpdateFrameUniforms();
 	CORE_BOOLEAN InitDepthBuffer();

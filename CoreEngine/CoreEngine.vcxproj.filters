@@ -73,11 +73,35 @@
     <Filter Include="Header Files\Infrastructure\Event\EventTypes">
       <UniqueIdentifier>{edc636e7-d7d6-4edd-927f-644744b8cd4b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Rendering\Lights">
+    <Filter Include="Source Files\Rendering\Cross-Platform">
+      <UniqueIdentifier>{cd66da13-b53d-41c7-ba9c-3e2ea0fad5cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Rendering\Cross-Platform\Lights">
+      <UniqueIdentifier>{29b5dff2-03c8-4a14-a4b7-97df2c0aa4d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Rendering\Cross-Platform">
+      <UniqueIdentifier>{0d2e8cf6-ec96-411a-8af1-601a3556305f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Rendering\Cross-Platform\Lights">
       <UniqueIdentifier>{b0e6d595-4827-40af-8c05-5b41c5840f75}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Rendering\Lights">
-      <UniqueIdentifier>{29b5dff2-03c8-4a14-a4b7-97df2c0aa4d7}</UniqueIdentifier>
+    <Filter Include="Header Files\Rendering\DirectX11">
+      <UniqueIdentifier>{f2e41060-b2c4-40c4-96c3-9b159862bee7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Rendering\DirectX11">
+      <UniqueIdentifier>{f5ba400a-b29b-4dcf-a04b-a62b852ffe33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Input">
+      <UniqueIdentifier>{82cfb61f-c12e-4a85-add1-05059fcfd1d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Input\DirectInput">
+      <UniqueIdentifier>{fd390ce7-79d4-425d-b725-123a35d08765}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Input">
+      <UniqueIdentifier>{bd82ce57-5e67-4f9a-8dcb-36c2131f44a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Input\DirectInput">
+      <UniqueIdentifier>{3698c015-f788-422a-8549-7742e9223b3b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -126,9 +150,6 @@
     <ClInclude Include="StringUtils.h">
       <Filter>Header Files\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="IEngineSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Engine.h">
       <Filter>Header Files\Component Model</Filter>
     </ClInclude>
@@ -150,47 +171,71 @@
     <ClInclude Include="Mesh.h">
       <Filter>Header Files\Geometry</Filter>
     </ClInclude>
-    <ClInclude Include="RenderableInstance.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectX11Renderer.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="Globals.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderBase.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectX11Shader.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectX11Buffer.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectX11Renderable.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectX11IndexBuffer.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="DDSTextureLoader.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectX11Texture2D.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectX11RenderSet.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectX11TextRenderer.h">
-      <Filter>Header Files\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="ResolutionChangedEventData.h">
       <Filter>Header Files\Infrastructure\Event\EventTypes</Filter>
     </ClInclude>
     <ClInclude Include="BasicLight.h">
-      <Filter>Header Files\Rendering\Lights</Filter>
+      <Filter>Header Files\Rendering\Cross-Platform\Lights</Filter>
+    </ClInclude>
+    <ClInclude Include="PointLight.h">
+      <Filter>Header Files\Rendering\Cross-Platform\Lights</Filter>
+    </ClInclude>
+    <ClInclude Include="LightManager.h">
+      <Filter>Header Files\Rendering\Cross-Platform\Lights</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectionalLight.h">
+      <Filter>Header Files\Rendering\Cross-Platform\Lights</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderBase.h">
+      <Filter>Header Files\Rendering\Cross-Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectX11Buffer.h">
+      <Filter>Header Files\Rendering\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectX11IndexBuffer.h">
+      <Filter>Header Files\Rendering\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectX11Renderable.h">
+      <Filter>Header Files\Rendering\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectX11Renderer.h">
+      <Filter>Header Files\Rendering\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectX11RenderSet.h">
+      <Filter>Header Files\Rendering\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectX11Shader.h">
+      <Filter>Header Files\Rendering\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectX11TextRenderer.h">
+      <Filter>Header Files\Rendering\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectX11Texture2D.h">
+      <Filter>Header Files\Rendering\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectX11RenderableInstance.h">
+      <Filter>Header Files\Rendering\DirectX11</Filter>
+    </ClInclude>
+    <ClInclude Include="InputBase.h">
+      <Filter>Header Files\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="IEngineSystem.h">
+      <Filter>Header Files\Component Model</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyEvents.h">
+      <Filter>Header Files\Infrastructure\Event\EventTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseEvents.h">
+      <Filter>Header Files\Infrastructure\Event\EventTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="inputHeaders.h">
+      <Filter>Header Files\Input</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -221,47 +266,50 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>Source Files\Geometry</Filter>
     </ClCompile>
-    <ClCompile Include="IRenderable.h">
-      <Filter>Header Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderableBase.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectX11Renderer.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderableInstance.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectX11Shader.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="Vertex.cpp">
       <Filter>Source Files\Geometry</Filter>
     </ClCompile>
-    <ClCompile Include="DirectX11Buffer.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectX11Renderable.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectX11IndexBuffer.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="DDSTextureLoader.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectX11RenderSet.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectX11TextRenderer.cpp">
-      <Filter>Source Files\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Engine.cpp">
       <Filter>Source Files\Component Model</Filter>
     </ClCompile>
     <ClCompile Include="BasicLight.cpp">
-      <Filter>Source Files\Rendering\Lights</Filter>
+      <Filter>Source Files\Rendering\Cross-Platform\Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="PointLight.cpp">
+      <Filter>Source Files\Rendering\Cross-Platform\Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="LightManager.cpp">
+      <Filter>Source Files\Rendering\Cross-Platform\Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectX11Buffer.cpp">
+      <Filter>Source Files\Rendering\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectX11IndexBuffer.cpp">
+      <Filter>Source Files\Rendering\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectX11Renderable.cpp">
+      <Filter>Source Files\Rendering\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectX11Renderer.cpp">
+      <Filter>Source Files\Rendering\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectX11RenderSet.cpp">
+      <Filter>Source Files\Rendering\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectX11Shader.cpp">
+      <Filter>Source Files\Rendering\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectX11TextRenderer.cpp">
+      <Filter>Source Files\Rendering\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectX11RenderableInstance.cpp">
+      <Filter>Source Files\Rendering\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectInput.cpp">
+      <Filter>Source Files\Input\DirectInput</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

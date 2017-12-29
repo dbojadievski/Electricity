@@ -1,4 +1,4 @@
-#include "RenderableInstance.h"
+#include "DirectX11RenderableInstance.h"
 
 DirectX11RenderableInstance::DirectX11RenderableInstance(DirectX11Renderable * pRenderable, CORE_ID id, DirectX11RenderableInstance * pParent, vector<DirectX11RenderableInstance *> * pChildren)
 {

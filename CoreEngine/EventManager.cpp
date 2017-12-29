@@ -58,7 +58,7 @@ EventManager::VRemoveListener(const EventListenerDelegate& eventDelegate, const 
 }
 
 CORE_BOOLEAN
-EventManager::VTriggerEvent(const IEventData * pEvent) const
+EventManager::VTriggerEvent(IEventData * pEvent) const
 {
 	assert(pEvent);
 
@@ -77,6 +77,7 @@ EventManager::VTriggerEvent(const IEventData * pEvent) const
 		}
 	}
 
+	delete pEvent;
 	return wasProcessed;
 }
 
@@ -122,6 +123,8 @@ EventManager::VAbortEvent(const EventType& inType, CORE_BOOLEAN abortAllOfType)
 				continue;
 
 			queue.erase(thisIt);
+			auto val = *thisIt;
+			delete val;
 			wasEventAborted = true;
 
 			if (!abortAllOfType)
@@ -159,6 +162,7 @@ EventManager::VTickUpdate(CORE_ULONG maxMs)
 				listener(pEvent);
 			}
 		}
+		delete pEvent;
 	}
 
 	areAnyUnprocessed = !this->m_Queues[queueToProcess].empty();

@@ -135,6 +135,7 @@
     <ClInclude Include="ConsoleCommandParameter.h" />
     <ClInclude Include="CoreTypes.h" />
     <ClInclude Include="DDSTextureLoader.h" />
+    <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="DirectX11Buffer.h" />
     <ClInclude Include="DirectX11IndexBuffer.h" />
     <ClInclude Include="DirectX11Renderable.h" />
@@ -154,9 +155,15 @@
     <ClInclude Include="IEngineSystem.h" />
     <ClInclude Include="IEventData.h" />
     <ClInclude Include="IEventManager.h" />
+    <ClInclude Include="InputBase.h" />
+    <ClInclude Include="inputHeaders.h" />
+    <ClInclude Include="KeyEvents.h" />
+    <ClInclude Include="LightManager.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Mesh.h" />
-    <ClInclude Include="RenderableInstance.h" />
+    <ClInclude Include="MouseEvents.h" />
+    <ClInclude Include="PointLight.h" />
+    <ClInclude Include="DirectX11RenderableInstance.h" />
     <ClInclude Include="ResolutionChangedEventData.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="runme.h" />
@@ -171,6 +178,7 @@
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="ConsoleCommand.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
+    <ClCompile Include="DirectInput.cpp" />
     <ClCompile Include="DirectX11Buffer.cpp" />
     <ClCompile Include="DirectX11IndexBuffer.cpp" />
     <ClCompile Include="DirectX11Renderable.cpp" />
@@ -181,10 +189,10 @@
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="GameObject.cpp" />
-    <ClCompile Include="IRenderable.h" />
+    <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="RenderableBase.cpp" />
-    <ClCompile Include="RenderableInstance.cpp" />
+    <ClCompile Include="PointLight.cpp" />
+    <ClCompile Include="DirectX11RenderableInstance.cpp" />
     <ClCompile Include="runme.cpp" />
     <ClCompile Include="StringUtils.cpp" />
     <ClCompile Include="TimeUtils.cpp" />

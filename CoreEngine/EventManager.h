@@ -48,7 +48,7 @@ public:
 	virtual CORE_BOOLEAN VAddListener(const EventListenerDelegate& eventDelegate, const EventType& type);
 	virtual CORE_BOOLEAN VRemoveListener(const EventListenerDelegate& eventDelegate, const EventType& type);
 
-	virtual CORE_BOOLEAN VTriggerEvent(const IEventData * pEventData) const;
+	virtual CORE_BOOLEAN VTriggerEvent(IEventData * pEventData) const;
 	virtual CORE_BOOLEAN VQueueEvent(const IEventData * pEventData);
 	virtual CORE_BOOLEAN VAbortEvent(const EventType& type, CORE_BOOLEAN abortAllOfType = false);
 

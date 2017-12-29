@@ -11,7 +11,7 @@
 #include "DirectX11Shader.h"
 #include "DirectX11Texture2D.h"
 
-#include "RenderableInstance.h"
+#include "DirectX11RenderableInstance.h"
 class DirectX11RenderableInstance;
 
 typedef std::_Vector_iterator<std::_Vector_val<std::_Simple_types<DirectX11RenderableInstance *>>> DirectX11RenderableInstanceIterator;

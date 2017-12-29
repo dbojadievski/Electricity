@@ -35,6 +35,13 @@ DirectX11Renderer::InitLights()
 	this->m_Light.m_Direction = FLOAT3(0.25f, 0.5f, -1.0f);
 	this->m_Light.m_ColourAmbient = FLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	this->m_Light.m_ColourDiffuse = FLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	this->m_Lights.push_back(this->m_Light);
+	this->m_LightManager.AddDirectionalLight(&this->m_Light);
+
+	this->m_pFrameUniformBuffer = DirectX11Buffer::CreateConstantBuffer(this->m_pDevice, sizeof(FrameUniformDescriptor), true, false, NULL);
+	assert(this->m_pFrameUniformBuffer);
+	this->ReloadLightBuffer();
 }
 
 void 
@@ -74,7 +81,7 @@ DirectX11Renderer::InitDirect3D()
 	D3D11CreateDeviceAndSwapChain(NULL,
 		D3D_DRIVER_TYPE_HARDWARE,
 		NULL,
-		D3D11_CREATE_DEVICE_BGRA_SUPPORT,
+		D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG,
 		featureLevels,
 		ARRAYSIZE(featureLevels),
 		D3D11_SDK_VERSION,
@@ -426,12 +433,7 @@ DirectX11Renderer::InitTransformationPipeline()
 		auto var = this->m_pUniformBuffer->GetRawPointer();
 		this->m_pDeviceContext->UpdateSubresource(var, 0, NULL, &this->m_FrameUniforms, 0, 0);
 		this->m_pDeviceContext->VSSetConstantBuffers(0, 1, &var);
-
 	}
-
-	this->m_pFrameUniformBuffer = DirectX11Buffer::CreateConstantBuffer(this->m_pDevice, sizeof(FrameUniformDescriptor), true, false, NULL);
-	assert(this->m_pFrameUniformBuffer);
-	UpdateFrameUniforms();
 
 	return wasInitted;
 }
@@ -442,6 +444,9 @@ DirectX11Renderer::UpdateFrameUniforms()
 	auto pUniformBuffer = this->m_pFrameUniformBuffer->GetRawPointer();
 	this->m_pDeviceContext->UpdateSubresource(pUniformBuffer, 0, NULL, &this->m_FrameUniforms, 0, 0);
 	this->m_pDeviceContext->PSSetConstantBuffers(0, 1, &pUniformBuffer);
+
+	//auto pLightsBuffer = this->m_pFrameUniformStructuredBuffer->GetRawPointer();
+	//this->m_pDeviceContext->PSSetConstantBuffers(1, 1, &pLightsBuffer);
 }
 
 
@@ -464,6 +469,7 @@ DirectX11Renderer::SetShader(const DirectX11Shader * pShader)
 void
 DirectX11Renderer::ShutDown()
 {
+	this->m_LightManager.ClearAllLights();
 	CloseDirectX11Device();
 }
 
@@ -586,10 +592,9 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 					++numRenderableInstances;
 					DirectX11RenderableInstance * pRenderableInstance = *instanceIterator;
 					const FASTMAT4 * const  pInstanceTransform = pRenderableInstance->GetCachedTransform();
-					const FASTMAT4 * const pInstanceWorldTransform = pRenderableInstance->GetTransform();
 					FASTMAT4 modelViewProjectionMatrix = *pInstanceTransform * cameraViewProjectionMatrix;
 					this->m_PerObjectBuffer.WorldViewProjection = FASTMAT_TRANSPOSE(modelViewProjectionMatrix);
-					this->m_PerObjectBuffer.World = FASTMAT_TRANSPOSE(*pInstanceWorldTransform);
+					this->m_PerObjectBuffer.World = FASTMAT_TRANSPOSE(*pInstanceTransform);
 					ID3D11Buffer * pUniformBufferPointer = this->m_pUniformBuffer->GetRawPointer();
 					this->m_pDeviceContext->UpdateSubresource(pUniformBufferPointer, 0, NULL, &this->m_PerObjectBuffer, 0, 0);
 					this->m_pDeviceContext->VSSetConstantBuffers(0, 1, &pUniformBufferPointer);
@@ -640,10 +645,36 @@ DirectX11Renderer::DeRegisterTexture(CORE_ID textureId)
 	this->m_TextureMap.erase(textureId);
 }
 
+
+void
+DirectX11Renderer::ReloadLightBuffer()
+{
+	DirectionalLight * pAsArray = this->m_Lights.data();
+	size_t numLights = this->m_Lights.size();
+
+	D3D11_SUBRESOURCE_DATA resourceData;
+	resourceData.SysMemPitch = (numLights * sizeof(DirectionalLight));
+	resourceData.SysMemSlicePitch = sizeof(DirectionalLight);
+	resourceData.pSysMem = &this->m_Light;
+
+	if (this->m_pFrameUniformStructuredBuffer)
+		delete this->m_pFrameUniformStructuredBuffer;
+	this->m_pFrameUniformStructuredBuffer = DirectX11Buffer::CreateStructuredBuffer(this->m_pDevice, numLights, sizeof(DirectionalLight), true, false, &resourceData);
+
+	ID3D11Buffer *pBuffers[] = { this->m_pUniformBuffer->GetRawPointer(), this->m_pFrameUniformStructuredBuffer->GetRawPointer() };
+
+	auto ptr = this->m_pFrameUniformStructuredBuffer->GetRawPointer();
+	this->m_pDeviceContext->UpdateSubresource(ptr, 0, 0, pAsArray, 0, 0);
+	this->m_pDeviceContext->PSSetConstantBuffers(0, ARRAYSIZE(pBuffers), pBuffers);
+
+	//this->UpdateFrameUniforms();
+}
+
 DirectX11Renderer::DirectX11Renderer(IEventManager * pManager)
 {
 	assert(pManager);
 	this->m_pEventManager = pManager;
+	this->m_pFrameUniformStructuredBuffer = NULL;
 }
 
 

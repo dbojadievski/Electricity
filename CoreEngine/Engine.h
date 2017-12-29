@@ -5,6 +5,7 @@
 #include "Console.h"
 #include "EventManager.h"
 #include "DirectX11Renderer.h"
+#include "InputBase.h"
 #include "TimeUtils.h"
 
 #include <assert.h>
@@ -20,7 +21,7 @@ private:
 
 	const IConsole * m_pConsole;
 	IEventManager * m_pEventManager;
-
+	InputBase * m_pInput;
 	Timer * m_pTimer;
 public:
 	CoreEngine();

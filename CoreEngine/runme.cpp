@@ -34,6 +34,7 @@ using namespace fastdelegate;
 
 CoreEngine g_Engine;
 HWND g_Window;
+HINSTANCE g_hInstance;
 
 EventManager manager("EVENT_MANAGER_MAIN", true);
 class TestEventData : public EventDataBase
@@ -81,15 +82,15 @@ public:
 		EventListenerDelegate eDelegate = MakeDelegate(this, &TestSystem::TestDelegateHandler);
 		manager.VAddListener(eDelegate, EVENT_TYPE_TEST);
 
-		TestEventData data;
-		EventType type = data.VGetEventType();
-		manager.VTriggerEvent( (const IEventData *) &data);
+		TestEventData * data = new TestEventData();
+		EventType type = data->VGetEventType();
+		manager.VTriggerEvent(data);
 
-		manager.VQueueEvent((const IEventData *)&data);
+		manager.VQueueEvent(data);
 		manager.VTickUpdate();
 
 		manager.VRemoveListener(eDelegate, EVENT_TYPE_TEST);
-		manager.VTriggerEvent((const IEventData *)&data);
+		manager.VTriggerEvent(data);
 	}
 
 	void TestCommandHandler(ConsoleCommandParameterList * pParams)
@@ -151,7 +152,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	int nCmdShow)
 {
 
-	/*NOTE(Dino):Set up the console, so we can do debug logging. */
+	///*NOTE(Dino):Set up the console, so we can do debug logging. */
 	AllocConsole();
 
 	HANDLE handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -208,6 +209,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 				  // display the window on the screen
 	g_Window = hWnd;
+	g_hInstance = hInstance;
 	ShowWindow(hWnd, nCmdShow);
 
 	g_Engine.Init();
@@ -218,10 +220,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	ConsoleCommandParameter<CORE_DWORD> paramDisplayHeight("display_resolution_height", EConsoleCommandParameterType::PARAM_DWORD32, monitorInfo.rcWork.bottom);
 	g_Engine.GetConsole()->VSetCVar((const CVar *) &paramDisplayHeight);
 
-	ResolutionChangedEventData resChangedData;
-	resChangedData.m_Width = monitorInfo.rcWork.right;
-	resChangedData.m_Height = monitorInfo.rcWork.bottom;
-	g_Engine.GetEventManager()->VTriggerEvent(&resChangedData);
+	ResolutionChangedEventData * pResChangedData = new ResolutionChangedEventData();
+	pResChangedData->m_Width = monitorInfo.rcWork.right;
+	pResChangedData->m_Height = monitorInfo.rcWork.bottom;
+	g_Engine.GetEventManager()->VTriggerEvent(pResChangedData);
 
 	g_Engine.Start();
 

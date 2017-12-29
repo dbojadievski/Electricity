@@ -10,18 +10,22 @@ CoreEngine::CoreEngine()
 void
 CoreEngine::Init()
 {
-	IConsole * pConsole = new Console();
 	this->m_pEventManager = new EventManager("EVENT_MANAGER_MAIN", true);
+	
+	IConsole * pConsole = new Console();
 	IEngineSystem * pConsoleSystem = (IEngineSystem *)pConsole;
+	this->m_pConsole = pConsole;
+	this->m_Systems.push_back(pConsoleSystem);
+	
 	DirectX11Renderer * pRenderer = new DirectX11Renderer(this->m_pEventManager);
 	IEngineSystem * pRendererSystem = (IEngineSystem *)pRenderer;
+	this->m_Systems.push_back(pRendererSystem);
 	
+	this->m_pInput = new InputBase(this->m_pEventManager);
+	this->m_Systems.push_back(this->m_pInput);
+
 	this->m_pTimer = new Timer();
 
-	this->m_Systems.push_back(pConsoleSystem);
-	this->m_pConsole = pConsole;
-
-	this->m_Systems.push_back(pRendererSystem);
 
 	size_t numSystems = this->m_Systems.size();
 	for (size_t currSystemIdx = 0; currSystemIdx < numSystems; currSystemIdx++)
