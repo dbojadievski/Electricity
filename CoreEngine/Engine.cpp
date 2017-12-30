@@ -49,13 +49,15 @@ CoreEngine::Update()
 	{
 		IEngineSystem * pSystem = this->m_Systems[currSystemIdx];
 		pSystem->Update(this->m_totalTimeRunning);
-
-		CORE_DOUBLE timeSinceUpdate = this->m_pTimer->GetTime();
-		this->m_totalTimeRunning += timeSinceUpdate;
-
-		this->m_TickCount++;
-		printf("Finished tick %l at %f.", this->m_TickCount, this->m_totalTimeRunning);
 	}
+
+	this->m_pEventManager->VTickUpdate();
+
+	CORE_DOUBLE timeSinceUpdate = this->m_pTimer->GetTime();
+	this->m_totalTimeRunning += timeSinceUpdate;
+
+	this->m_TickCount++;
+	printf("Finished tick %d at %f.", this->m_TickCount, this->m_totalTimeRunning);
 
 end:
 	return;

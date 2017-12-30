@@ -11,7 +11,7 @@ Mesh::AddVertex(Vertex * pVertex)
 }
 
 void 
-Mesh::AddIndice(unsigned int indice1, unsigned int indice2)
+Mesh::AddIndice(unsigned long int indice1, unsigned long int indice2)
 {
 	this->m_Indices.push_back(indice1);
 	this->m_Indices.push_back(indice2);
@@ -20,7 +20,7 @@ Mesh::AddIndice(unsigned int indice1, unsigned int indice2)
 }
 
 void
-Mesh::AddIndice(unsigned int indice1, unsigned int indice2, unsigned int indice3)
+Mesh::AddIndice(unsigned long int indice1, unsigned long int indice2, unsigned long int indice3)
 {
 	this->m_Indices.push_back(indice1);
 	this->m_Indices.push_back(indice2);
@@ -28,6 +28,14 @@ Mesh::AddIndice(unsigned int indice1, unsigned int indice2, unsigned int indice3
 		
 	this->m_NumIndices += 3;
 }
+
+void
+Mesh::AddIndice(unsigned long int indice)
+{
+	this->m_Indices.push_back(indice);
+	this->m_NumIndices++;
+}
+
 Mesh::Mesh(EMeshType type)
 {
 	this->m_NumIndices = 0;
@@ -49,7 +57,7 @@ Mesh::GetVertexCount()
 size_t
 Mesh::GetIndiceCount()
 {
-	return (this->m_NumIndices * 2);
+	return (this->m_NumIndices);
 }
 
 size_t
@@ -77,7 +85,7 @@ size_t Mesh::GetVertexSize()
 	return sizeof(Vertex);
 }
 
-unsigned int *
+unsigned long int *
 Mesh::GetIndicesRaw()
 {
 	return this->m_Indices.data();

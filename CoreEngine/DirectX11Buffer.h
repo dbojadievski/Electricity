@@ -13,7 +13,6 @@ private:
 
 public:
 	DirectX11Buffer(ID3D11Device * pDevice, UINT byteWidth, D3D11_USAGE usage = D3D11_USAGE_DYNAMIC, D3D11_BIND_FLAG bindFlags = D3D11_BIND_VERTEX_BUFFER, D3D11_CPU_ACCESS_FLAG cpuAccessFlag = D3D11_CPU_ACCESS_WRITE);
-	void LoadToVideoMemory(ID3D11DeviceContext * pDeviceContext, void * pData, size_t dataSize, UINT subresource = NULL, D3D11_MAP mapType = D3D11_MAP_WRITE_DISCARD, UINT mapFlags = NULL);
 
 	ID3D11Buffer * GetRawPointer();
 

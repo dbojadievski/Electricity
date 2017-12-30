@@ -6,6 +6,7 @@
 #include "FastDelegateBind.h"
 
 #include "ResolutionChangedEventData.h"
+#include "KeyEvents.h"
 
 // include the Direct3D Library file
 #pragma comment (lib, "d3d11.lib")
@@ -19,6 +20,14 @@ extern HWND g_Window;
 
 using namespace fastdelegate;
 
+
+XMVECTOR DefaultForward = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+XMVECTOR DefaultRight = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+XMVECTOR CameraForward = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+XMVECTOR CameraRight = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+XMVECTOR CameraUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+
 void
 DirectX11Renderer::Init()
 {
@@ -26,7 +35,7 @@ DirectX11Renderer::Init()
 	InitDirect3D();
 
 	/*Init lights. */
-	InitLights();
+	//InitLights();
 }
 
 void 
@@ -50,18 +59,22 @@ DirectX11Renderer::InitEventHandlers()
 	EventListenerDelegate eDelegate;// MakeDelegate(this, &this->OnResolutionChanged);
 	eDelegate = MakeDelegate(this, &DirectX11Renderer::OnResolutionChanged);
 	this->m_pEventManager->VAddListener(eDelegate, EventType::EVENT_TYPE_RESOLUTION_CHANGED);
+
+	EventListenerDelegate keyDownDelegate = MakeDelegate(this, &DirectX11Renderer::OnKeyDown);
+	this->m_pEventManager->VAddListener(keyDownDelegate, EventType::EVENT_TYPE_KEYDOWN);
 }
 
 void 
 DirectX11Renderer::InitDirect3D()
 {
+#pragma region Initialize swap chain.
 	DXGI_SWAP_CHAIN_DESC swapChainDescriptor;
 	ZeroMemory(&swapChainDescriptor, sizeof(DXGI_SWAP_CHAIN_DESC));
 
 	swapChainDescriptor.BufferCount = 1;
 	swapChainDescriptor.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // We're using standard 32-bit colours for now. Would need to be increased for HDR support.
 	swapChainDescriptor.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDescriptor.OutputWindow = g_Window; //Well, fuck.
+	swapChainDescriptor.OutputWindow = g_Window;
 	swapChainDescriptor.SampleDesc.Count = 4; //TODO(Dino): Make configurable.
 	swapChainDescriptor.Windowed = true;
 
@@ -81,7 +94,7 @@ DirectX11Renderer::InitDirect3D()
 	D3D11CreateDeviceAndSwapChain(NULL,
 		D3D_DRIVER_TYPE_HARDWARE,
 		NULL,
-		D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG,
+		D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_SINGLETHREADED,
 		featureLevels,
 		ARRAYSIZE(featureLevels),
 		D3D11_SDK_VERSION,
@@ -90,7 +103,8 @@ DirectX11Renderer::InitDirect3D()
 		&this->m_pDevice,
 		&this->m_featureLevel,
 		&this->m_pDeviceContext);
-
+#pragma endregion
+#pragma region Initialize back-buffer and render target.
 	/*Sets the backbuffer to be the current render target. */
 	ID3D11Texture2D *pBackBuffer;
 	this->m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *) &pBackBuffer);
@@ -98,8 +112,8 @@ DirectX11Renderer::InitDirect3D()
 	pBackBuffer->Release();
 
 	this->m_pDeviceContext->OMSetRenderTargets(1, &this->m_pRenderTargetView, NULL);
-
-	/*Sets up the viewport. */
+#pragma endregion
+#pragma region Initialize viewport.
 	D3D11_VIEWPORT viewport;
 	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
 	viewport.TopLeftX = 0;
@@ -108,23 +122,25 @@ DirectX11Renderer::InitDirect3D()
 	viewport.Height = 1440,
 	viewport.MinDepth = VIEWPORT_DEPTH_MIN;
 	viewport.MaxDepth = VIEWPORT_DEPTH_MAX;
-
+	this->m_pDeviceContext->RSSetViewports(1, &viewport);
+#pragma endregion
+#pragma region Initialize rasterizer states.
 	D3D11_RASTERIZER_DESC wfdesc;
 	ZeroMemory(&wfdesc, sizeof(D3D11_RASTERIZER_DESC));
 	wfdesc.FillMode = D3D11_FILL_WIREFRAME;
 	wfdesc.CullMode = D3D11_CULL_NONE;
 	this->m_pDevice->CreateRasterizerState(&wfdesc, &this->m_pRasterizerStateWireframe);
 	this->m_pDeviceContext->RSSetState(NULL);
+#pragma endregion
 
-	this->m_pDeviceContext->RSSetViewports(1, &viewport);
-	this->m_ClearColour = { 0.0f, 0.0f, 0.0f, 1.0f };
+	this->m_ClearColour = { 0.1f, 0.1f, 0.1f, 1.0f };
 
 	InitDepthBuffer();
-	InitShader();
-	InitVertexBuffer();
-	InitTransformationPipeline();
+	InitShaders();
+	InitTextures();
+	InitRenderables();
+	InitCamera();
 	InitBlendStates();
-
 	InitTextRenderer();
 }
 
@@ -243,42 +259,226 @@ DirectX11Renderer::InitDepthBuffer()
 
 	this->m_pDeviceContext->OMSetRenderTargets(1, &this->m_pRenderTargetView, this->m_pDepthStencilView);
 
+
 end:
 	return wasInitted;
 }
 
 void 
-DirectX11Renderer::InitShader()
+DirectX11Renderer::InitShaders()
 {
-	/*Let's init the rendering pipeline itself. */
-	DirectX11Shader * pShader = new DirectX11Shader("shaders.shader", "shaders.shader", 1);
+	this->m_pActiveShader = NULL;
 
+	DirectX11Shader * pShader = new DirectX11Shader(L"Assets\\Shaders\\red.shader", "VShader", L"Assets\\Shaders\\red.shader", "PShader", 1);
+	
+	ID3D11VertexShader * pVertexShader = pShader->GetVertexShader();
 	DirectXShaderBufferDescriptor vertexShaderDescriptor = pShader->GetVertexShaderBufferPointer();
-	ID3D11VertexShader const  * pVertexShader = pShader->GetVertexShader();
-	this->m_pDevice->CreateVertexShader(vertexShaderDescriptor.m_pBuffer, vertexShaderDescriptor.m_size, NULL, (ID3D11VertexShader **)
-		&pVertexShader);
-	this->m_pDeviceContext->VSSetShader((ID3D11VertexShader *)pVertexShader, 0, 0);
+	this->m_pDevice->CreateVertexShader(vertexShaderDescriptor.m_pBuffer, vertexShaderDescriptor.m_size, NULL, (ID3D11VertexShader **) &pVertexShader);
+	this->m_pDeviceContext->VSSetShader(pVertexShader, 0, 0);
 
+	ID3D11PixelShader * pPixelShader = pShader->GetPixelShader();
 	DirectXShaderBufferDescriptor pixelShaderDescriptor = pShader->GetPixelShaderBufferPointer();
-	ID3D11PixelShader const  * pPixelShader = pShader->GetPixelShader();
-	this->m_pDevice->CreatePixelShader(pixelShaderDescriptor.m_pBuffer, pixelShaderDescriptor.m_size, NULL, (ID3D11PixelShader **)
-		&pPixelShader);
-	this->m_pDeviceContext->PSSetShader((ID3D11PixelShader *)pPixelShader, 0, 0);
+	this->m_pDevice->CreatePixelShader(pixelShaderDescriptor.m_pBuffer, pixelShaderDescriptor.m_size, NULL, (ID3D11PixelShader **) &pPixelShader);
+	this->m_pDeviceContext->PSSetShader(pPixelShader, 0, 0);
 
-	this->m_pActiveShader = pShader;
+	D3D11_INPUT_ELEMENT_DESC inputElementDescriptor[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+
+	DirectXShaderBufferDescriptor descriptor = pShader->GetVertexShaderBufferPointer();
+	ID3D11InputLayout * pLayout = NULL;
+	HRESULT res = this->m_pDevice->CreateInputLayout(inputElementDescriptor, ARRAYSIZE(inputElementDescriptor), descriptor.m_pBuffer, descriptor.m_size, &pLayout);
+	pShader->SetInputLayout(pLayout);
+	this->m_pDeviceContext->IASetInputLayout(pLayout);
 
 	this->RegisterShader(pShader);
+	this->m_pActiveShader = pShader;
+
+
+	ShaderDescriptor redDescriptor;
+	redDescriptor.m_Identifier = 1;
+	redDescriptor.m_PixelShaderPath = L"Assets\\Shaders\\red.shader";
+	redDescriptor.m_PixelShaderEntryPoint = "PShader";
+	redDescriptor.m_VertexShaderPath = L"Assets\\Shaders\\red.shader";
+	redDescriptor.m_VertexShaderEntryPoint = "VShader";
+	auto shader = CreateShader(&redDescriptor);
+
+	//this->m_pActiveShader
+
+}
+
+DirectX11Shader * 
+DirectX11Renderer::CreateShader(ShaderDescriptor * pDescriptor)
+{
+	assert(pDescriptor);
+
+	DirectX11Shader * pRetVal = new DirectX11Shader(pDescriptor->m_VertexShaderPath, pDescriptor->m_VertexShaderEntryPoint, pDescriptor->m_PixelShaderPath, pDescriptor->m_PixelShaderEntryPoint, pDescriptor->m_Identifier);
+	
+	DirectXShaderBufferDescriptor vertexShaderDescriptor = pRetVal->GetVertexShaderBufferPointer();
+	ID3D11VertexShader * pVertexShader = pRetVal->GetVertexShader();
+	this->m_pDevice->CreateVertexShader(vertexShaderDescriptor.m_pBuffer, vertexShaderDescriptor.m_size, NULL, (ID3D11VertexShader **) &pVertexShader);
+
+	DirectXShaderBufferDescriptor pixelShaderDescriptor = pRetVal->GetPixelShaderBufferPointer();
+	ID3D11PixelShader * pPixelShader = pRetVal->GetPixelShader();
+	this->m_pDevice->CreatePixelShader(pixelShaderDescriptor.m_pBuffer, pixelShaderDescriptor.m_size, NULL, (ID3D11PixelShader **) &pPixelShader);
+
+	D3D11_INPUT_ELEMENT_DESC inputElementDescriptor[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+
+	DirectXShaderBufferDescriptor descriptor = pRetVal->GetVertexShaderBufferPointer();
+	ID3D11InputLayout * pLayout = NULL;
+	HRESULT res = this->m_pDevice->CreateInputLayout(inputElementDescriptor, ARRAYSIZE(inputElementDescriptor), descriptor.m_pBuffer, descriptor.m_size, &pLayout);
+	pRetVal->SetInputLayout(pLayout);
+
+	this->RegisterShader(pRetVal);
+	return pRetVal;
 }
 
 void 
-DirectX11Renderer::InitVertexBuffer()
+DirectX11Renderer::InitRenderables()
+{
+#define ENABLE_CUBES
+#ifdef ENABLE_CUBES
+	InitCubeGeometry();
+#endif
+	InitTerrain();
+}
+
+void 
+DirectX11Renderer::InitTerrain()
+{
+	CORE_REAL terrainWidth = 100.0f;
+	CORE_REAL terrainHeight = 100.0f;
+
+	unsigned long index = 0, i, j;
+	CORE_REAL positionX, positionZ;
+	unsigned long vertexCount = (terrainWidth - 1) * (terrainHeight - 1) * 8;
+	unsigned long indexCount = vertexCount;
+
+	Mesh * pDynamicTerrainMesh = new Mesh();
+	Vertex ** pVertices = new Vertex *[vertexCount];
+	unsigned long * pIndices = new unsigned long[indexCount];
+
+	VEC2 colour(1.0f, 1.0f);
+	VEC3 normal(0.0f, 0.0f, 0.0f);
+
+	for (j = 0; j < (terrainHeight - 1); j++)
+	{
+		for (i = 0; i < (terrainWidth - 1); i++)
+		{
+			/* We generate 4 lines per grid element. */
+				
+			/* Line 1 - upper left.*/
+			positionX = (float)i;
+			positionZ = (float) (j + 1);
+
+			VEC3 position(positionX, 0.0f, positionZ);
+			pVertices[index] = new Vertex(position, colour, normal);
+			pIndices[index] = index;
+			index++;
+
+			/* Line 1 - upper right. */
+			positionX = (float)(i + 1);
+			positionZ = (float)(j + 1);
+
+			VEC3 position2(positionX, 0.0f, positionZ);
+			pVertices[index] = new Vertex(position2, colour, normal);
+			pIndices[index] = index;
+			index++;
+
+			/* Line 2 - upper right. */
+			positionX = (float)(i + 1);
+			positionZ = (float)(j + 1);
+
+			VEC3 position3(positionX, 0.0f, positionZ);
+			pVertices[index] = new Vertex(position3, colour, normal);
+			pIndices[index] = index;
+			index++;
+
+			/* Line 2 - bottom right. */
+			positionX = (float)(i + 1);
+			positionZ = (float)j;
+
+			VEC3 position4(positionX, 0.0f, positionZ);
+			pVertices[index] = new Vertex(position4, colour, normal);
+			pIndices[index] = index;
+			index++;
+
+			/* Line 3 - bottom right. */
+			positionX = (float)(i + 1);
+			positionZ = (float)j;
+
+			VEC3 position5(positionX, 0.0f, positionZ);
+			pVertices[index] = new Vertex(position5, colour, normal);
+			pIndices[index] = index;
+			index++;
+
+			/* Line 3 - bottom left. */
+			positionX = (float)i;
+			positionZ = (float)j;
+				
+			VEC3 position6(positionX, 0.0f, positionZ);
+			pVertices[index] = new Vertex(position6, colour, normal);
+			pIndices[index] = index;
+			index++;
+
+			/* Line 4 - bottom left. */
+			positionX = (float)i;
+			positionZ = (float)j;
+
+			VEC3 position7(positionX, 0.0f, positionZ);
+			pVertices[index] = new Vertex(position7, colour, normal);
+			pIndices[index] = index;
+			index++;
+
+			/* Line 4 - upper left. */
+			positionX = (float)i;
+			positionZ = (float)(j + 1);
+
+			VEC3 position8(positionX, 0.0f, positionZ);
+			pVertices[index] = new Vertex(position8, colour, normal);
+			pIndices[index] = index;
+			index++;
+		}
+	}
+
+
+	for (size_t currIdx = 0; currIdx < vertexCount; currIdx++)
+		pDynamicTerrainMesh->AddVertex(pVertices[currIdx]);
+
+	for (size_t currIdx = 0; currIdx < indexCount; currIdx++)
+		pDynamicTerrainMesh->AddIndice(pIndices[currIdx]);
+
+	DirectX11Texture2D * pTexture = this->m_TextureMap.at(1);
+	DirectX11Shader * pShader = this->m_ShaderMap.at(1);
+
+	DirectX11Renderable * pDynamicTerrainRenderable = new DirectX11Renderable(pDynamicTerrainMesh, pTexture, pShader, FALSE, D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	this->m_Renderables.push_back(pDynamicTerrainRenderable);
+
+	DirectX11RenderableInstance * pDynamicTerrainInstance = pDynamicTerrainRenderable->Instantiate(5, XMMatrixScaling(10.0f, 10.0f, 10.0f), NULL);
+	assert(pDynamicTerrainInstance);
+ 	pDynamicTerrainRenderable->Buffer(this->m_pDevice, this->m_pDeviceContext);
+	this->m_RenderSet.Insert(pDynamicTerrainRenderable);
+}
+
+
+
+void 
+DirectX11Renderer::InitCubeGeometry()
 {
 	Mesh *  pMesh = new Mesh();
 	Vertex * pCurrVertex = NULL;
-	
+
 	pCurrVertex = new Vertex(-1.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, -1.0f, -1.0f);
 	pMesh->AddVertex(pCurrVertex);
-	
+
 	pCurrVertex = new Vertex(-1.0f, +1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, -1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
@@ -299,9 +499,9 @@ DirectX11Renderer::InitVertexBuffer()
 	pCurrVertex = new Vertex(1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
 	pMesh->AddVertex(pCurrVertex);
 
-	pCurrVertex = new Vertex (-1.0f, 1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 1.0f);
+	pCurrVertex = new Vertex(-1.0f, 1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f, 1.0f);
 	pMesh->AddVertex(pCurrVertex);
-	
+
 	/* Part 3. */
 	pCurrVertex = new Vertex(-1.0f, 1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 1.0f, -1.0f);
 	pMesh->AddVertex(pCurrVertex);
@@ -374,21 +574,11 @@ DirectX11Renderer::InitVertexBuffer()
 	pMesh->AddIndice(20, 21, 22);
 	pMesh->AddIndice(20, 22, 23);
 
-	DirectX11Texture2D * pTex = DirectX11Texture2D::FromDDSFile(this->m_pDevice, L"Assets\\Textures\\wood.dds", 1);
-	this->RegisterTexture(pTex);
-	DirectX11Renderable * pRenderable = new DirectX11Renderable(pMesh, pTex, this->m_pActiveShader);
-	this->m_pRenderables.push_back(pRenderable);
-
-	D3D11_INPUT_ELEMENT_DESC inputElementDescriptor[] =
-	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0}
-	};
-
-	DirectXShaderBufferDescriptor descriptor = this->m_pActiveShader->GetVertexShaderBufferPointer();
-	this->m_pDevice->CreateInputLayout(inputElementDescriptor, ARRAYSIZE(inputElementDescriptor), descriptor.m_pBuffer, descriptor.m_size, &this->m_pInputLayout);
-	this->m_pDeviceContext->IASetInputLayout(this->m_pInputLayout);
+	DirectX11Shader * pShader = this->m_ShaderMap.at(1);
+	DirectX11Texture2D * pTex = this->m_TextureMap.at(1);
+	assert(pTex);
+	DirectX11Renderable * pRenderable = new DirectX11Renderable(pMesh, pTex, pShader);
+	this->m_Renderables.push_back(pRenderable);
 
 	DirectX11RenderableInstance * pFirstInstance = pRenderable->Instantiate(1, XMMatrixTranslation(5, 0, 0), NULL);
 	XMMATRIX childTransform = XMMatrixRotationX(0.3f) * XMMatrixRotationY(-0.6f) * XMMatrixRotationZ(0.46f) * XMMatrixTranslation(-7.f, 2.f, -3.f);
@@ -400,8 +590,19 @@ DirectX11Renderer::InitVertexBuffer()
 	assert(wasInserted);
 }
 
+void 
+DirectX11Renderer::InitTextures()
+{
+	DirectX11Texture2D * pTex = DirectX11Texture2D::FromDDSFile(this->m_pDevice, L"Assets\\Textures\\wood.dds", 1);
+	this->RegisterTexture(pTex);
+
+	DirectX11Texture2D  * pGrassTex = DirectX11Texture2D::FromDDSFile(this->m_pDevice, L"Assets\\Textures\\grass.dds", 2);
+	this->RegisterTexture(pTex);
+}
+
 void DirectX11Renderer::SetTexture(DirectX11Texture2D * pTex)
 {
+
 	this->m_pDeviceContext->PSSetShaderResources(0, 1, &pTex->m_pShaderResourceView);
 	this->m_pDeviceContext->PSSetSamplers(0, 1, &pTex->m_pSampler);
 	
@@ -409,38 +610,62 @@ void DirectX11Renderer::SetTexture(DirectX11Texture2D * pTex)
 }
 
 CORE_BOOLEAN
-DirectX11Renderer::InitTransformationPipeline()
+DirectX11Renderer::InitCamera()
 {
 	CORE_BOOLEAN wasInitted = true;
 	
 	this->m_pUniformBuffer = DirectX11Buffer::CreateConstantBuffer(this->m_pDevice, sizeof(InstanceUniformDescriptor), true, false, NULL);
 	assert(this->m_pUniformBuffer);
 
-	this->m_CameraPosition = FASTVEC_SET(0.0f, 3.0f, -8.0f, 0.0f);
-	this->m_CameraTarget = FASTVEC_SET(0.0f, 0.0f, 0.0f, 0.0f);
-	this->m_CameraUp = FASTVEC_SET(0.0f, 1.0f, 0.0, 0.0f);
+	this->m_CameraYaw = 0;
+	this->m_CameraPitch = 0;
+	this->m_MoveLeftRight = 0.0f;
+	this->m_MoveBackForward = 0.0f;
 
+	this->m_CameraPosition = FASTVEC_SET(0.0f, 3.0f, -8.0f, 0.0f);
+	this->m_CameraTarget = FASTVEC_SET(0.0f, -1.0f, 0.0f, 0.0f);
+	this->m_CameraUp = FASTVEC_SET(0.0f, 1.0f, 0.0, 0.0f);
+	this->m_CameraForward = CameraForward;
+	this->m_CameraRight = CameraRight;
 	this->m_CameraView = XMMatrixLookAtLH(this->m_CameraPosition, this->m_CameraTarget, this->m_CameraUp);
 	this->m_CameraProjection = XMMatrixPerspectiveFovLH(0.4f*3.14f, (float)2560 / 1440, VIEW_NEAR, VIEW_FAR);
 
-	/*NOTE(Dino): 'tis only an example world matrix, so the equation pans out. It will need to be modified for every object, of course. */
-	this->m_World = FASTMAT_IDENTITY();
-	this->m_WorldViewProjection = this->m_World * this->m_CameraView * this->m_CameraProjection;
-	this->m_PerObjectBuffer.WorldViewProjection = FASTMAT_TRANSPOSE(this->m_WorldViewProjection);
-
-	{
-		/*NOTE(Dino): Sets the uniform buffer. */
-		auto var = this->m_pUniformBuffer->GetRawPointer();
-		this->m_pDeviceContext->UpdateSubresource(var, 0, NULL, &this->m_FrameUniforms, 0, 0);
-		this->m_pDeviceContext->VSSetConstantBuffers(0, 1, &var);
-	}
-
 	return wasInitted;
+}
+
+void
+DirectX11Renderer::UpdateCamera()
+{
+	this->m_CameraRotation = XMMatrixRotationRollPitchYaw(this->m_CameraPitch, this->m_CameraYaw, 0);
+	this->m_CameraTarget = XMVector3TransformCoord(DefaultForward, this->m_CameraRotation);
+	this->m_CameraTarget = XMVector3Normalize(this->m_CameraTarget);
+
+
+	XMMATRIX RotateYTempMatrix;
+	RotateYTempMatrix = XMMatrixRotationY(this->m_CameraYaw);
+
+	this->m_CameraRight = XMVector3TransformCoord(DefaultRight, RotateYTempMatrix);
+	this->m_CameraUp = XMVector3TransformCoord(CameraUp, RotateYTempMatrix);
+	this->m_CameraForward = XMVector3TransformCoord(DefaultForward, RotateYTempMatrix);
+
+	this->m_CameraPosition += this->m_MoveLeftRight * this->m_CameraRight;
+	this->m_CameraPosition += this->m_MoveBackForward * this->m_CameraForward;
+
+	this->m_MoveLeftRight = 0;
+	this->m_MoveBackForward = 0;
+
+	this->m_CameraTarget = this->m_CameraPosition + this->m_CameraTarget;
+
+	FASTVEC DOWN = FASTVEC_SET(0.0f, -1.0f, 0.0f, 0.0f);
+	/*DEBUG(Dino): The next line is code to debug terrain. Remove afterwards. */
+	//this->m_CameraTarget = DOWN;
+	this->m_CameraView = XMMatrixLookAtLH(this->m_CameraPosition, this->m_CameraTarget, this->m_CameraUp);
 }
 
 void 
 DirectX11Renderer::UpdateFrameUniforms()
 {
+	return;
 	auto pUniformBuffer = this->m_pFrameUniformBuffer->GetRawPointer();
 	this->m_pDeviceContext->UpdateSubresource(pUniformBuffer, 0, NULL, &this->m_FrameUniforms, 0, 0);
 	this->m_pDeviceContext->PSSetConstantBuffers(0, 1, &pUniformBuffer);
@@ -451,19 +676,16 @@ DirectX11Renderer::UpdateFrameUniforms()
 
 
 void
-DirectX11Renderer::SetShader(const DirectX11Shader * pShader)
+DirectX11Renderer::SetShader(DirectX11Shader * pShader)
 {
 	assert(pShader);
-	if (pShader != this->m_pActiveShader)
-	{
-		this->m_pActiveShader = (DirectX11Shader *) pShader;
-		
-		ID3D11VertexShader * pVertexShader = (ID3D11VertexShader *) ((DirectX11Shader *)pShader)->GetVertexShader();
-		this->m_pDeviceContext->VSSetShader(pVertexShader, 0, 0);
+	this->m_pActiveShader = pShader;
+	
+	ID3D11VertexShader * pVertexShader = pShader->GetVertexShader();
+	ID3D11PixelShader * pPixelShader = pShader->GetPixelShader();
 
-		ID3D11PixelShader * pPixelShader = (ID3D11PixelShader *) ((DirectX11Shader *)pShader)->GetPixelShader();
-		this->m_pDeviceContext->PSSetShader(pPixelShader, 0, 0);
-	}
+	this->m_pDeviceContext->VSSetShader(pVertexShader, 0, 0);
+	this->m_pDeviceContext->PSSetShader(pPixelShader, 0, 0);
 }
 
 void
@@ -498,6 +720,7 @@ DirectX11Renderer::CloseDirectX11Device()
 void
 DirectX11Renderer::Update(CORE_DOUBLE dT)
 {
+	this->UpdateCamera();
 	RenderAll(dT);
 }
 
@@ -517,13 +740,14 @@ DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 
 	FASTMAT4 cameraViewProjectionMatrix = this->m_CameraView * this->m_CameraProjection;
 
+	/*NOTE(Dino): Update per-frame uniform buffer. */
+	this->m_FrameUniforms.light = this->m_Light;
+	this->UpdateFrameUniforms();
+
 	this->ResetBlendState();
 	RenderAllInSet(&this->m_RenderSet.m_OpaqueRenderables, numTextureSwitches, numRenderableInstances, numRenderableInstances, cameraViewProjectionMatrix);
 	this->SetBlendStateTransparent();
 
-	/*NOTE(Dino): Update per-frame uniform buffer. */
-	this->m_FrameUniforms.light = this->m_Light;
-	this->UpdateFrameUniforms();
 
 	/*
 	 * NOTE(Dino): 
@@ -555,12 +779,21 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 		assert(shaderId);
 		auto shaderIter = this->m_ShaderMap.find(shaderId);
 		assert(shaderIter != this->m_ShaderMap.end());
-		const DirectX11Shader * pShader = shaderIter->second;
+		DirectX11Shader * pShader = shaderIter->second;
 		assert(pShader);
 		if (this->m_pActiveShader != pShader)
 		{
+			ID3D11InputLayout * pLayout = pShader->GetInputLayout();
+			this->m_pInputLayout = pLayout;
+			this->m_pDeviceContext->IASetInputLayout(pLayout);
+			ID3D11VertexShader * pVertexShader = pShader->GetVertexShader();
+			ID3D11PixelShader * pPixelShader = pShader->GetPixelShader();
+
+			this->m_pDeviceContext->VSSetShader(pVertexShader, 0, 0);
+			this->m_pDeviceContext->PSSetShader(pPixelShader, 0, 0);
+
 			++numShaderSwitches;
-			this->SetShader(pShader);
+			this->m_pActiveShader = pShader;
 		}
 
 		DirectX11RenderablesPerTextureSet * pPerTexSet = &(*perShaderIterator->second);
@@ -592,9 +825,9 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 					++numRenderableInstances;
 					DirectX11RenderableInstance * pRenderableInstance = *instanceIterator;
 					const FASTMAT4 * const  pInstanceTransform = pRenderableInstance->GetCachedTransform();
-					FASTMAT4 modelViewProjectionMatrix = *pInstanceTransform * cameraViewProjectionMatrix;
+					FASTMAT4 modelViewProjectionMatrix = *pInstanceTransform * this->m_CameraView * cameraViewProjectionMatrix;
 					this->m_PerObjectBuffer.WorldViewProjection = FASTMAT_TRANSPOSE(modelViewProjectionMatrix);
-					this->m_PerObjectBuffer.World = FASTMAT_TRANSPOSE(*pInstanceTransform);
+					this->m_PerObjectBuffer.World =  FASTMAT_TRANSPOSE(*pInstanceTransform);
 					ID3D11Buffer * pUniformBufferPointer = this->m_pUniformBuffer->GetRawPointer();
 					this->m_pDeviceContext->UpdateSubresource(pUniformBufferPointer, 0, NULL, &this->m_PerObjectBuffer, 0, 0);
 					this->m_pDeviceContext->VSSetConstantBuffers(0, 1, &pUniformBufferPointer);
@@ -609,6 +842,8 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 		perShaderIterator++;
 	}
 }
+
+
 
 void
 DirectX11Renderer::RegisterShader(DirectX11Shader * pShader)
@@ -649,6 +884,7 @@ DirectX11Renderer::DeRegisterTexture(CORE_ID textureId)
 void
 DirectX11Renderer::ReloadLightBuffer()
 {
+	return;
 	DirectionalLight * pAsArray = this->m_Lights.data();
 	size_t numLights = this->m_Lights.size();
 
@@ -677,6 +913,27 @@ DirectX11Renderer::DirectX11Renderer(IEventManager * pManager)
 	this->m_pFrameUniformStructuredBuffer = NULL;
 }
 
+
+void
+DirectX11Renderer::OnKeyDown(IEventData * pEvent)
+{
+	assert(pEvent);
+	KeyDownEventData *pEventData = (KeyDownEventData *)pEvent;
+	switch (pEventData->m_KeyCode)
+	{
+	case VK_UP:
+		this->m_MoveBackForward += 0.1;
+		break;
+	case VK_DOWN:
+		this->m_MoveBackForward -= 0.1;
+		break;
+	case VK_LEFT:
+		break;
+	case VK_RIGHT:
+		break;
+	}
+
+}
 
 void
 DirectX11Renderer::OnResolutionChanged(IEventData * pEvent)

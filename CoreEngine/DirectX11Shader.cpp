@@ -4,10 +4,11 @@
 //#include <d3d11.h>
 #include <d3dcompiler.h>
 
-DirectX11Shader::DirectX11Shader(CORE_STRING pStrVertexShader, CORE_STRING pStrFragmentShader, CORE_ID shaderId)
+DirectX11Shader::DirectX11Shader(LPWSTR pStrVertexShaderPath, LPCSTR pStrVertexShaderFunc, LPWSTR pStrFragmentShaderPath, LPCSTR pStrFragmentShaderFunc, CORE_ID shaderId)
 {
-	this->Compile();
+	this->Compile(pStrVertexShaderPath, pStrVertexShaderFunc, pStrFragmentShaderPath, pStrFragmentShaderFunc);
 	this->m_Identifier = shaderId;
+	this->m_pInputLayout = NULL;
 }
 
 DirectX11Shader::~DirectX11Shader()
@@ -17,16 +18,15 @@ DirectX11Shader::~DirectX11Shader()
 }
 
 CORE_BOOLEAN 
-DirectX11Shader::Compile()
+DirectX11Shader::Compile(LPWSTR pStrVertexShaderPath, LPCSTR pStrVertexShaderFunc, LPWSTR pStrFragmentShaderPath, LPCSTR pStrFragmentShaderFunc)
 {
 	CORE_BOOLEAN wasCompiled = true;
 
 	HRESULT errCode;
 	
-	LPCWSTR pathShader = L"Assets\\Shaders\\shaders.shader";
 	ID3DBlob * pErrMsg;
 
-	errCode = D3DCompileFromFile(pathShader, NULL, NULL, "VShader", "vs_5_0", 0, 0, &this->m_pVertexShaderBlob, &pErrMsg);
+	errCode = D3DCompileFromFile(pStrVertexShaderPath, NULL, NULL, pStrVertexShaderFunc, "vs_5_0", 0, 0, &this->m_pVertexShaderBlob, &pErrMsg);
 	if (errCode)
 	{
 		OutputDebugStringA((char*)pErrMsg->GetBufferPointer());
@@ -36,7 +36,7 @@ DirectX11Shader::Compile()
 	}
 	assert(errCode == S_OK);
 
-	errCode = D3DCompileFromFile(pathShader, NULL, NULL, "PShader", "ps_5_0", 0, 0, &this->m_pPixelShaderBlob, &pErrMsg);
+	errCode = D3DCompileFromFile(pStrFragmentShaderPath, NULL, NULL, pStrFragmentShaderFunc, "ps_5_0", D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG, 0, &this->m_pPixelShaderBlob, &pErrMsg);
 	if (errCode)
 	{
 		OutputDebugStringA((char*)pErrMsg->GetBufferPointer());
@@ -72,22 +72,41 @@ DirectX11Shader::GetPixelShaderBufferPointer()
 	return buffDescriptor;
 }
 
-ID3D11VertexShader const *
+ID3D11VertexShader *
 DirectX11Shader::GetVertexShader()
 {
-	ID3D11VertexShader const * pRetVal = this->m_pVertexShader;
-	return pRetVal;
+	return this->m_pVertexShader;
 }
 
-ID3D11PixelShader const *
+ID3D11PixelShader *
 	DirectX11Shader::GetPixelShader()
 {
-	ID3D11PixelShader const * pRetVal = this->m_pPixelShader;
-	return pRetVal;
+	return this->m_pPixelShader;
 }
 
 CORE_ID
 DirectX11Shader::GetIdentifier()
 {
 	return this->m_Identifier;
+}
+
+void
+DirectX11Shader::SetInputLayout(ID3D11InputLayout * pLayout)
+{
+	assert(pLayout);
+	this->m_pInputLayout = pLayout;
+}
+
+ID3D11InputLayout *
+DirectX11Shader::GetInputLayout()
+{
+	return this->m_pInputLayout;
+}
+
+
+
+ID3D11Buffer *
+DirectX11Shader::GetFrameConstantBuffer()
+{
+	return this->m_pFrameConstantBuffer->GetRawPointer();
 }

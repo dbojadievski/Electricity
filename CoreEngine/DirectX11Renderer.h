@@ -22,6 +22,18 @@
 #include "DirectionalLight.h"
 #include "LightManager.h"
 
+
+struct ShaderDescriptor
+{
+	CORE_ID m_Identifier;
+
+	LPWSTR m_VertexShaderPath;
+	LPCSTR m_VertexShaderEntryPoint;
+
+	LPWSTR m_PixelShaderPath;
+	LPCSTR m_PixelShaderEntryPoint;
+};
+
 class DirectX11Renderer : IEngineSystem
 {
 private:
@@ -54,21 +66,27 @@ private:
 
 	DirectX11Texture2D * m_pActiveTexture;
 	DirectX11Texture2DMap m_TextureMap;
-	vector<DirectX11Renderable *> m_pRenderables;
+	vector<DirectX11Renderable *> m_Renderables;
 	DirectX11RenderSet m_RenderSet;
 
 	VEC4 m_ClearColour;
 	vector<DirectionalLight> m_Lights;
 	LightManager m_LightManager;
 
-	FASTMAT4 m_World;
 	FASTMAT4 m_WorldViewProjection;
 	
 	FASTMAT4 m_CameraView;
 	FASTMAT4 m_CameraProjection;
 	FASTVEC m_CameraPosition;
+	FASTMAT4 m_CameraRotation;
 	FASTVEC m_CameraTarget;
 	FASTVEC m_CameraUp;
+	FASTVEC m_CameraRight;
+	FASTVEC m_CameraForward;
+	CORE_REAL m_CameraPitch;
+	CORE_REAL m_CameraYaw;
+	CORE_REAL m_MoveLeftRight;
+	CORE_REAL m_MoveBackForward;
 
 	CORE_DWORD m_Width;
 	CORE_DWORD m_Height;
@@ -98,16 +116,22 @@ private:
 	void InitTextRenderer();
 	void InitBlendStates();
 	void SetRasterizerToWireFrame();
-	void InitShader();
-	void InitVertexBuffer();
+	void InitShaders();
+	DirectX11Shader * CreateShader(ShaderDescriptor * pDescriptor);
+	void InitRenderables();
+	void InitTerrain();
+	void InitCubeGeometry();
+	void InitTextures();
 	void InitLights();
 	void ReloadLightBuffer();
-	CORE_BOOLEAN InitTransformationPipeline();
-	void UpdateFrameUniforms();
+	CORE_BOOLEAN InitCamera();
 	CORE_BOOLEAN InitDepthBuffer();
-	
+
+	void UpdateCamera();
+	void UpdateFrameUniforms();
+
 	void SetTexture(DirectX11Texture2D * pTex);
-	void SetShader(const DirectX11Shader * pShader);
+	void SetShader(DirectX11Shader * pShader);
 	void ResetBlendState();
 	void SetBlendStateTransparent();
 
@@ -120,10 +144,12 @@ private:
 	void CloseDirectX11Device();
 
 	void RenderAll(CORE_DOUBLE dT);
+	//void RenderUnsorted(size_t &numRenderableInstances, const FASTMAT4 &cameraViewProjectionMatrix);
 	void RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShaderSwitches, size_t &numTextureSwitches, size_t &numRenderableInstances, const FASTMAT4 &cameraViewProjectionMatrix);
 	
 	/*Event handlers. */
 	void OnResolutionChanged(IEventData * pData);
+	void OnKeyDown(IEventData * pData);
 public:
 	DirectX11Renderer(IEventManager * pEventManager);
 	void Init();

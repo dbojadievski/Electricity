@@ -156,6 +156,7 @@
     <ClInclude Include="IEventManager.h" />
     <ClInclude Include="InputBase.h" />
     <ClInclude Include="inputHeaders.h" />
+    <ClInclude Include="InstanceUniformDescriptor.h" />
     <ClInclude Include="KeyEvents.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="Math.h" />

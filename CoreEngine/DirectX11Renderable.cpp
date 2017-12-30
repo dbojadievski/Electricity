@@ -7,7 +7,7 @@ DirectX11Renderable::Render(ID3D11DeviceContext * pDeviceContext)
 	assert(pDeviceContext);
 
 	this->ActivateBuffers(pDeviceContext);
-	pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	pDeviceContext->IASetPrimitiveTopology(this->m_Topology);
 	size_t indiceCount = this->m_pMesh->GetIndiceCount();
 	size_t vertexCount = this->m_pMesh->GetVertexCount();
 
@@ -28,8 +28,9 @@ DirectX11Renderable::Buffer(ID3D11Device * pDevice, ID3D11DeviceContext * pDevic
 		Vertex * pVertices = this->m_pMesh->GetVerticesRaw();
 		size_t vertexArraySize = this->m_pMesh->GetVertexArraySize();
 
-		this->m_pVertexBuffer = new DirectX11Buffer(pDevice, sizeof(Vertex) * numVertices);
-		this->m_pVertexBuffer->LoadToVideoMemory(pDeviceContext, pVertices, vertexArraySize);
+		D3D11_SUBRESOURCE_DATA vertexData;
+		vertexData.pSysMem = pVertices;
+		this->m_pVertexBuffer = DirectX11Buffer::CreateVertexBuffer(pDevice, sizeof(Vertex) * numVertices, false, false, &vertexData);
 	}
 
 	{
@@ -37,10 +38,10 @@ DirectX11Renderable::Buffer(ID3D11Device * pDevice, ID3D11DeviceContext * pDevic
 			delete this->m_pIndexBuffer;
 
 		size_t numIndices = this->m_pMesh->GetIndiceCount();
-		unsigned int * pIndices = this->m_pMesh->GetIndicesRaw();
+		unsigned long int * pIndices = this->m_pMesh->GetIndicesRaw();
 		D3D11_SUBRESOURCE_DATA instanceData;
 		instanceData.pSysMem = pIndices;
-		this->m_pIndexBuffer = DirectX11Buffer::CreateIndexBuffer(pDevice, sizeof(unsigned int) * numIndices, false, &instanceData);
+		this->m_pIndexBuffer = DirectX11Buffer::CreateIndexBuffer(pDevice, sizeof(unsigned long int) * numIndices, false, &instanceData);
 	}
 }
 
@@ -59,11 +60,12 @@ DirectX11Renderable::ActivateBuffers(ID3D11DeviceContext * pDeviceContext)
 	pDeviceContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 }
 
-DirectX11Renderable::DirectX11Renderable(Mesh * pMesh, DirectX11Texture2D * pTexture, DirectX11Shader * pShader, CORE_BOOLEAN isTransparent)
+DirectX11Renderable::DirectX11Renderable(Mesh * pMesh, DirectX11Texture2D * pTexture, DirectX11Shader * pShader, CORE_BOOLEAN isTransparent, D3D11_PRIMITIVE_TOPOLOGY topology)
 {
 	assert(pMesh);
 	assert(pShader);
 	assert(pTexture);
+	assert(topology);
 
 	this->m_pMesh = pMesh;
 	this->m_pShader = pShader;
@@ -71,7 +73,7 @@ DirectX11Renderable::DirectX11Renderable(Mesh * pMesh, DirectX11Texture2D * pTex
 
 	this->m_pVertexBuffer = NULL;
 	this->m_pIndexBuffer = NULL;
-
+	this->m_Topology = topology;
 	this->m_IsTransparent = isTransparent;
 }
 

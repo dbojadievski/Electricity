@@ -17,7 +17,7 @@ private:
 	std::vector<IEngineSystem *> m_Systems;
 	
 	CORE_ULONG m_TickCount;
-	CORE_REAL m_totalTimeRunning;
+	CORE_DOUBLE m_totalTimeRunning;
 
 	const IConsole * m_pConsole;
 	IEventManager * m_pEventManager;

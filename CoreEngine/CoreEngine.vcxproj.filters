@@ -106,6 +106,9 @@
     <Filter Include="Source Files\Infrastructure\Event\EventType">
       <UniqueIdentifier>{94cc7efc-757f-466b-b2b7-940ad8bf3d8e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Rendering\Cross-Platform\Uniforms">
+      <UniqueIdentifier>{d7f78aa6-015e-4053-afe9-11c55de7eb40}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TimeUtils.h">
@@ -233,6 +236,9 @@
     </ClInclude>
     <ClInclude Include="inputHeaders.h">
       <Filter>Header Files\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="InstanceUniformDescriptor.h">
+      <Filter>Header Files\Rendering\Cross-Platform\Uniforms</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -231,6 +231,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	MSG msg;
 
 
+	CORE_BOOLEAN isShutdownQueued = false;
 	while (true)
 	{
 		g_Engine.Update();
@@ -239,7 +240,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 			if (msg.message == WM_QUIT || msg.message == WM_CLOSE ||
 				msg.message == WM_DESTROY)
 			{
-				g_Engine.ShutDown();
+				isShutdownQueued = true;
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
@@ -248,6 +249,12 @@ int WINAPI WinMain(HINSTANCE hInstance,
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
+		}
+
+		if (isShutdownQueued)
+		{
+			g_Engine.Stop();
+			break;
 		}
 	}
 

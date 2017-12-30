@@ -162,7 +162,7 @@ InputBase::UpdateKeyboardState()
 			pData->m_KeyCode = currKeyIdx;
 			this->m_pEventManager->VQueueEvent(pData);
 		}
-		else if (keyboardState[currKeyIdx])
+		else if (keyboardState[currKeyIdx] && this->m_PrevKeyboardState[currKeyIdx])
 		{
 			KeyDownEventData * pData = new KeyDownEventData();
 			pData->m_KeyCode = currKeyIdx;
