@@ -218,10 +218,9 @@ Console::RegisterAllCommands()
 		
 		ConsoleCommand * pCommand = new ConsoleCommand(pStrCommandText, pParamsList, pCommandDelegate);
 		wasRegistered = this->VRegisterCommand(pCommand);
-
 		assert(wasRegistered);
 
-		this->VParseCommand("entity_create ananas");
+		//NOTE(Dino): Use command as: this->VParseCommand("entity_create ananas");
 	}
 
 	{
@@ -238,10 +237,9 @@ Console::RegisterAllCommands()
 
 		ConsoleCommand * pCommand = new ConsoleCommand(pStrCommandText, pParamsList, pCommandDelegate);
 		wasRegistered = this->VRegisterCommand(pCommand);
-
 		assert(wasRegistered);
 
-		this->VParseCommand("entity_destroy ananas");
+		//NOTE(Dino): Use command as: this->VParseCommand("entity_destroy ananas");
 	}
 }
 

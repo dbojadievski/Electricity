@@ -22,10 +22,16 @@ Console::OnEntityCreateHandler(ConsoleCommandParameterList * pParams) const
 		EntitySystem * pEntitySystem = g_Engine.GetEntitySystem();
 		assert(pEntitySystem);
 
+		Entity * pEntity = NULL;
 		string * pStrEntityName = new string(pNameCast->GetValue());
-		Entity * pEntity = new Entity(pStrEntityName);
-		errCode = pEntitySystem->RegisterEntity(pEntity);
-		assert(errCode == ERR_OK);
+		errCode = pEntitySystem->GetEntityByTag(pStrEntityName, &pEntity);
+		assert(errCode == ERR_OBJECT_NOT_FOUND);
+		if (errCode == ERR_OBJECT_NOT_FOUND)
+		{
+			pEntity = new Entity(pStrEntityName);
+			errCode = pEntitySystem->RegisterEntity(pEntity);
+			assert(errCode == ERR_OK);
+		}
 	}
 }
 
