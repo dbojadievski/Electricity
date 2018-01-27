@@ -59,7 +59,7 @@ EntitySystem::UnRegisterEntity(CORE_ID identifier)
 }
 
 CORE_ERROR
-EntitySystem::GetEntityByIdentifier(CORE_ID identifier, Entity * pEntity)
+EntitySystem::GetEntityByIdentifier(CORE_ID identifier, Entity ** pEntity)
 {
 	assert(identifier);
 
@@ -69,7 +69,7 @@ EntitySystem::GetEntityByIdentifier(CORE_ID identifier, Entity * pEntity)
 	{
 		auto findIt = this->m_Entities.find(identifier);
 		if (findIt != this->m_Entities.end())
-			pEntity = findIt->second;
+			*pEntity = findIt->second;
 		else
 			errCode = CORE_ERROR::ERR_OBJECT_NOT_FOUND;
 	}
@@ -80,7 +80,7 @@ EntitySystem::GetEntityByIdentifier(CORE_ID identifier, Entity * pEntity)
 }
 
 CORE_ERROR
-EntitySystem::GetEntityByTag(const char * pTag, Entity * pEntity)
+EntitySystem::GetEntityByTag(string * pTag, Entity ** pEntity)
 {
 	assert(pTag);
 
@@ -91,9 +91,9 @@ EntitySystem::GetEntityByTag(const char * pTag, Entity * pEntity)
 		while (entitiesIt != this->m_Entities.end())
 		{
 			Entity * pCurrEntity = entitiesIt->second;
-			if (pCurrEntity->m_pTag && !pCurrEntity->m_pTag->compare(pTag))
+			if (pCurrEntity->m_pTag && !pCurrEntity->m_pTag->compare(*pTag))
 			{
-				pEntity = pCurrEntity;
+				*pEntity = pCurrEntity;
 				errCode = CORE_ERROR::ERR_SUCCESS;
 				break;
 			}

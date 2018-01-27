@@ -31,8 +31,8 @@ public:
 	CORE_ERROR RegisterEntity(Entity * pEntity);
 	CORE_ERROR UnRegisterEntity(CORE_ID identifier);
 	
-	CORE_ERROR GetEntityByIdentifier(CORE_ID identifier, Entity * pEntity);
-	CORE_ERROR GetEntityByTag(const char * pTag, Entity * pEntity);
+	CORE_ERROR GetEntityByIdentifier(CORE_ID identifier, Entity ** pEntity);
+	CORE_ERROR GetEntityByTag(string * pTag, Entity ** pEntity);
 	
 #pragma endregion
 #pragma region Basic engine system events.

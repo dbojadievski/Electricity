@@ -31,6 +31,8 @@ public:
 	static void AdoptChild(GameObject * pParent, GameObject * pChild);
 	static void OrphanChild(GameObject * pChild);
 	static CORE_BOOLEAN AreRelated(const GameObject * pPotentialAncestor, const GameObject * pPotentialDescendant);
+
+	CORE_ID GetIdentifier() const;
 };
 
 typedef GameObject Entity;

@@ -223,6 +223,26 @@ Console::RegisterAllCommands()
 
 		this->VParseCommand("entity_create ananas");
 	}
+
+	{
+		CORE_BOOLEAN wasRegistered = false;
+
+		CORE_STRING pStrCommandText = "entity_destroy";
+		ConsoleCommandParameterDescriptor * pParamEntityName = new ConsoleCommandParameterDescriptor("entity_name", EConsoleCommandParameterType::PARAM_STRING);
+
+		ConsoleCommandParameterList * pParamsList = new ConsoleCommandParameterList();
+		pParamsList->push_back(pParamEntityName);
+
+		CommandHandlerDelegate  commandDelegate = MakeDelegate(this, &Console::OnEntityDestroyHandler);
+		CommandHandlerDelegate * pCommandDelegate = new CommandHandlerDelegate(commandDelegate);
+
+		ConsoleCommand * pCommand = new ConsoleCommand(pStrCommandText, pParamsList, pCommandDelegate);
+		wasRegistered = this->VRegisterCommand(pCommand);
+
+		assert(wasRegistered);
+
+		this->VParseCommand("entity_destroy ananas");
+	}
 }
 
 void

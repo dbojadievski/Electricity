@@ -16,6 +16,12 @@
 
 using namespace std;
 
+CORE_ID
+GameObject::GetIdentifier() const
+{
+	return this->m_Identifier;
+}
+
 /* * * * * * * * * * * * * * * * * * * * * * */
 /* Object generic functionality.             */
 /* * * * * * * * * * * * * * * * * * * * * *   */

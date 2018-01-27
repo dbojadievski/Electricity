@@ -23,6 +23,7 @@ private:
 
 #pragma region Command handlers.
 	void OnEntityCreateHandler(ConsoleCommandParameterList * pParams) const;
+	void OnEntityDestroyHandler(ConsoleCommandParameterList * pParams) const;
 
 #pragma endregion
 	void RegisterAllCommands();
