@@ -13,9 +13,9 @@ using namespace std;
 enum EConsoleCommandParameterType
 {
 	PARAM_DWORD32,
-	REAL32,
+	PARAM_REAL32,
 	PARAM_BOOLEAN,
-	STRING,
+	PARAM_STRING,
 	PARAM_TYPE_UNUSED
 };
 
@@ -31,7 +31,6 @@ protected:
 		this->m_pStrName = pStrName;
 		this->m_Type = type;
 	}
-
 };
 
 typedef ConsoleCommandParameterBase ConsoleCommandParameterDescriptor;
@@ -46,6 +45,8 @@ public:
 	{
 		this->m_Value = value;
 	}
+
+	ConsoleCommandParameter() { }
 
 	CommandParameterType GetValue()
 	{

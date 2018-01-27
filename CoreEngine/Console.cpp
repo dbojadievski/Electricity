@@ -6,6 +6,10 @@
 #include <list>
 #include <string>
 
+#include "FastDelegate.h"
+
+using namespace fastdelegate;
+
 CORE_BOOLEAN 
 Console::VRegisterCommand(ConsoleCommand * pCommand) 
 {
@@ -47,7 +51,7 @@ Console::VUnregisterCommand(CORE_STRING pStrCommandText)
 
 
 CORE_BOOLEAN 
-Console::ParseCommandParameters(ConsoleCommand * pCommandDescriptor, list<string *> * pTokens, OUT_PARAM ConsoleCommandParameterList * pRetVal, size_t paramIdx)
+Console::ParseCommandParameters(ConsoleCommand * pCommandDescriptor, list<string *> * pTokens, ConsoleCommandParameterList * pRetVal, size_t paramIdx)
 {
 	assert(pCommandDescriptor);
 	assert(pTokens);
@@ -66,9 +70,6 @@ Console::ParseCommandParameters(ConsoleCommand * pCommandDescriptor, list<string
 			std::advance(it, paramIdx);
 			if (it != pTokens->end())
 			{
-
-				int meaningOfLife = 42;
-				meaningOfLife++;
 				size_t currParamIdx = 0;
 				while (it != pTokens->end())
 				{
@@ -81,6 +82,8 @@ Console::ParseCommandParameters(ConsoleCommand * pCommandDescriptor, list<string
 					CORE_DWORD asDword = -1;
 					CORE_REAL asReal = -1;
 					CORE_BOOLEAN asBoolean = false;
+					CORE_STRING pStrAsString = NULL;
+
 					ConsoleCommandParameterBase * pParam = NULL;
 					switch (pParamDescriptor->m_Type)
 					{
@@ -88,7 +91,7 @@ Console::ParseCommandParameters(ConsoleCommand * pCommandDescriptor, list<string
 							asDword = stoi(*pParamText);
 							pParam = (ConsoleCommandParameterBase *) new ConsoleCommandParameter<CORE_DWORD>(pParamDescriptor->m_pStrName, pParamDescriptor->m_Type, asDword);
 							break;
-						case EConsoleCommandParameterType::REAL32:
+						case EConsoleCommandParameterType::PARAM_REAL32:
 							asReal = stof(*pParamText);
 							pParam = (ConsoleCommandParameterBase *) new ConsoleCommandParameter<CORE_REAL>(pParamDescriptor->m_pStrName, pParamDescriptor->m_Type, asReal);
 							break;
@@ -100,12 +103,16 @@ Console::ParseCommandParameters(ConsoleCommand * pCommandDescriptor, list<string
 							else
 								assert(false);
 							break;
-						case EConsoleCommandParameterType::STRING:
-							pParam = (ConsoleCommandParameterBase *) new ConsoleCommandParameter<string>(pParamDescriptor->m_pStrName, pParamDescriptor->m_Type, *pParamText);
+						case EConsoleCommandParameterType::PARAM_STRING:
+							/*NOTE(Dino): We're copying the text value of the token because the caller needs to release the token objects themselves. */
+							string * pTokenValue(pParamText);
+							pParam = (ConsoleCommandParameterBase *) new ConsoleCommandParameter<string>(pParamDescriptor->m_pStrName, pParamDescriptor->m_Type, *pTokenValue);
 							break;
 					}
 					pRetVal->push_back(pParam);
+					it++;
 				}
+
 			}
 			else if (numPotentialParams != 0)
 				isCommandValid = false;
@@ -145,6 +152,14 @@ Console::VParseCommand(CORE_STRING pStrCmdText)
 					std::pair<ConsoleCommand *, ConsoleCommandParameterList *> pair = std::make_pair(pCommand, pParams);
 					this->m_Queue.push(pair);
 				}
+			}
+
+			auto tokIter = pTokens->begin();
+			while (tokIter != pTokens->end())
+			{
+				string * pStr = *tokIter;
+				delete pStr;
+				tokIter++;
 			}
 		}
 	}
@@ -187,11 +202,34 @@ Console::VSetCVar(const CVar * const pCVar)
 }
 
 void
-Console::Init()
+Console::RegisterAllCommands()
 {
+	{
+		CORE_BOOLEAN wasRegistered = false;
 
+		CORE_STRING pStrCommandText = "entity_create";
+		ConsoleCommandParameterDescriptor * pParamEntityName = new ConsoleCommandParameterDescriptor("entity_name", EConsoleCommandParameterType::PARAM_STRING);
+
+		ConsoleCommandParameterList * pParamsList = new ConsoleCommandParameterList();
+		pParamsList->push_back(pParamEntityName);
+
+		CommandHandlerDelegate  commandDelegate = MakeDelegate(this, &Console::OnEntityCreateHandler);
+		CommandHandlerDelegate * pCommandDelegate = new CommandHandlerDelegate(commandDelegate);
+		
+		ConsoleCommand * pCommand = new ConsoleCommand(pStrCommandText, pParamsList, pCommandDelegate);
+		wasRegistered = this->VRegisterCommand(pCommand);
+
+		assert(wasRegistered);
+
+		this->VParseCommand("entity_create ananas");
+	}
 }
 
+void
+Console::Init()
+{
+	this->RegisterAllCommands();
+}
 
 void
 Console::Update(CORE_DOUBLE dT)
@@ -201,7 +239,8 @@ Console::Update(CORE_DOUBLE dT)
 	if (!numCommandsQueued)
 		goto end;
 
-	while (this->m_Queue.size());
+	size_t queueSize = this->m_Queue.size();
+	while (this->m_Queue.size() > 0 )
 	{
 		ConsoleCommandQueueEntry entry = this->m_Queue.front();
 		
@@ -212,6 +251,7 @@ Console::Update(CORE_DOUBLE dT)
 		CommandHandlerDelegate asDelegate = *pCommandHandler;
 		(*pCommandHandler)(pParams);
 	
+		this->CleanUpCommand(&entry);
 		this->m_Queue.pop();
 	}
 
@@ -220,7 +260,61 @@ end:
 }
 
 void
+Console::CleanUpCommand(ConsoleCommandQueueEntry * pEntry)
+{
+	assert(pEntry);
+	ConsoleCommandParameterList * pParams = pEntry->second;
+	if (pParams && pParams->size())
+	{
+		size_t numParams = pParams->size();
+		for (size_t currParamIdx = 0; currParamIdx < numParams; currParamIdx++)
+		{
+			ConsoleCommandParameterBase * pParam = pParams->at(currParamIdx);
+			delete pParam;
+		}
+
+		pParams->clear();
+		delete pParams;
+	}
+}
+void
 Console::ShutDown()
 {
+	/*Clears the commands themselves. */
+	{
+		auto commandIt = this->m_Commands.begin();
+		while (commandIt != this->m_Commands.end())
+		{
+			ConsoleCommand * pCommand = commandIt->second;
+			assert(pCommand);
+			free(pCommand);
+			commandIt++;
+		}
 
+		this->m_Commands.clear();
+	}
+
+	/*Clears the command queue. */
+	{
+		while (this->m_Queue.size())
+		{
+			ConsoleCommandQueueEntry item = this->m_Queue.front();
+			free(item.second);
+			this->m_Queue.pop();
+		}
+	}
+
+	/*Clears the CVars. */
+	{
+		auto cvarIt = this->m_CVars.begin();
+		while (cvarIt != this->m_CVars.end())
+		{
+			CORE_STRING pStrCvarName = cvarIt->first;
+			CVar * pCvar = cvarIt->second;
+			free(pCvar);
+			cvarIt++;
+
+		}
+		this->m_CVars.clear();
+	}
 }

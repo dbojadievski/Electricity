@@ -9,5 +9,3 @@ typedef const CORE_CHAR * CORE_STRING;
 typedef unsigned char CORE_BYTE;
 typedef CORE_BYTE KEYCODE;
 typedef size_t CORE_ID;
-
-#define OUT_PARAM

@@ -19,8 +19,13 @@ private:
 	ConsoleCommandMap m_Commands;
 	ConsoleCommandQueue m_Queue;
 
-	static CORE_BOOLEAN ParseCommandParameters(ConsoleCommand * pCommandDescriptor, list<string *> * pTokens, OUT_PARAM ConsoleCommandParameterList * pRetVal, size_t paramIdx = 1);
+	static CORE_BOOLEAN ParseCommandParameters(ConsoleCommand * pCommandDescriptor, list<string *> * pTokens, ConsoleCommandParameterList * pRetVal, size_t paramIdx = 1);
 
+#pragma region Command handlers.
+	void OnEntityCreateHandler(ConsoleCommandParameterList * pParams) const;
+
+#pragma endregion
+	void RegisterAllCommands();
 public:
 	virtual CORE_BOOLEAN IConsole::VRegisterCommand(ConsoleCommand * pCommand);
 	virtual CORE_BOOLEAN IConsole::VUnregisterCommand(CORE_STRING pStrCommandText);
@@ -30,6 +35,7 @@ public:
 	virtual CORE_BOOLEAN IConsole::VSetCVar(const CVar * const pCVar);
 
 	virtual void IEngineSystem::Init(void);
+	void CleanUpCommand(ConsoleCommandQueueEntry * pEntry);
 	virtual void IEngineSystem::Update(CORE_DOUBLE dT);
 	virtual void IEngineSystem::ShutDown();
 };

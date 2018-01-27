@@ -5,9 +5,10 @@ void
 DirectX11TextRenderer::SetText(const wchar_t * pText)
 {
 	HRESULT errCode = S_OK;
-
-	//if (this->m_pTextLayout)
-		//this->m_pTextLayout->Release();
+	
+	if (this->m_pTextLayout)
+		this->m_pTextLayout->Release();
+	
 	size_t len = wcslen(pText);
 	errCode = this->m_pDWriteFactory->CreateTextLayout(pText, len, this->m_pTextFormatFPS, 2560, 1440, &m_pTextLayout);
 	
@@ -57,6 +58,7 @@ DirectX11TextRenderer::Init()
 	errCode = this->m_pDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, &this->m_pDeviceContext);
 	assert(errCode == S_OK);
 
+	this->m_pTextLayout = NULL;
 	CreateBitmapRenderTarget();
 	InitializeTextFormats();
 }

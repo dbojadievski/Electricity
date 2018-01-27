@@ -24,6 +24,7 @@ CoreEngine::Init()
 	this->m_pInput = new InputBase(this->m_pEventManager);
 	this->m_Systems.push_back(this->m_pInput);
 
+	this->m_pEntitySystem = new EntitySystem(this->m_pEventManager);
 	this->m_pTimer = new Timer();
 
 
@@ -88,13 +89,29 @@ CoreEngine::Stop()
 }
 
 IConsole *
-CoreEngine::GetConsole()
+CoreEngine::GetConsole() const
 {
 	return (IConsole *)this->m_pConsole;
 }
 
 IEventManager *
-CoreEngine::GetEventManager()
+CoreEngine::GetEventManager() const
 {
-	return this->m_pEventManager;
+	return (IEventManager *) this->m_pEventManager;
+}
+
+EntitySystem *
+CoreEngine::GetEntitySystem() const
+{
+	return (EntitySystem * ) this->m_pEntitySystem;
+}
+
+void
+CoreEngine::RegisterCommands()
+{
+	{
+		/*NOTE(Dino): Registers the entity_create command. */
+		ConsoleCommandParameterList * pParams = new ConsoleCommandParameterList();
+		//CommandHandlerDelegate commandDelegate = MakeDelegate(this->)
+	}
 }

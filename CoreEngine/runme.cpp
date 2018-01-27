@@ -101,7 +101,10 @@ public:
 
 void TestHandler(ConsoleCommandParameterList * pParams)
 {
+	assert(pParams);
+	assert(pParams->size() == 1);
 
+	auto paramEntityName = pParams->begin();
 }
 
 void TestConsole(IConsole * pConsole, TestSystem * pSystem)

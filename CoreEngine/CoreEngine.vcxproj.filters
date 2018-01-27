@@ -109,6 +109,9 @@
     <Filter Include="Header Files\Rendering\Cross-Platform\Uniforms">
       <UniqueIdentifier>{d7f78aa6-015e-4053-afe9-11c55de7eb40}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Infrastructure\Console\Command Implementations">
+      <UniqueIdentifier>{880b1634-5387-4de0-86e4-2e1db4a886f3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TimeUtils.h">
@@ -240,6 +243,24 @@
     <ClInclude Include="InstanceUniformDescriptor.h">
       <Filter>Header Files\Rendering\Cross-Platform\Uniforms</Filter>
     </ClInclude>
+    <ClInclude Include="EntitySystem.h">
+      <Filter>Header Files\Component Model</Filter>
+    </ClInclude>
+    <ClInclude Include="CoreError.h">
+      <Filter>Header Files\Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="CoreHeaders.h">
+      <Filter>Header Files\Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="CoreSymbols.h">
+      <Filter>Header Files\Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityEvents.h">
+      <Filter>Header Files\Infrastructure\Event\EventTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="CoreEngine.h">
+      <Filter>Header Files\Infrastructure</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TimeUtils.cpp">
@@ -322,6 +343,15 @@
     </ClCompile>
     <ClCompile Include="DirectX11Texture2D.cpp">
       <Filter>Source Files\Rendering\DirectX11</Filter>
+    </ClCompile>
+    <ClCompile Include="EntitySystem.cpp">
+      <Filter>Source Files\Component Model</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityEvents.cpp">
+      <Filter>Source Files\Infrastructure\Event\EventType</Filter>
+    </ClCompile>
+    <ClCompile Include="ConsoleCommandImplementationEntity.cpp">
+      <Filter>Source Files\Infrastructure\Console\Command Implementations</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

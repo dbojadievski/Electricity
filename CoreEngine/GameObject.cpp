@@ -21,7 +21,7 @@ using namespace std;
 /* * * * * * * * * * * * * * * * * * * * * *   */
 
 GameObject::GameObject(const string * pTag, const GameObject * pParent)
-{
+{	
 	this->m_pTag = (string *)pTag;
 	this->m_pParent = (GameObject *)pParent;
 }

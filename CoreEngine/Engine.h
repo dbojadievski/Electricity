@@ -4,6 +4,7 @@
 #include "IComponent.h"
 #include "Console.h"
 #include "EventManager.h"
+#include "EntitySystem.h"
 #include "DirectX11Renderer.h"
 #include "InputBase.h"
 #include "TimeUtils.h"
@@ -20,9 +21,13 @@ private:
 	CORE_DOUBLE m_totalTimeRunning;
 
 	const IConsole * m_pConsole;
+	const EntitySystem * m_pEntitySystem;
 	IEventManager * m_pEventManager;
 	InputBase * m_pInput;
 	Timer * m_pTimer;
+
+
+	void RegisterCommands();
 public:
 	CoreEngine();
 
@@ -35,6 +40,7 @@ public:
 	void ShutDown();
 #pragma endregion
 	
-	IConsole * GetConsole();
-	IEventManager * GetEventManager();
+	IConsole * GetConsole() const;
+	IEventManager * GetEventManager() const;
+	EntitySystem * GetEntitySystem() const;
 };
