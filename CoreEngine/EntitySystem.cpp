@@ -59,7 +59,7 @@ EntitySystem::UnRegisterEntity(CORE_ID identifier)
 }
 
 CORE_ERROR
-EntitySystem::GetEntityByIdentifier(CORE_ID identifier, Entity ** pEntity)
+EntitySystem::GetEntityByIdentifier(CORE_ID identifier, __PARAM_OUT__ Entity ** pEntity)
 {
 	assert(identifier);
 
@@ -80,7 +80,7 @@ EntitySystem::GetEntityByIdentifier(CORE_ID identifier, Entity ** pEntity)
 }
 
 CORE_ERROR
-EntitySystem::GetEntityByTag(string * pTag, Entity ** pEntity)
+EntitySystem::GetEntityByTag(string const * pTag, __PARAM_OUT__ Entity ** pEntity)
 {
 	assert(pTag);
 

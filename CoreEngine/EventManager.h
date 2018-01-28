@@ -45,12 +45,12 @@ public:
 	explicit EventManager(const char * pTag, CORE_BOOLEAN isGlobalEventManager);
 	virtual ~EventManager(void) {}
 
-	virtual CORE_BOOLEAN VAddListener(const EventListenerDelegate& eventDelegate, const EventType& type);
-	virtual CORE_BOOLEAN VRemoveListener(const EventListenerDelegate& eventDelegate, const EventType& type);
+	virtual CORE_BOOLEAN VAddListener(const EventListenerDelegate& eventDelegate, const EventType type);
+	virtual CORE_BOOLEAN VRemoveListener(const EventListenerDelegate& eventDelegate, const EventType type);
 
 	virtual CORE_BOOLEAN VTriggerEvent(IEventData * pEventData) const;
 	virtual CORE_BOOLEAN VQueueEvent(const IEventData * pEventData);
-	virtual CORE_BOOLEAN VAbortEvent(const EventType& type, CORE_BOOLEAN abortAllOfType = false);
+	virtual CORE_BOOLEAN VAbortEvent(const EventType type, CORE_BOOLEAN abortAllOfType = false);
 
 	virtual CORE_BOOLEAN VTickUpdate(CORE_ULONG maxMs = kInfinite);
 };

@@ -22,7 +22,7 @@ MouseButtonPressedEventData::VGetTimeStamp(void) const
 	return this->m_timeStamp;
 }
 
-const EventType& 
+const EventType 
 MouseButtonPressedEventData::VGetEventType(void) const
 {
 	return EventType::EVENT_TYPE_MOUSE_BUTTON_PRESSED;
@@ -59,7 +59,7 @@ MouseButtonDownEventData::VGetTimeStamp(void) const
 	return this->m_timeStamp;
 }
 
-const EventType& 
+const EventType 
 MouseButtonDownEventData::VGetEventType(void) const
 {
 	return EventType::EVENT_TYPE_MOUSE_BUTTON_DOWN;
@@ -105,7 +105,7 @@ float MouseButtonReleasedEventData
 	return this->m_timeStamp;
 }
 
-const EventType& 
+const EventType 
 MouseButtonReleasedEventData::VGetEventType(void) const
 {
 	return EventType::EVENT_TYPE_MOUSE_BUTTON_UP;

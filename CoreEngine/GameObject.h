@@ -28,11 +28,13 @@ public:
 	void RegisterComponent(const IComponent * pComponent);
 	void UnregisterComponent(const EComponentType componentType);
 
-	static void AdoptChild(GameObject * pParent, GameObject * pChild);
-	static void OrphanChild(GameObject * pChild);
+	static CORE_BOOLEAN AdoptChild(GameObject * pParent, GameObject * pChild);
+	static CORE_BOOLEAN OrphanChild(GameObject * pChild);
 	static CORE_BOOLEAN AreRelated(const GameObject * pPotentialAncestor, const GameObject * pPotentialDescendant);
 
+	GameObject * const GetParent() const;
 	CORE_ID GetIdentifier() const;
+	string const * GetTag() const;
 };
 
 typedef GameObject Entity;

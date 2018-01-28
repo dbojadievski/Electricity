@@ -55,7 +55,7 @@ public:
 	{
 		return this->m_timeStamp;
 	}
-	virtual const EventType& VGetEventType(void) const
+	virtual const EventType VGetEventType(void) const
 	{
 		return EVENT_TYPE_TEST;
 	}

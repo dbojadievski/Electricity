@@ -13,7 +13,7 @@ struct ResolutionChangedEventData : EventDataBase
 
 	virtual const char * VGetName() const;
 	float EventDataBase::VGetTimeStamp(void) const;
-	virtual const EventType& VGetEventType(void) const;
+	virtual const EventType VGetEventType(void) const;
 	
 	virtual ~ResolutionChangedEventData();
 };

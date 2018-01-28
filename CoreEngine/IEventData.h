@@ -15,7 +15,9 @@ enum EventType
 	EVENT_TYPE_MOUSE_BUTTON_DOWN,
 	EVENT_TYPE_MOUSE_BUTTON_UP,
 	EVENT_TYPE_ENTITY_REGISTERED,
-	EVENT_TYPE_ENTITY_UNREGISTERED
+	EVENT_TYPE_ENTITY_UNREGISTERED,
+	EVENT_TYPE_ENTITY_LINKED,
+	EVENT_TYPE_ENTITY_UNLINKED
 
 };
 
@@ -23,7 +25,7 @@ enum EventType
 class IEventData
 {
 public:
-	virtual const EventType& VGetEventType(void) const = 0;
+	virtual const EventType VGetEventType(void) const = 0;
 	virtual float VGetTimeStamp(void) const = 0;
 	virtual void VSerialize(std::ostream & out) const = 0;
 	virtual IEventData * VCopy(void) const = 0;
@@ -38,7 +40,7 @@ public:
 	explicit EventDataBase(const CORE_REAL timeStamp = 0.0f) : m_timeStamp(timeStamp) {}
 	//virtual ~EventDataBase(void) = 0;
 
-	virtual const EventType& VGetEventType(void) const = 0;
+	virtual const EventType VGetEventType(void) const = 0;
 	float VGetTimeStamp(void)const = 0;
 
 	/* Used for network transfer.*/

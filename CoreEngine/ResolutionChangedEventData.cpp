@@ -22,7 +22,7 @@ float ResolutionChangedEventData::VGetTimeStamp(void) const
 	return this->m_timeStamp;
 }
 
-const EventType& 
+const EventType 
 ResolutionChangedEventData::VGetEventType(void) const
 {
 	return EventType::EVENT_TYPE_RESOLUTION_CHANGED;

@@ -111,6 +111,7 @@ Console::ParseCommandParameters(ConsoleCommand * pCommandDescriptor, list<string
 					}
 					pRetVal->push_back(pParam);
 					it++;
+					currParamIdx++;
 				}
 
 			}
@@ -220,7 +221,8 @@ Console::RegisterAllCommands()
 		wasRegistered = this->VRegisterCommand(pCommand);
 		assert(wasRegistered);
 
-		//NOTE(Dino): Use command as: this->VParseCommand("entity_create ananas");
+		//NOTE(Dino): Use command as: 
+		//this->VParseCommand("entity_create ananas");
 	}
 
 	{
@@ -239,8 +241,64 @@ Console::RegisterAllCommands()
 		wasRegistered = this->VRegisterCommand(pCommand);
 		assert(wasRegistered);
 
-		//NOTE(Dino): Use command as: this->VParseCommand("entity_destroy ananas");
+		//NOTE(Dino): Use command as: 
+		//this->VParseCommand("entity_destroy ananas");
 	}
+
+	{
+		CORE_BOOLEAN wasRegistered = false;
+
+		CORE_STRING pStrCommandText = "entity_link";
+		ConsoleCommandParameterDescriptor * pParamParentName = new ConsoleCommandParameterDescriptor("parent_name", EConsoleCommandParameterType::PARAM_STRING);
+		ConsoleCommandParameterDescriptor * pParamChildName = new ConsoleCommandParameterDescriptor("child_name", EConsoleCommandParameterType::PARAM_STRING);
+
+		ConsoleCommandParameterList * pParamsList = new ConsoleCommandParameterList();
+		pParamsList->push_back(pParamParentName);
+		pParamsList->push_back(pParamChildName);
+
+
+		CommandHandlerDelegate  commandDelegate = MakeDelegate(this, &Console::OnEntitiesLinkHandler);
+		CommandHandlerDelegate * pCommandDelegate = new CommandHandlerDelegate(commandDelegate);
+
+		ConsoleCommand * pCommand = new ConsoleCommand(pStrCommandText, pParamsList, pCommandDelegate);
+		wasRegistered = this->VRegisterCommand(pCommand);
+		assert(wasRegistered);
+
+		//NOTE(Dino): Use command as: 
+		//this->VParseCommand("entity_link my_parent_entity my_child_entity");
+		
+	}
+
+	{
+		CORE_BOOLEAN wasRegistered = false;
+
+		CORE_STRING pStrCommandText = "entity_unlink";
+		ConsoleCommandParameterDescriptor * pParentEntityName = new ConsoleCommandParameterDescriptor("entity_name", EConsoleCommandParameterType::PARAM_STRING);
+
+		ConsoleCommandParameterList * pParamsList = new ConsoleCommandParameterList();
+		pParamsList->push_back(pParentEntityName);
+
+		CommandHandlerDelegate  commandDelegate = MakeDelegate(this, &Console::OnEntitiesUnLinkHandler);
+		CommandHandlerDelegate * pCommandDelegate = new CommandHandlerDelegate(commandDelegate);
+
+		ConsoleCommand * pCommand = new ConsoleCommand(pStrCommandText, pParamsList, pCommandDelegate);
+		wasRegistered = this->VRegisterCommand(pCommand);
+		assert(wasRegistered);
+
+		//NOTE(Dino): Use command as: 
+		//this->VParseCommand("entity_unlink my_child_entity");
+	}
+
+#pragma region Unit testing. If the debug build does not assert, then all is well.
+	{
+		this->VParseCommand("entity_create parent");
+		this->VParseCommand("entity_create child");
+		this->VParseCommand("entity_link parent child");
+		this->VParseCommand("entity_unlink child");
+		this->VParseCommand("entity_destroy parent");
+		this->VParseCommand("entity_destroy child");
+	}
+#pragma endregion
 }
 
 void

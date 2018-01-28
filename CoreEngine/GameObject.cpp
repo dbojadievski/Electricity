@@ -67,6 +67,18 @@ GameObject::Update(float dT)
 	}
 }
 
+GameObject * const
+GameObject::GetParent() const
+{
+	return this->m_pParent;
+}
+
+string const *
+GameObject::GetTag() const
+{
+	return this->m_pTag;
+}
+
 /* * * * * * * * * * * * * * * * * * * * * * */
 /* Object component management.              */
 /* * * * * * * * * * * * * * * * * * * * * * */
@@ -107,7 +119,7 @@ GameObject::UnregisterComponent(const EComponentType componentType)
 /* * * * * * * * * * * * * * * * * * * * * * */
 /* Object parent-child dependency management.*/
 /* * * * * * * * * * * * * * * * * * * * * * */
-void
+CORE_BOOLEAN
 GameObject::AdoptChild(GameObject * pParent, GameObject * pChild)
 {
 	assert(pParent);
@@ -115,6 +127,8 @@ GameObject::AdoptChild(GameObject * pParent, GameObject * pChild)
 	assert(pParent != pChild);
 	assert(pParent->m_pParent != pChild);
 	assert(pChild->m_pParent != pParent);
+
+	CORE_BOOLEAN areRelated = false;
 
 	if (!pParent || !pChild)
 		goto end;
@@ -127,28 +141,37 @@ GameObject::AdoptChild(GameObject * pParent, GameObject * pChild)
 
 	pChild->m_pParent = pParent;
 	pParent->m_Children.push_back(pChild);
-
+	
+	areRelated = true;
 end:
-	return;
+	return areRelated;
 }
 
-void
+CORE_BOOLEAN
 GameObject::OrphanChild(GameObject * pChild)
 {
 	assert(pChild);
 	assert(pChild->m_pParent);
 	assert(pChild->m_pParent != pChild);
 
+	CORE_BOOLEAN wasOrphaned = false;
+
 	GameObject * pParent = pChild->m_pParent;
-	pChild->m_pParent = NULL;
+	if (pParent)
+	{
+		pChild->m_pParent = NULL;
 	
-	size_t numChildren = pParent->m_Children.size();
-	for (size_t currIdx = 0; currIdx < numChildren; currIdx++)
-		if (pParent->m_Children[currIdx] == pChild)
-		{
-			pParent->m_Children.erase(pParent->m_Children.begin() + currIdx);
-			break;
-		}
+		size_t numChildren = pParent->m_Children.size();
+		for (size_t currIdx = 0; currIdx < numChildren; currIdx++)
+			if (pParent->m_Children[currIdx] == pChild)
+			{
+				pParent->m_Children.erase(pParent->m_Children.begin() + currIdx);
+				wasOrphaned = true;
+				break;
+			}
+	}
+
+	return wasOrphaned;
 }
 
 CORE_BOOLEAN

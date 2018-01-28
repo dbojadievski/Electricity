@@ -8,7 +8,7 @@ EventManager::EventManager(char const * const pTag, CORE_BOOLEAN isGlobalEventMa
 }
 
 CORE_BOOLEAN
-EventManager::VAddListener(const EventListenerDelegate& eventDelegate, const EventType& type)
+EventManager::VAddListener(const EventListenerDelegate& eventDelegate, const EventType type)
 {
 	assert(eventDelegate);
 
@@ -33,7 +33,7 @@ end:
 }
 
 CORE_BOOLEAN
-EventManager::VRemoveListener(const EventListenerDelegate& eventDelegate, const EventType& type)
+EventManager::VRemoveListener(const EventListenerDelegate& eventDelegate, const EventType type)
 {
 	assert(eventDelegate);
 
@@ -103,7 +103,7 @@ EventManager::VQueueEvent(const IEventData * pEvent)
 }
 
 CORE_BOOLEAN
-EventManager::VAbortEvent(const EventType& inType, CORE_BOOLEAN abortAllOfType)
+EventManager::VAbortEvent(const EventType inType, CORE_BOOLEAN abortAllOfType)
 {
 	assert(inType);
 	assert(this->m_activeQueueIdx < EVENT_MANAGER_NUM_QUEUES);
@@ -151,7 +151,7 @@ EventManager::VTickUpdate(CORE_ULONG maxMs)
 	{
 		IEventData * pEvent = this->m_Queues[queueToProcess].front();
 		this->m_Queues[queueToProcess].pop_front();
-		const EventType& eventType = pEvent->VGetEventType();
+		const EventType eventType = pEvent->VGetEventType();
 
 		/*Find and notify all delegates subscribed to this event. */
 		auto findIt = this->m_Listeners.find(eventType);

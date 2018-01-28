@@ -11,7 +11,7 @@ struct KeyDownEventData : EventDataBase
 	virtual const char * VGetName() const;
 	float EventDataBase::VGetTimeStamp(void) const;
 
-	virtual const EventType& VGetEventType(void) const;
+	virtual const EventType VGetEventType(void) const;
 
 	virtual ~KeyDownEventData();
 
@@ -28,7 +28,7 @@ struct KeyUpEventData : EventDataBase
 
 	float EventDataBase::VGetTimeStamp(void) const;
 
-	virtual const EventType& VGetEventType(void) const;
+	virtual const EventType VGetEventType(void) const;
 
 	virtual ~KeyUpEventData();
 
@@ -44,7 +44,7 @@ struct KeyPressEventData : EventDataBase
 
 	float EventDataBase::VGetTimeStamp(void) const;
 
-	virtual const EventType& VGetEventType(void) const;
+	virtual const EventType VGetEventType(void) const;
 
 	virtual ~KeyPressEventData();
 

@@ -25,7 +25,7 @@ KeyDownEventData::VGetTimeStamp(void) const
 
 }
 
-const EventType&
+const EventType
 KeyDownEventData::VGetEventType(void) const
 {
 	return EventType::EVENT_TYPE_KEYDOWN;
@@ -64,7 +64,7 @@ KeyUpEventData::VGetTimeStamp(void) const
 	return this->m_timeStamp;
 }
 
-const EventType& 
+const EventType 
 KeyUpEventData::VGetEventType(void) const
 {
 	return EventType::EVENT_TYPE_KEYUP;
@@ -101,7 +101,7 @@ KeyPressEventData::VGetTimeStamp(void) const
 	return this->m_timeStamp;
 }
 
-const EventType& 
+const EventType 
 KeyPressEventData::VGetEventType(void) const
 {
 	return EventType::EVENT_TYPE_KEYPRESS;
