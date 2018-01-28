@@ -8,6 +8,7 @@
 
 using namespace std;
 
+#define COMPONENT_DELETE_ALL 0
 class GameObject
 {
 	friend class EntitySystem;
@@ -16,7 +17,7 @@ private:
 	CORE_ID m_Identifier;
 	GameObject * m_pParent;
 	vector<GameObject *> m_Children;
-	map<EComponentType, IComponent *> m_Components;
+	map<EComponentType, ComponentList *> m_Components;
 
 public:
 	GameObject(const string * pTag = NULL, const GameObject * pParent = NULL);
@@ -26,7 +27,7 @@ public:
 
 	IComponent * GetComponentByType(const EComponentType componentType);
 	void RegisterComponent(const IComponent * pComponent);
-	void UnregisterComponent(const EComponentType componentType);
+	void UnregisterComponent(const EComponentType componentType, CORE_ID identifier = COMPONENT_DELETE_ALL);
 
 	static CORE_BOOLEAN AdoptChild(GameObject * pParent, GameObject * pChild);
 	static CORE_BOOLEAN OrphanChild(GameObject * pChild);

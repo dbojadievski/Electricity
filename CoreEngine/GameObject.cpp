@@ -35,10 +35,15 @@ GameObject::GameObject(const string * pTag, const GameObject * pParent)
 void 
 GameObject::Init()
 {
-	for (auto componentIterator = this->m_Components.begin(); componentIterator != this->m_Components.end(); componentIterator++)
+	for (auto componentListIterator = this->m_Components.begin(); componentListIterator != this->m_Components.end(); componentListIterator++)
 	{
-		IComponent * pComponent = componentIterator->second;
-		pComponent->Init();
+		ComponentList * pComponentList = componentListIterator->second;
+		for (auto componentIterator = pComponentList->begin(); componentIterator != pComponentList->end(); componentIterator++)
+		{
+			IComponent * pComponent = *componentIterator;
+			assert(pComponent);
+			pComponent->Init();
+		}
 	}
 
 	for (size_t currChildIdx = 0; currChildIdx < this->m_Children.size(); currChildIdx++)
@@ -52,10 +57,15 @@ GameObject::Init()
 void 
 GameObject::Update(float dT)
 {
-	for (auto componentIterator = this->m_Components.begin(); componentIterator != this->m_Components.end(); componentIterator++)
+	for (auto componentListIterator = this->m_Components.begin(); componentListIterator != this->m_Components.end(); componentListIterator++)
 	{
-		IComponent * pComponent = componentIterator->second;
-		pComponent->Update(dT);
+		ComponentList * pComponentList = componentListIterator->second;
+		for (auto componentIterator = pComponentList->begin(); componentIterator != pComponentList->end(); componentIterator++)
+		{
+			IComponent * pComponent = *componentIterator;
+			assert(pComponent);
+			pComponent->Update(dT);
+		}
 	}
 
 	size_t numChildren = this->m_Children.size();
@@ -87,9 +97,12 @@ GameObject::GetComponentByType(const EComponentType componentType)
 {
 	IComponent * retVal = NULL;
 
-	map<EComponentType, IComponent *>::iterator it = this->m_Components.find(componentType);
+	auto it = this->m_Components.find(componentType);
 	if (it != this->m_Components.end())
-		retVal = this->m_Components[componentType];
+	{
+		ComponentList * pComponentList = this->m_Components[componentType];
+		retVal = pComponentList->at(0);
+	}
 
 	return retVal;
 }
@@ -99,22 +112,67 @@ GameObject::RegisterComponent(const IComponent * pComponent)
 {
 	assert(pComponent);
 
-	map<EComponentType, IComponent *>::iterator it = this->m_Components.find(pComponent->m_Type);
-	CORE_BOOLEAN hasComponentOfType = (it != this->m_Components.end());
+	ComponentList * pComponentList = NULL;
+
+	auto componentsOfTypeIt = this->m_Components.find(pComponent->m_Type);
+	CORE_BOOLEAN hasComponentOfType = (componentsOfTypeIt != this->m_Components.end());
 	if (!hasComponentOfType)
-		this->m_Components.insert(std::make_pair(pComponent->m_Type, (IComponent *)pComponent));
+	{
+		pComponentList = new ComponentList();
+		this->m_Components.insert(std::make_pair(pComponent->m_Type, pComponentList));
+	}
 	else
-		it->second = (IComponent *)pComponent;
+		pComponentList = componentsOfTypeIt->second;
+	
+	size_t numComponentsOfType = pComponentList->size();
+	CORE_BOOLEAN areMultipleInstancesAllowed = pComponent->AreMultipleInstancesAllowed();
+	
+	if(numComponentsOfType == 0 || areMultipleInstancesAllowed)
+		pComponentList->push_back((IComponent *) pComponent);
 }
 
 void
-GameObject::UnregisterComponent(const EComponentType componentType)
+GameObject::UnregisterComponent(const EComponentType componentType, CORE_ID identifier)
 {
-	map<EComponentType, IComponent *>::iterator it = this->m_Components.find(componentType);
-	if (it != this->m_Components.end())
-		this->m_Components.erase(componentType);
-}
+	auto componentListIt = this->m_Components.find(componentType);
+	if (componentListIt != this->m_Components.end())
+	{
+		ComponentList * pComponentList = componentListIt->second;
+		assert(pComponentList);
+		assert(pComponentList->size());
+		size_t numComponentsOfType = pComponentList->size();
+		if (numComponentsOfType)
+		{
+			if (identifier == COMPONENT_DELETE_ALL || numComponentsOfType == 1)
+			{
+				for (size_t currComponentIdx = 0; currComponentIdx < numComponentsOfType; currComponentIdx++)
+				{
+					IComponent * pComponent = pComponentList->at(currComponentIdx);
+					assert(pComponent);
+					delete pComponent;
+				}
 
+				delete pComponentList;
+				this->m_Components.erase(componentType);
+			}
+			else
+			{
+				for (size_t currComponentIdx = 0; currComponentIdx < numComponentsOfType; currComponentIdx++)
+				{
+					IComponent * pComponent = pComponentList->at(currComponentIdx);
+					assert(pComponent);
+					if (pComponent->m_Identifier == identifier)
+					{
+						/*Delete component.*/
+						pComponentList->erase(pComponentList->begin() + currComponentIdx);
+						delete pComponent;
+						break;
+					}
+				}
+			}
+		}
+	}
+}
 
 /* * * * * * * * * * * * * * * * * * * * * * */
 /* Object parent-child dependency management.*/

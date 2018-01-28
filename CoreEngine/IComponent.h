@@ -1,8 +1,12 @@
 #pragma once
 
+#include <vector>
+using namespace std;
+
 enum EComponentType
 {
-	UNUSED
+	COMPONENT_TYPE_UNUSED,
+	COMPONENT_TYPE_TEST
 };
 
 class IComponent
@@ -10,6 +14,11 @@ class IComponent
 public:
 	EComponentType m_Type;
 	CORE_ID m_Identifier;
+	
 	virtual void Init() = 0;
 	virtual void Update(float dT) = 0;
+	
+	virtual CORE_BOOLEAN AreMultipleInstancesAllowed() const = 0;
 };
+
+typedef vector<IComponent *> ComponentList;

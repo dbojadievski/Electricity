@@ -143,6 +143,37 @@ void TestLoadAsset()
 
 }
 
+class TestComponentType : public IComponent
+{
+public:
+	virtual void Init ( ) { }
+	virtual void Update (float dT = 0 ) {}
+	virtual CORE_BOOLEAN AreMultipleInstancesAllowed() const
+	{
+		return true;
+	}
+
+	TestComponentType()
+	{
+		this->m_Type = EComponentType::COMPONENT_TYPE_TEST;
+	}
+};
+
+void TestComponentSystem()
+{
+	Entity entity;
+	TestComponentType * pComponentA = new TestComponentType();
+	TestComponentType * pComponentB = new TestComponentType();
+	entity.RegisterComponent(pComponentA);
+	entity.RegisterComponent(pComponentB);
+	IComponent * pComponent = entity.GetComponentByType(EComponentType::COMPONENT_TYPE_TEST);
+	assert(pComponent);
+	entity.UnregisterComponent(EComponentType::COMPONENT_TYPE_TEST);
+	pComponent = entity.GetComponentByType(EComponentType::COMPONENT_TYPE_TEST);
+	assert(!pComponent);
+
+}
+
 LRESULT CALLBACK WindowProc(HWND hWnd,
 	UINT message,
 	WPARAM wParam,
@@ -154,7 +185,6 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	LPSTR lpCmdLine,
 	int nCmdShow)
 {
-
 	///*NOTE(Dino):Set up the console, so we can do debug logging. */
 	AllocConsole();
 
