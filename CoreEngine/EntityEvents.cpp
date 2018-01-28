@@ -145,3 +145,78 @@ EntityUnLinkedEventData::VGetTimeStamp() const
 }
 EntityUnLinkedEventData::~EntityUnLinkedEventData() { }
 #pragma endregion
+
+#pragma region Entity component added event data.
+IEventData *
+EntityComponentAddedEventData::VCopy(void) const
+{
+	EntityComponentAddedEventData * pCopy = new EntityComponentAddedEventData();
+
+	pCopy->m_EntityIdentifier = this->m_EntityIdentifier;
+	pCopy->m_EntityIdentifier = this->m_EntityIdentifier;
+
+	return pCopy;
+}
+
+const char *
+EntityComponentAddedEventData::VGetName() const
+{
+	return "EntityComponentAddedEventData";
+}
+
+const EventType
+EntityComponentAddedEventData::VGetEventType() const
+{
+	return EventType::EVENT_TYPE_ENTITY_COMPONENT_ADDED;
+}
+
+void
+EntityComponentAddedEventData::VSerialize(std::ostream & out) const
+{
+	out << "ENTITY_COMPONENT_CREATED " << this->m_EntityIdentifier << " " << this->m_ComponentType;
+}
+
+float
+EntityComponentAddedEventData::VGetTimeStamp() const
+{
+	return this->m_timeStamp;
+}
+EntityComponentAddedEventData::~EntityComponentAddedEventData() { }
+#pragma endregion
+#pragma region Entity component removed event data.
+IEventData *
+EntityComponentRemovedEventData::VCopy(void) const
+{
+	EntityComponentRemovedEventData * pCopy = new EntityComponentRemovedEventData();
+
+	pCopy->m_EntityIdentifier = this->m_EntityIdentifier;
+	pCopy->m_EntityIdentifier = this->m_EntityIdentifier;
+
+	return pCopy;
+}
+
+const char *
+EntityComponentRemovedEventData::VGetName() const
+{
+	return "EntityComponentRemovedEventData";
+}
+
+const EventType
+EntityComponentRemovedEventData::VGetEventType() const
+{
+	return EventType::EVENT_TYPE_ENTITY_COMPONENT_REMOVED;
+}
+
+void
+EntityComponentRemovedEventData::VSerialize(std::ostream & out) const
+{
+	out << "ENTITY_COMPONENT_REMOVED " << this->m_EntityIdentifier << " " << this->m_ComponentType;
+}
+
+float
+EntityComponentRemovedEventData::VGetTimeStamp() const
+{
+	return this->m_timeStamp;
+}
+EntityComponentRemovedEventData::~EntityComponentRemovedEventData() { }
+#pragma endregion

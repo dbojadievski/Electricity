@@ -291,12 +291,14 @@ Console::RegisterAllCommands()
 
 #pragma region Unit testing. If the debug build does not assert, then all is well.
 	{
+#if DEBUG
 		this->VParseCommand("entity_create parent");
 		this->VParseCommand("entity_create child");
 		this->VParseCommand("entity_link parent child");
 		this->VParseCommand("entity_unlink child");
 		this->VParseCommand("entity_destroy parent");
 		this->VParseCommand("entity_destroy child");
+#endif
 	}
 #pragma endregion
 }
