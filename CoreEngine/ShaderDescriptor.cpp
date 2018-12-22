@@ -2,8 +2,8 @@
 
 ShaderAssetDescriptor::ShaderAssetDescriptor(const string & path, CORE_ID identifier)
 {
-	this->m_Path = path;
-	this->m_Identifier = identifier;
+	this->m_Path        = path;
+	this->m_Identifier  = identifier;
 }
 
 CORE_ASSET_TYPE

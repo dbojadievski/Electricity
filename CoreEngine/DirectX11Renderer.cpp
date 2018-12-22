@@ -59,10 +59,10 @@ void
 DirectX11Renderer::InitEventHandlers()
 {
 	EventListenerDelegate eDelegate;
-	eDelegate = MakeDelegate(this, &DirectX11Renderer::OnResolutionChanged);
+	eDelegate                               = MakeDelegate(this, &DirectX11Renderer::OnResolutionChanged);
 	this->m_pEventManager->VAddListener(eDelegate, EventType::EVENT_TYPE_RESOLUTION_CHANGED);
 
-	EventListenerDelegate keyDownDelegate = MakeDelegate(this, &DirectX11Renderer::OnKeyDown);
+	EventListenerDelegate keyDownDelegate   = MakeDelegate(this, &DirectX11Renderer::OnKeyDown);
 	this->m_pEventManager->VAddListener(keyDownDelegate, EventType::EVENT_TYPE_KEYDOWN);
 }
 

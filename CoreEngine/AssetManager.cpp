@@ -1,5 +1,6 @@
 #include "AssetManager.h"
 
+#include "TextureAssetDescriptor.h"
 #include <string>
 #include <iostream>
 #include <filesystem>
@@ -17,6 +18,7 @@ void
 AssetManager::Init() 
 {
 	this->VRegisterShaders();
+    this->VRegisterTextures ();
 }
 
 void
@@ -35,6 +37,27 @@ AssetManager::ShutDown()
 }
 #pragma endregion
 
+
+CORE_ERROR
+AssetManager::VRegisterTextures ()
+{
+    CORE_ERROR err_code         = CORE_ERROR::ERR_OK;
+
+    CORE_ID currTexId = 1;
+    std::string textureDirectoryPath = "Assets\\Textures\\";
+    for (auto & p : fs::directory_iterator (textureDirectoryPath))
+    {
+        path texPath = p.path ();
+        string asString = texPath.string ();
+        TextureAssetDescriptor * pTexAssetDescriptor = new TextureAssetDescriptor (asString, currTexId);
+        auto pair = make_pair (currTexId, pTexAssetDescriptor);
+        this->m_TextureMap.insert (pair);
+        currTexId++;
+    }
+
+    return err_code;
+
+}
 CORE_ERROR
 AssetManager::VRegisterShaders()
 {
@@ -92,6 +115,9 @@ AssetManager::LoadAsset(AssetDescriptor * pAssetDescriptor)
 	case CORE_ASSET_TYPE::ASSET_TYPE_SHADER:
 		this->LoadShader( (ShaderAssetDescriptor * )pAssetDescriptor);
 		break;
+        case CORE_ASSET_TYPE::ASSET_TYPE_TEXTURE:
+            this->LoadTexture ((TextureAssetDescriptor *)pAssetDescriptor);
+            break;
 	default:
 		assert(0);
 		break;
@@ -115,18 +141,23 @@ AssetManager::IsLoaded( __PARAM_IN__ AssetDescriptor * pAssetDescriptor, __PARAM
 		CORE_ASSET_TYPE assetType = pAssetDescriptor->GetAssetType();
 		switch (assetType)
 		{
-		case CORE_ASSET_TYPE::ASSET_TYPE_SHADER:
-		{
-			auto itShader = this->m_LoadedShaderMap.find(identifier);
-			retVal = (itShader != this->m_LoadedShaderMap.end());
-			break;
-
-		}
-		default:
-		{
-			assert(false);
-			errCode = CORE_ERROR::ERR_PARAM_OUT_OF_RANGE;
-		}
+		    case CORE_ASSET_TYPE::ASSET_TYPE_SHADER:
+		    {
+			    auto itShader = this->m_LoadedShaderMap.find(identifier);
+			    retVal = (itShader != this->m_LoadedShaderMap.end());
+			    break;
+		    }
+            case CORE_ASSET_TYPE::ASSET_TYPE_TEXTURE:
+            {
+                auto itTex = this->m_LoadedTextureMap.find (identifier);
+                retVal = (itTex != this->m_LoadedTextureMap.end ());
+                break;
+            }
+		    default:
+		    {
+			    assert(false);
+			    errCode = CORE_ERROR::ERR_PARAM_OUT_OF_RANGE;
+		    }
 		}
 	}
 	return errCode;
@@ -162,4 +193,32 @@ AssetManager::LoadShader(ShaderAssetDescriptor * pShaderDescriptor)
 	}
 
 	return errCode;
+}
+
+CORE_ERROR
+AssetManager::LoadTexture (TextureAssetDescriptor * pTextureDescriptor)
+{
+    assert (pTextureDescriptor);
+
+    CORE_ERROR errCode  = CORE_ERROR::ERR_OK;
+
+    if (!pTextureDescriptor)
+        errCode         = CORE_ERROR::ERR_PARAM_INVALID;
+    else
+    {
+        CORE_ID identifier = pTextureDescriptor->GetIdentifier ();
+        CORE_BOOLEAN isTexLoaded = false;
+        CORE_ERROR errTexLoaded = this->IsLoaded (pTextureDescriptor, isTexLoaded);
+        assert (errTexLoaded == CORE_ERROR::ERR_OK);
+        if (!isTexLoaded)
+        {
+            string texPath = pTextureDescriptor->GetPath();
+            string texData = ReadFile (texPath);
+
+            AssetLoadedEventData * pAssetLoadedEventData = new AssetLoadedEventData (pTextureDescriptor);
+            this->m_pEventManager->VQueueEvent (pAssetLoadedEventData);
+        }
+    }
+
+    return errCode;
 }

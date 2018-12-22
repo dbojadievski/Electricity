@@ -182,6 +182,7 @@
     <ClInclude Include="runme.h" />
     <ClInclude Include="ShaderDescriptor.h" />
     <ClInclude Include="StringUtils.h" />
+    <ClInclude Include="TextureAssetDescriptor.h" />
     <ClInclude Include="TimeUtils.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
@@ -219,6 +220,7 @@
     <ClCompile Include="runme.cpp" />
     <ClCompile Include="ShaderDescriptor.cpp" />
     <ClCompile Include="StringUtils.cpp" />
+    <ClCompile Include="TextureAssetDescriptor.cpp" />
     <ClCompile Include="TimeUtils.cpp" />
     <ClCompile Include="Vertex.cpp" />
   </ItemGroup>

@@ -300,6 +300,9 @@
     <ClInclude Include="AssetEvents.h">
       <Filter>Header Files\Infrastructure\Event\EventTypes</Filter>
     </ClInclude>
+    <ClInclude Include="TextureAssetDescriptor.h">
+      <Filter>Header Files\AssetManagement\AssetDescriptors</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TimeUtils.cpp">
@@ -406,6 +409,9 @@
     </ClCompile>
     <ClCompile Include="AssetEvents.cpp">
       <Filter>Source Files\Infrastructure\Event\EventType</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureAssetDescriptor.cpp">
+      <Filter>Source Files\AssetManagement\AssetDescriptors</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
