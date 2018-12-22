@@ -298,8 +298,12 @@ DirectX11Renderer::InitShaders()
 	this->m_pRedShader = this->CreateShader(pRedShaderDescriptor);
 	this->SetShader(this->m_pRedShader);
 
-	ShaderDescriptor * pGreenShaderDescriptor = new ShaderDescriptor(11, "VShader", L"Assets\\Shaders\\green.shader", "PShader", L"Assets\\Shaders\\green.shader");
+	ShaderDescriptor * pGreenShaderDescriptor = new ShaderDescriptor(12, "VShader", L"Assets\\Shaders\\green.shader", "PShader", L"Assets\\Shaders\\green.shader");
 	this->m_pGreenShader = this->CreateShader(pGreenShaderDescriptor);
+
+    ShaderDescriptor * pTexturingShader = new ShaderDescriptor (13, "VShader", L"Assets\\Shaders\\shaders.shader", "PShader", L"Assets\\Shaders\\shaders.shader");
+    DirectX11Shader * pTexShader = this->CreateShader (pTexturingShader);
+    this->RegisterShader (pTexShader);
 }
 
 DirectX11Shader * 
@@ -449,8 +453,8 @@ DirectX11Renderer::InitTerrain()
 	for (size_t currIdx = 0; currIdx < indexCount; currIdx++)
 		pDynamicTerrainMesh->AddIndice(pIndices[currIdx]);
 
-	DirectX11Texture2D * pTexture = this->m_TextureMap.at(1);
-	DirectX11Shader * pShader = this->m_ShaderMap.at(1);
+	DirectX11Texture2D * pTexture   = this->m_TextureMap.at(1);
+	DirectX11Shader * pShader       = this->m_ShaderMap.at(1);
 
 	DirectX11Renderable * pDynamicTerrainRenderable = new DirectX11Renderable(pDynamicTerrainMesh, pTexture, pShader, FALSE, D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	this->m_Renderables.push_back(pDynamicTerrainRenderable);
@@ -567,7 +571,7 @@ DirectX11Renderer::InitCubeGeometry()
 	pMesh->AddIndice(20, 21, 22);
 	pMesh->AddIndice(20, 22, 23);
 
-	DirectX11Shader * pShader = this->m_ShaderMap.at(1);
+    DirectX11Shader * pShader = this->m_pGreenShader;
 	DirectX11Texture2D * pTex = this->m_TextureMap.at(1);
 	assert(pTex);
 	DirectX11Renderable * pRenderable = new DirectX11Renderable(pMesh, pTex, pShader);
@@ -928,7 +932,7 @@ DirectX11Renderer::ReloadLightBuffer()
 	this->m_pDeviceContext->UpdateSubresource(ptr, 0, 0, pAsArray, 0, 0);
 	this->m_pDeviceContext->PSSetConstantBuffers(0, ARRAYSIZE(pBuffers), pBuffers);
 
-	//this->UpdateFrameUniforms();
+	this->UpdateFrameUniforms();
 }
 
 DirectX11Renderer::DirectX11Renderer(IEventManager * pManager)
@@ -971,7 +975,7 @@ DirectX11Renderer::OnResolutionChanged(IEventData * pEvent)
 void
 DirectX11Renderer::ChangeResolution(CORE_DWORD width, CORE_DWORD height)
 {
-	this->m_Width = width;
-	this->m_Height = height;
+	this->m_Width       = width;
+	this->m_Height      = height;
 	/*NOTE(Dino): Changing the actual resolution is very, very hard. */
 }
