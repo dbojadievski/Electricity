@@ -80,6 +80,7 @@ private:
 	map<CORE_ID, DirectX11Shader *> m_ShaderMap;
 	DirectX11Shader * m_pRedShader;
 	DirectX11Shader * m_pGreenShader;
+    DirectX11Shader * m_pBasicShader;
 
 	DirectX11Texture2D * m_pActiveTexture;
 	DirectX11Texture2DMap m_TextureMap;

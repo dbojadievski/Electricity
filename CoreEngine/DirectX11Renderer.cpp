@@ -294,15 +294,16 @@ DirectX11Renderer::InitShaders()
 	this->RegisterShader(pShader);
 	this->m_pActiveShader = pShader;
 
-	ShaderDescriptor * pRedShaderDescriptor = new ShaderDescriptor(11, "VShader", L"Assets\\Shaders\\red.shader", "PShader", L"Assets\\Shaders\\red.shader");
-	this->m_pRedShader = this->CreateShader(pRedShaderDescriptor);
+	ShaderDescriptor * pRedShaderDescriptor     = new ShaderDescriptor(11, "VShader", L"Assets\\Shaders\\red.shader", "PShader", L"Assets\\Shaders\\red.shader");
+	this->m_pRedShader                      = this->CreateShader(pRedShaderDescriptor);
 	this->SetShader(this->m_pRedShader);
 
-	ShaderDescriptor * pGreenShaderDescriptor = new ShaderDescriptor(12, "VShader", L"Assets\\Shaders\\green.shader", "PShader", L"Assets\\Shaders\\green.shader");
-	this->m_pGreenShader = this->CreateShader(pGreenShaderDescriptor);
+	ShaderDescriptor * pGreenShaderDescriptor   = new ShaderDescriptor(12, "VShader", L"Assets\\Shaders\\green.shader", "PShader", L"Assets\\Shaders\\green.shader");
+	this->m_pGreenShader                        = this->CreateShader(pGreenShaderDescriptor);
 
     ShaderDescriptor * pTexturingShader = new ShaderDescriptor (13, "VShader", L"Assets\\Shaders\\shaders.shader", "PShader", L"Assets\\Shaders\\shaders.shader");
-    DirectX11Shader * pTexShader = this->CreateShader (pTexturingShader);
+    DirectX11Shader * pTexShader        = this->CreateShader (pTexturingShader);
+    this->m_pBasicShader                = pTexShader;
     this->RegisterShader (pTexShader);
 }
 
@@ -571,7 +572,7 @@ DirectX11Renderer::InitCubeGeometry()
 	pMesh->AddIndice(20, 21, 22);
 	pMesh->AddIndice(20, 22, 23);
 
-    DirectX11Shader * pShader = this->m_pGreenShader;
+    DirectX11Shader * pShader = this->m_pBasicShader;
 	DirectX11Texture2D * pTex = this->m_TextureMap.at(1);
 	assert(pTex);
 	DirectX11Renderable * pRenderable = new DirectX11Renderable(pMesh, pTex, pShader);
@@ -593,7 +594,7 @@ DirectX11Renderer::InitTextures()
 	DirectX11Texture2D * pTex = DirectX11Texture2D::FromDDSFile(this->m_pDevice, L"Assets\\Textures\\wood.dds", 1);
 	this->RegisterTexture(pTex);
 
-	DirectX11Texture2D  * pGrassTex = DirectX11Texture2D::FromDDSFile(this->m_pDevice, L"Assets\\Textures\\grass.dds", 2);
+	DirectX11Texture2D  * pGrassTex = DirectX11Texture2D::FromDDSFile(this->m_pDevice,  L"Assets\\Textures\\grass.dds", 2);
 	this->RegisterTexture(pTex);
 }
 

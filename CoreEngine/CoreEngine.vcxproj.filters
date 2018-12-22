@@ -130,6 +130,9 @@
     <Filter Include="Source Files\AssetManagement\AssetDescriptors">
       <UniqueIdentifier>{66d32d76-2085-45be-bba0-bd5b2b9038d7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{ba5b8b8b-1b7d-4369-a088-a7d4674ce850}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TimeUtils.h">
