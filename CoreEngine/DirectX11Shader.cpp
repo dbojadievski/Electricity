@@ -72,16 +72,16 @@ DirectX11Shader::GetPixelShaderBufferPointer()
 	return buffDescriptor;
 }
 
-ID3D11VertexShader *
+ID3D11VertexShader **
 DirectX11Shader::GetVertexShader()
 {
-	return this->m_pVertexShader;
+	return &this->m_pVertexShader;
 }
 
-ID3D11PixelShader *
+ID3D11PixelShader **
 	DirectX11Shader::GetPixelShader()
 {
-	return this->m_pPixelShader;
+	return &this->m_pPixelShader;
 }
 
 CORE_ID

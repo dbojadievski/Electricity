@@ -112,6 +112,24 @@
     <Filter Include="Source Files\Infrastructure\Console\Command Implementations">
       <UniqueIdentifier>{880b1634-5387-4de0-86e4-2e1db4a886f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Utils\File System">
+      <UniqueIdentifier>{fc7425fc-f96f-4c43-9344-cf99a88586a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\File System">
+      <UniqueIdentifier>{fe64a1fe-cc64-42f2-9d2f-4f0597a2cf7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AssetManagement">
+      <UniqueIdentifier>{2006f046-4587-4478-aebc-2e197dad2b98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AssetManagement">
+      <UniqueIdentifier>{fed8ea91-6474-4e6f-a43e-5bc97b5d3903}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AssetManagement\AssetDescriptors">
+      <UniqueIdentifier>{841e1ece-159c-430a-9653-7bd6886fac2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AssetManagement\AssetDescriptors">
+      <UniqueIdentifier>{66d32d76-2085-45be-bba0-bd5b2b9038d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TimeUtils.h">
@@ -261,6 +279,24 @@
     <ClInclude Include="CoreEngine.h">
       <Filter>Header Files\Infrastructure</Filter>
     </ClInclude>
+    <ClInclude Include="FileReader.h">
+      <Filter>Header Files\Utils\File System</Filter>
+    </ClInclude>
+    <ClInclude Include="IAssetManager.h">
+      <Filter>Header Files\AssetManagement</Filter>
+    </ClInclude>
+    <ClInclude Include="AssetManager.h">
+      <Filter>Header Files\AssetManagement</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderDescriptor.h">
+      <Filter>Header Files\AssetManagement\AssetDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="AssetDescriptor.h">
+      <Filter>Header Files\AssetManagement\AssetDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="AssetEvents.h">
+      <Filter>Header Files\Infrastructure\Event\EventTypes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TimeUtils.cpp">
@@ -352,6 +388,21 @@
     </ClCompile>
     <ClCompile Include="ConsoleCommandImplementationEntity.cpp">
       <Filter>Source Files\Infrastructure\Console\Command Implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="FileReader.cpp">
+      <Filter>Source Files\Utils\File System</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetManager.cpp">
+      <Filter>Source Files\AssetManagement</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderDescriptor.cpp">
+      <Filter>Source Files\AssetManagement\AssetDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetDescriptor.cpp">
+      <Filter>Source Files\AssetManagement\AssetDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetEvents.cpp">
+      <Filter>Source Files\Infrastructure\Event\EventType</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -130,7 +130,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ArrayUtils.h" />
+    <ClInclude Include="AssetDescriptor.h" />
+    <ClInclude Include="AssetEvents.h" />
     <ClInclude Include="AssetLoader.h" />
+    <ClInclude Include="AssetManager.h" />
     <ClInclude Include="BasicLight.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="ConsoleCommand.h" />
@@ -155,8 +158,10 @@
     <ClInclude Include="EventManager.h" />
     <ClInclude Include="FastDelegate.h" />
     <ClInclude Include="FastDelegateBind.h" />
+    <ClInclude Include="FileReader.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Globals.h" />
+    <ClInclude Include="IAssetManager.h" />
     <ClInclude Include="IComponent.h" />
     <ClInclude Include="IConsole.h" />
     <ClInclude Include="IEngineSystem.h" />
@@ -175,12 +180,16 @@
     <ClInclude Include="ResolutionChangedEventData.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="runme.h" />
+    <ClInclude Include="ShaderDescriptor.h" />
     <ClInclude Include="StringUtils.h" />
     <ClInclude Include="TimeUtils.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ArrayUtils.cpp" />
+    <ClCompile Include="AssetDescriptor.cpp" />
+    <ClCompile Include="AssetEvents.cpp" />
+    <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="BasicLight.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="ConsoleCommand.cpp" />
@@ -198,6 +207,7 @@
     <ClCompile Include="EntityEvents.cpp" />
     <ClCompile Include="EntitySystem.cpp" />
     <ClCompile Include="EventManager.cpp" />
+    <ClCompile Include="FileReader.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="KeyEvents.cpp" />
     <ClCompile Include="LightManager.cpp" />
@@ -207,6 +217,7 @@
     <ClCompile Include="DirectX11RenderableInstance.cpp" />
     <ClCompile Include="ResolutionChangedEventData.cpp" />
     <ClCompile Include="runme.cpp" />
+    <ClCompile Include="ShaderDescriptor.cpp" />
     <ClCompile Include="StringUtils.cpp" />
     <ClCompile Include="TimeUtils.cpp" />
     <ClCompile Include="Vertex.cpp" />

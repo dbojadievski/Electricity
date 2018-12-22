@@ -8,7 +8,7 @@
 #include "DirectX11Renderer.h"
 #include "InputBase.h"
 #include "TimeUtils.h"
-
+#include "AssetManager.h"
 #include <assert.h>
 #include <vector>
 class CoreEngine
@@ -22,6 +22,7 @@ private:
 
 	const IConsole * m_pConsole;
 	const EntitySystem * m_pEntitySystem;
+	const IAssetManager * m_pAssetManager;
 	IEventManager * m_pEventManager;
 	InputBase * m_pInput;
 	Timer * m_pTimer;
@@ -42,5 +43,6 @@ public:
 	
 	IConsole * GetConsole() const;
 	IEventManager * GetEventManager() const;
+	IAssetManager * GetAssetManager() const;
 	EntitySystem * GetEntitySystem() const;
 };

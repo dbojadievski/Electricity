@@ -73,6 +73,7 @@ struct EntityComponentAddedEventData : EventDataBase
 {
 	CORE_ID m_EntityIdentifier;
 	EComponentType m_ComponentType;
+	IComponent * m_pComponent;
 
 	virtual IEventData * VCopy(void) const;
 	virtual const char * VGetName() const;

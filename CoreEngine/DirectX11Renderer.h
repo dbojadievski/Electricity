@@ -32,6 +32,21 @@ struct ShaderDescriptor
 
 	LPWSTR m_PixelShaderPath;
 	LPCSTR m_PixelShaderEntryPoint;
+
+	ShaderDescriptor()
+	{
+	}
+
+	ShaderDescriptor(CORE_ID identifier, LPCSTR pVertexShaderEntry, LPWSTR pVertexShaderPath, LPCSTR pPixelShaderEntry, LPWSTR pPixelShaderPath)
+	{
+		this->m_Identifier = identifier;
+		
+		this->m_VertexShaderEntryPoint = pVertexShaderEntry;
+		this->m_VertexShaderPath = pVertexShaderPath;
+
+		this->m_PixelShaderEntryPoint = pPixelShaderEntry;
+		this->m_PixelShaderPath = pPixelShaderPath;
+	}
 };
 
 class DirectX11Renderer : IEngineSystem
@@ -63,6 +78,8 @@ private:
 
 	DirectX11Shader * m_pActiveShader;
 	map<CORE_ID, DirectX11Shader *> m_ShaderMap;
+	DirectX11Shader * m_pRedShader;
+	DirectX11Shader * m_pGreenShader;
 
 	DirectX11Texture2D * m_pActiveTexture;
 	DirectX11Texture2DMap m_TextureMap;
@@ -144,7 +161,7 @@ private:
 	void CloseDirectX11Device();
 
 	void RenderAll(CORE_DOUBLE dT);
-	//void RenderUnsorted(size_t &numRenderableInstances, const FASTMAT4 &cameraViewProjectionMatrix);
+	void RenderAllSimple(CORE_DOUBLE dT);
 	void RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShaderSwitches, size_t &numTextureSwitches, size_t &numRenderableInstances, const FASTMAT4 &cameraViewProjectionMatrix);
 	
 	/*Event handlers. */

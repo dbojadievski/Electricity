@@ -33,9 +33,6 @@ DirectX11Renderer::Init()
 {
 	InitEventHandlers();
 	InitDirect3D();
-
-	/*Init lights. */
-	//InitLights();
 }
 
 void 
@@ -56,7 +53,7 @@ DirectX11Renderer::InitLights()
 void 
 DirectX11Renderer::InitEventHandlers()
 {
-	EventListenerDelegate eDelegate;// MakeDelegate(this, &this->OnResolutionChanged);
+	EventListenerDelegate eDelegate;
 	eDelegate = MakeDelegate(this, &DirectX11Renderer::OnResolutionChanged);
 	this->m_pEventManager->VAddListener(eDelegate, EventType::EVENT_TYPE_RESOLUTION_CHANGED);
 
@@ -271,15 +268,15 @@ DirectX11Renderer::InitShaders()
 
 	DirectX11Shader * pShader = new DirectX11Shader(L"Assets\\Shaders\\red.shader", "VShader", L"Assets\\Shaders\\red.shader", "PShader", 1);
 	
-	ID3D11VertexShader * pVertexShader = pShader->GetVertexShader();
+	ID3D11VertexShader ** pVertexShader = pShader->GetVertexShader();
 	DirectXShaderBufferDescriptor vertexShaderDescriptor = pShader->GetVertexShaderBufferPointer();
-	this->m_pDevice->CreateVertexShader(vertexShaderDescriptor.m_pBuffer, vertexShaderDescriptor.m_size, NULL, (ID3D11VertexShader **) &pVertexShader);
-	this->m_pDeviceContext->VSSetShader(pVertexShader, 0, 0);
+	this->m_pDevice->CreateVertexShader(vertexShaderDescriptor.m_pBuffer, vertexShaderDescriptor.m_size, NULL, pVertexShader);
+	this->m_pDeviceContext->VSSetShader(*pVertexShader, 0, 0);
 
-	ID3D11PixelShader * pPixelShader = pShader->GetPixelShader();
+	ID3D11PixelShader ** pPixelShader = pShader->GetPixelShader();
 	DirectXShaderBufferDescriptor pixelShaderDescriptor = pShader->GetPixelShaderBufferPointer();
-	this->m_pDevice->CreatePixelShader(pixelShaderDescriptor.m_pBuffer, pixelShaderDescriptor.m_size, NULL, (ID3D11PixelShader **) &pPixelShader);
-	this->m_pDeviceContext->PSSetShader(pPixelShader, 0, 0);
+	this->m_pDevice->CreatePixelShader(pixelShaderDescriptor.m_pBuffer, pixelShaderDescriptor.m_size, NULL, pPixelShader);
+	this->m_pDeviceContext->PSSetShader(*pPixelShader, 0, 0);
 
 	D3D11_INPUT_ELEMENT_DESC inputElementDescriptor[] =
 	{
@@ -297,17 +294,12 @@ DirectX11Renderer::InitShaders()
 	this->RegisterShader(pShader);
 	this->m_pActiveShader = pShader;
 
+	ShaderDescriptor * pRedShaderDescriptor = new ShaderDescriptor(11, "VShader", L"Assets\\Shaders\\red.shader", "PShader", L"Assets\\Shaders\\red.shader");
+	this->m_pRedShader = this->CreateShader(pRedShaderDescriptor);
+	this->SetShader(this->m_pRedShader);
 
-	ShaderDescriptor redDescriptor;
-	redDescriptor.m_Identifier = 1;
-	redDescriptor.m_PixelShaderPath = L"Assets\\Shaders\\red.shader";
-	redDescriptor.m_PixelShaderEntryPoint = "PShader";
-	redDescriptor.m_VertexShaderPath = L"Assets\\Shaders\\red.shader";
-	redDescriptor.m_VertexShaderEntryPoint = "VShader";
-	auto shader = CreateShader(&redDescriptor);
-
-	//this->m_pActiveShader
-
+	ShaderDescriptor * pGreenShaderDescriptor = new ShaderDescriptor(11, "VShader", L"Assets\\Shaders\\green.shader", "PShader", L"Assets\\Shaders\\green.shader");
+	this->m_pGreenShader = this->CreateShader(pGreenShaderDescriptor);
 }
 
 DirectX11Shader * 
@@ -318,12 +310,13 @@ DirectX11Renderer::CreateShader(ShaderDescriptor * pDescriptor)
 	DirectX11Shader * pRetVal = new DirectX11Shader(pDescriptor->m_VertexShaderPath, pDescriptor->m_VertexShaderEntryPoint, pDescriptor->m_PixelShaderPath, pDescriptor->m_PixelShaderEntryPoint, pDescriptor->m_Identifier);
 	
 	DirectXShaderBufferDescriptor vertexShaderDescriptor = pRetVal->GetVertexShaderBufferPointer();
-	ID3D11VertexShader * pVertexShader = pRetVal->GetVertexShader();
-	this->m_pDevice->CreateVertexShader(vertexShaderDescriptor.m_pBuffer, vertexShaderDescriptor.m_size, NULL, (ID3D11VertexShader **) &pVertexShader);
+	ID3D11VertexShader ** pVertexShader = pRetVal->GetVertexShader();
+	HRESULT resVs = this->m_pDevice->CreateVertexShader(vertexShaderDescriptor.m_pBuffer, vertexShaderDescriptor.m_size, NULL, pVertexShader);
+	assert(resVs == S_OK);
 
 	DirectXShaderBufferDescriptor pixelShaderDescriptor = pRetVal->GetPixelShaderBufferPointer();
-	ID3D11PixelShader * pPixelShader = pRetVal->GetPixelShader();
-	this->m_pDevice->CreatePixelShader(pixelShaderDescriptor.m_pBuffer, pixelShaderDescriptor.m_size, NULL, (ID3D11PixelShader **) &pPixelShader);
+	ID3D11PixelShader ** pPixelShader = pRetVal->GetPixelShader();
+	this->m_pDevice->CreatePixelShader(pixelShaderDescriptor.m_pBuffer, pixelShaderDescriptor.m_size, NULL, pPixelShader);
 
 	D3D11_INPUT_ELEMENT_DESC inputElementDescriptor[] =
 	{
@@ -669,9 +662,6 @@ DirectX11Renderer::UpdateFrameUniforms()
 	auto pUniformBuffer = this->m_pFrameUniformBuffer->GetRawPointer();
 	this->m_pDeviceContext->UpdateSubresource(pUniformBuffer, 0, NULL, &this->m_FrameUniforms, 0, 0);
 	this->m_pDeviceContext->PSSetConstantBuffers(0, 1, &pUniformBuffer);
-
-	//auto pLightsBuffer = this->m_pFrameUniformStructuredBuffer->GetRawPointer();
-	//this->m_pDeviceContext->PSSetConstantBuffers(1, 1, &pLightsBuffer);
 }
 
 
@@ -681,11 +671,11 @@ DirectX11Renderer::SetShader(DirectX11Shader * pShader)
 	assert(pShader);
 	this->m_pActiveShader = pShader;
 	
-	ID3D11VertexShader * pVertexShader = pShader->GetVertexShader();
-	ID3D11PixelShader * pPixelShader = pShader->GetPixelShader();
+	ID3D11VertexShader ** pVertexShader = pShader->GetVertexShader();
+	ID3D11PixelShader ** pPixelShader = pShader->GetPixelShader();
 
-	this->m_pDeviceContext->VSSetShader(pVertexShader, 0, 0);
-	this->m_pDeviceContext->PSSetShader(pPixelShader, 0, 0);
+	this->m_pDeviceContext->VSSetShader(*pVertexShader, 0, 0);
+	this->m_pDeviceContext->PSSetShader(*pPixelShader, 0, 0);
 }
 
 void
@@ -722,6 +712,38 @@ DirectX11Renderer::Update(CORE_DOUBLE dT)
 {
 	this->UpdateCamera();
 	RenderAll(dT);
+}
+
+void
+DirectX11Renderer::RenderAllSimple(CORE_DOUBLE dT)
+{
+	float backgroundColor[4] = { this->m_ClearColour.x, this->m_ClearColour.y, this->m_ClearColour.z, this->m_ClearColour.w };
+	this->m_pDeviceContext->ClearRenderTargetView(this->m_pRenderTargetView, backgroundColor);
+
+	this->m_pDeviceContext->ClearDepthStencilView(this->m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+	FASTMAT4 cameraViewProjectionMatrix = this->m_CameraView * this->m_CameraProjection;
+
+	/*NOTE(Dino): Update per-frame uniform buffer. */
+	this->m_FrameUniforms.light = this->m_Light;
+	this->UpdateFrameUniforms();
+
+	this->ResetBlendState();
+
+	for (auto renderableIterator = this->m_Renderables.begin(); renderableIterator != this->m_Renderables.end(); renderableIterator++)
+	{
+		DirectX11Renderable * pRenderable = *renderableIterator;
+		assert(pRenderable);
+
+		DirectX11Shader * pShader = (DirectX11Shader *) pRenderable->GetShader();
+		this->SetShader(pShader);
+		for (auto instanceIterator = pRenderable->GetInstances(); instanceIterator != pRenderable->GetInstancesEnd(); instanceIterator++)
+		{
+			DirectX11RenderableInstance * pInstance = *instanceIterator;
+			auto transform = pInstance->GetCachedTransform();
+		}
+	}
+	this->SetBlendStateTransparent();
 }
 
 void 
@@ -786,11 +808,11 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 			ID3D11InputLayout * pLayout = pShader->GetInputLayout();
 			this->m_pInputLayout = pLayout;
 			this->m_pDeviceContext->IASetInputLayout(pLayout);
-			ID3D11VertexShader * pVertexShader = pShader->GetVertexShader();
-			ID3D11PixelShader * pPixelShader = pShader->GetPixelShader();
+			ID3D11VertexShader ** pVertexShader = pShader->GetVertexShader();
+			ID3D11PixelShader ** pPixelShader = pShader->GetPixelShader();
 
-			this->m_pDeviceContext->VSSetShader(pVertexShader, 0, 0);
-			this->m_pDeviceContext->PSSetShader(pPixelShader, 0, 0);
+			this->m_pDeviceContext->VSSetShader(*pVertexShader, 0, 0);
+			this->m_pDeviceContext->PSSetShader(*pPixelShader, 0, 0);
 
 			++numShaderSwitches;
 			this->m_pActiveShader = pShader;
@@ -852,6 +874,9 @@ DirectX11Renderer::RegisterShader(DirectX11Shader * pShader)
 	assert(pShader->GetIdentifier());
 
 	CORE_ID shaderId = pShader->GetIdentifier();
+
+	auto vShader = pShader->GetVertexShader();
+	auto pixShader = pShader->GetPixelShader();
 	pair<CORE_ID, DirectX11Shader *> pair = make_pair(shaderId, pShader);
 	this->m_ShaderMap.emplace(pair);
 }

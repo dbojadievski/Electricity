@@ -27,6 +27,11 @@ CoreEngine::Init()
 	this->m_pEntitySystem = new EntitySystem(this->m_pEventManager);
 	this->m_pTimer = new Timer();
 
+	IAssetManager * pAssetManager = new AssetManager(this->m_pEventManager);
+	this->m_pAssetManager = pAssetManager;
+	this->m_Systems.push_back((IEngineSystem *) pAssetManager);
+
+	this->m_pAssetManager = pAssetManager;
 
 	size_t numSystems = this->m_Systems.size();
 	for (size_t currSystemIdx = 0; currSystemIdx < numSystems; currSystemIdx++)

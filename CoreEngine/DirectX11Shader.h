@@ -18,7 +18,6 @@ class DirectX11Shader
 	ID3D11VertexShader *m_pVertexShader;
 	ID3D11PixelShader *m_pPixelShader;
 
-
 	CORE_ID m_Identifier;
 	ID3D10Blob * m_pVertexShaderBlob;
 	ID3D10Blob * m_pPixelShaderBlob;
@@ -31,6 +30,7 @@ class DirectX11Shader
 	DirectX11Buffer * m_pFrameConstantStructuredBuffer;
 
 	ID3D11Buffer * GetFrameConstantBuffer();
+
 public:
 	DirectX11Shader(LPWSTR pStrVertexShaderPath, LPCSTR pStrVertexShaderFunc, LPWSTR pStrFragmentShaderPath, LPCSTR pStrFragmentShaderFunc, CORE_ID shaderId);
 	~DirectX11Shader();
@@ -38,8 +38,8 @@ public:
 	DirectXShaderBufferDescriptor GetVertexShaderBufferPointer();
 	DirectXShaderBufferDescriptor GetPixelShaderBufferPointer();
 	
-	ID3D11VertexShader * GetVertexShader();
-	ID3D11PixelShader * GetPixelShader();
+	ID3D11VertexShader ** GetVertexShader();
+	ID3D11PixelShader ** GetPixelShader();
 
 	CORE_ID GetIdentifier();
 

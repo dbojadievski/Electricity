@@ -152,7 +152,8 @@ EntityComponentAddedEventData::VCopy(void) const
 {
 	EntityComponentAddedEventData * pCopy = new EntityComponentAddedEventData();
 
-	pCopy->m_EntityIdentifier = this->m_EntityIdentifier;
+	pCopy->m_pComponent = this->m_pComponent;
+	pCopy->m_ComponentType = this->m_ComponentType;
 	pCopy->m_EntityIdentifier = this->m_EntityIdentifier;
 
 	return pCopy;
