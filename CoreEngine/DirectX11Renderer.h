@@ -141,6 +141,7 @@ private:
 	void InitCubeGeometry();
 	void InitTextures();
 	void InitLights();
+    void InitFrameUniformBuffer ();
 	void ReloadLightBuffer();
 	CORE_BOOLEAN InitCamera();
 	CORE_BOOLEAN InitDepthBuffer();

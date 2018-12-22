@@ -33,21 +33,26 @@ DirectX11Renderer::Init()
 {
 	InitEventHandlers();
 	InitDirect3D();
+    InitLights ();
 }
 
 void 
 DirectX11Renderer::InitLights()
 {
-	this->m_Light.m_Direction = FLOAT3(0.25f, 0.5f, -1.0f);
-	this->m_Light.m_ColourAmbient = FLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	this->m_Light.m_ColourDiffuse = FLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	this->m_Light.m_Direction           = FLOAT3(0.25f, 0.5f, -1.0f);
+	this->m_Light.m_ColourAmbient       = FLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	this->m_Light.m_ColourDiffuse       = FLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	this->m_Lights.push_back(this->m_Light);
 	this->m_LightManager.AddDirectionalLight(&this->m_Light);
 
-	this->m_pFrameUniformBuffer = DirectX11Buffer::CreateConstantBuffer(this->m_pDevice, sizeof(FrameUniformDescriptor), true, false, NULL);
-	assert(this->m_pFrameUniformBuffer);
 	this->ReloadLightBuffer();
+}
+
+void DirectX11Renderer::InitFrameUniformBuffer ()
+{
+    this->m_pFrameUniformBuffer = DirectX11Buffer::CreateConstantBuffer (this->m_pDevice, sizeof (FrameUniformDescriptor), true, false, NULL);
+    assert (this->m_pFrameUniformBuffer);
 }
 
 void 
@@ -139,6 +144,7 @@ DirectX11Renderer::InitDirect3D()
 	InitCamera();
 	InitBlendStates();
 	InitTextRenderer();
+    InitFrameUniformBuffer ();
 }
 
 void 
@@ -634,37 +640,36 @@ DirectX11Renderer::InitCamera()
 void
 DirectX11Renderer::UpdateCamera()
 {
-	this->m_CameraRotation = XMMatrixRotationRollPitchYaw(this->m_CameraPitch, this->m_CameraYaw, 0);
-	this->m_CameraTarget = XMVector3TransformCoord(DefaultForward, this->m_CameraRotation);
-	this->m_CameraTarget = XMVector3Normalize(this->m_CameraTarget);
+	this->m_CameraRotation  = XMMatrixRotationRollPitchYaw(this->m_CameraPitch, this->m_CameraYaw, 0);
+	this->m_CameraTarget    = XMVector3TransformCoord(DefaultForward, this->m_CameraRotation);
+	this->m_CameraTarget    = XMVector3Normalize(this->m_CameraTarget);
 
 
 	XMMATRIX RotateYTempMatrix;
-	RotateYTempMatrix = XMMatrixRotationY(this->m_CameraYaw);
+	RotateYTempMatrix       = XMMatrixRotationY(this->m_CameraYaw);
 
-	this->m_CameraRight = XMVector3TransformCoord(DefaultRight, RotateYTempMatrix);
-	this->m_CameraUp = XMVector3TransformCoord(CameraUp, RotateYTempMatrix);
-	this->m_CameraForward = XMVector3TransformCoord(DefaultForward, RotateYTempMatrix);
+	this->m_CameraRight     = XMVector3TransformCoord(DefaultRight, RotateYTempMatrix);
+	this->m_CameraUp        = XMVector3TransformCoord(CameraUp, RotateYTempMatrix);
+	this->m_CameraForward   = XMVector3TransformCoord(DefaultForward, RotateYTempMatrix);
 
-	this->m_CameraPosition += this->m_MoveLeftRight * this->m_CameraRight;
-	this->m_CameraPosition += this->m_MoveBackForward * this->m_CameraForward;
+	this->m_CameraPosition  += this->m_MoveLeftRight * this->m_CameraRight;
+	this->m_CameraPosition  += this->m_MoveBackForward * this->m_CameraForward;
 
-	this->m_MoveLeftRight = 0;
+	this->m_MoveLeftRight   = 0;
 	this->m_MoveBackForward = 0;
 
-	this->m_CameraTarget = this->m_CameraPosition + this->m_CameraTarget;
+	this->m_CameraTarget    = this->m_CameraPosition + this->m_CameraTarget;
 
-	FASTVEC DOWN = FASTVEC_SET(0.0f, -1.0f, 0.0f, 0.0f);
+	FASTVEC DOWN            = FASTVEC_SET(0.0f, -1.0f, 0.0f, 0.0f);
 	/*DEBUG(Dino): The next line is code to debug terrain. Remove afterwards. */
 	//this->m_CameraTarget = DOWN;
-	this->m_CameraView = XMMatrixLookAtLH(this->m_CameraPosition, this->m_CameraTarget, this->m_CameraUp);
+	this->m_CameraView      = XMMatrixLookAtLH(this->m_CameraPosition, this->m_CameraTarget, this->m_CameraUp);
 }
 
 void 
 DirectX11Renderer::UpdateFrameUniforms()
 {
-	return;
-	auto pUniformBuffer = this->m_pFrameUniformBuffer->GetRawPointer();
+	auto pUniformBuffer     = this->m_pFrameUniformBuffer->GetRawPointer();
 	this->m_pDeviceContext->UpdateSubresource(pUniformBuffer, 0, NULL, &this->m_FrameUniforms, 0, 0);
 	this->m_pDeviceContext->PSSetConstantBuffers(0, 1, &pUniformBuffer);
 }
@@ -674,10 +679,10 @@ void
 DirectX11Renderer::SetShader(DirectX11Shader * pShader)
 {
 	assert(pShader);
-	this->m_pActiveShader = pShader;
+	this->m_pActiveShader                   = pShader;
 	
-	ID3D11VertexShader ** pVertexShader = pShader->GetVertexShader();
-	ID3D11PixelShader ** pPixelShader = pShader->GetPixelShader();
+	ID3D11VertexShader ** pVertexShader     = pShader->GetVertexShader();
+	ID3D11PixelShader ** pPixelShader       = pShader->GetPixelShader();
 
 	this->m_pDeviceContext->VSSetShader(*pVertexShader, 0, 0);
 	this->m_pDeviceContext->PSSetShader(*pPixelShader, 0, 0);
@@ -705,6 +710,7 @@ DirectX11Renderer::CloseDirectX11Device()
 	this->m_pCounterClockWisecullMode->Release();
 	this->m_pClockWiseCullMode->Release();
 	this->m_pDisableCullingMode->Release();
+    this->m_pFrameUniformBuffer->Release ();;
 
 	delete this->m_pTextRenderer;
 	

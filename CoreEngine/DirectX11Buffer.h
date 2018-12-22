@@ -14,6 +14,7 @@ private:
 public:
 	DirectX11Buffer(ID3D11Device * pDevice, UINT byteWidth, D3D11_USAGE usage = D3D11_USAGE_DYNAMIC, D3D11_BIND_FLAG bindFlags = D3D11_BIND_VERTEX_BUFFER, D3D11_CPU_ACCESS_FLAG cpuAccessFlag = D3D11_CPU_ACCESS_WRITE);
 
+    void Release ();
 	ID3D11Buffer * GetRawPointer();
 
 #pragma region Buffer factory methods.

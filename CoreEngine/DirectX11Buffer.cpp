@@ -213,4 +213,10 @@ end:
 
 	return pRetVal;
 }
+
+void
+DirectX11Buffer::Release ()
+{
+    this->m_pBuffer->Release ();
+}
 #pragma endregion
