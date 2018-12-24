@@ -14,9 +14,7 @@ public:
 
 class ShaderAssetDescriptorExtended : public ShaderAssetDescriptor
 {
-	string m_ShaderSource;
 
 public:
-	ShaderAssetDescriptorExtended(const string & path, CORE_ID identifier, const string & shaderSource);
-	string GetSource();
+	ShaderAssetDescriptorExtended(const string & path, CORE_ID identifier);
 };

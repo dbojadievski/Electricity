@@ -4,7 +4,7 @@
 
 #include "FastDelegate.h"
 #include "FastDelegateBind.h"
-
+#include "AssetEvents.h"
 #include "ResolutionChangedEventData.h"
 #include "KeyEvents.h"
 
@@ -21,11 +21,11 @@ extern HWND g_Window;
 using namespace fastdelegate;
 
 
-XMVECTOR DefaultForward = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-XMVECTOR DefaultRight = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
-XMVECTOR CameraForward = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-XMVECTOR CameraRight = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
-XMVECTOR CameraUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+XMVECTOR DefaultForward     = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+XMVECTOR DefaultRight       = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+XMVECTOR CameraForward      = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+XMVECTOR CameraRight        = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+XMVECTOR CameraUp           = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
 
 void
@@ -64,6 +64,9 @@ DirectX11Renderer::InitEventHandlers()
 
 	EventListenerDelegate keyDownDelegate   = MakeDelegate(this, &DirectX11Renderer::OnKeyDown);
 	this->m_pEventManager->VAddListener(keyDownDelegate, EventType::EVENT_TYPE_KEYDOWN);
+
+    EventListenerDelegate assetLoadedDelegate = MakeDelegate (this, &DirectX11Renderer::OnAssetLoaded);
+    this->m_pEventManager->VAddListener (assetLoadedDelegate, EventType::EVENT_TYPE_ASSET_LOADED);
 }
 
 void 
@@ -92,7 +95,6 @@ DirectX11Renderer::InitDirect3D()
 		D3D_FEATURE_LEVEL_9_1
 	};
 
-
 	D3D11CreateDeviceAndSwapChain(NULL,
 		D3D_DRIVER_TYPE_HARDWARE,
 		NULL,
@@ -118,12 +120,12 @@ DirectX11Renderer::InitDirect3D()
 #pragma region Initialize viewport.
 	D3D11_VIEWPORT viewport;
 	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.Width = 2560,
-	viewport.Height = 1440,
-	viewport.MinDepth = VIEWPORT_DEPTH_MIN;
-	viewport.MaxDepth = VIEWPORT_DEPTH_MAX;
+	viewport.TopLeftX   = 0;
+	viewport.TopLeftY   = 0;
+	viewport.Width      = 1920,
+	viewport.Height     = 1080,
+	viewport.MinDepth   = VIEWPORT_DEPTH_MIN;
+	viewport.MaxDepth   = VIEWPORT_DEPTH_MAX;
 	this->m_pDeviceContext->RSSetViewports(1, &viewport);
 #pragma endregion
 #pragma region Initialize rasterizer states.
@@ -301,7 +303,7 @@ DirectX11Renderer::InitShaders()
 	this->m_pActiveShader = pShader;
 
 	ShaderDescriptor * pRedShaderDescriptor     = new ShaderDescriptor(11, "VShader", L"Assets\\Shaders\\red.shader", "PShader", L"Assets\\Shaders\\red.shader");
-	this->m_pRedShader                      = this->CreateShader(pRedShaderDescriptor);
+	this->m_pRedShader                          = this->CreateShader(pRedShaderDescriptor);
 	this->SetShader(this->m_pRedShader);
 
 	ShaderDescriptor * pGreenShaderDescriptor   = new ShaderDescriptor(12, "VShader", L"Assets\\Shaders\\green.shader", "PShader", L"Assets\\Shaders\\green.shader");
@@ -601,7 +603,7 @@ DirectX11Renderer::InitTextures()
 	this->RegisterTexture(pTex);
 
 	DirectX11Texture2D  * pGrassTex = DirectX11Texture2D::FromDDSFile(this->m_pDevice,  L"Assets\\Textures\\grass.dds", 2);
-	this->RegisterTexture(pTex);
+	this->RegisterTexture(pGrassTex);
 }
 
 void DirectX11Renderer::SetTexture(DirectX11Texture2D * pTex)
@@ -969,6 +971,86 @@ DirectX11Renderer::OnKeyDown(IEventData * pEvent)
 		break;
 	}
 
+}
+
+void
+DirectX11Renderer::OnAssetLoaded (IEventData * pEvent)
+{
+    assert (pEvent);
+    if (pEvent)
+    {
+        CORE_BOOLEAN assetLoaded            = false;
+        AssetLoadedEventData * pEventData   = (AssetLoadedEventData *)pEvent;
+        AssetDescriptor * pDescriptor       = pEventData->m_pAssetDescriptorExtended;
+        switch (pEventData->GetAssetType ())
+        {
+            case ASSET_TYPE_SHADER:
+            {
+                assetLoaded                 = this->LoadShader (pDescriptor);
+                break;
+            }
+            case ASSET_TYPE_TEXTURE:
+                assetLoaded                 = this->LoadTexture (pDescriptor);
+                break;
+            default:
+                assert (false);
+        }
+
+        if (assetLoaded == false)
+        {
+            AssetLoadFailedEventData * pAssetLoadFailedEvent    = new AssetLoadFailedEventData ();
+            pAssetLoadFailedEvent->m_pAssetDescriptorExtended   = pDescriptor;
+            this->m_pEventManager->VTriggerEvent (pAssetLoadFailedEvent);
+
+        }
+    }
+}
+
+CORE_BOOLEAN
+DirectX11Renderer::LoadTexture (AssetDescriptor * pDescriptor)
+{
+    CORE_BOOLEAN retVal                 = false;
+
+    assert (pDescriptor);
+    if (pDescriptor)
+    {
+        wstring wst(pDescriptor->GetPath ().begin (), pDescriptor->GetPath ().end ());
+        DirectX11Texture2D  * pGrassTex = DirectX11Texture2D::FromDDSFile (this->m_pDevice, wst.c_str(), pDescriptor->GetIdentifier());
+        assert (pGrassTex);
+        if (pGrassTex)
+        {
+            retVal                      = true;
+            this->RegisterTexture (pGrassTex);
+
+        }
+    }
+
+    return retVal;
+}
+
+CORE_BOOLEAN 
+DirectX11Renderer::LoadShader (AssetDescriptor * pDescriptor)
+{
+    CORE_BOOLEAN retVal                 = false;
+    
+    ShaderDescriptor shaderDesc;
+    shaderDesc.m_Identifier             = pDescriptor->GetIdentifier ();
+    string filePath                     = pDescriptor->GetPath ();
+    wstring widePath (filePath.begin (), filePath.end ());
+    shaderDesc.m_PixelShaderPath        = (wchar_t *)widePath.c_str ();
+    shaderDesc.m_PixelShaderEntryPoint  = "PShader";
+    shaderDesc.m_VertexShaderPath       = (wchar_t *)widePath.c_str ();
+    shaderDesc.m_VertexShaderEntryPoint = "VShader";
+    
+    DirectX11Shader * pShader           = this->CreateShader (&shaderDesc);
+    assert (pShader);
+    if (pShader)
+    {
+        this->RegisterShader (pShader);
+        retVal                          = true;
+    }
+    
+    return retVal;
 }
 
 void

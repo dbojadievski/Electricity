@@ -19,4 +19,10 @@ struct AssetLoadedEventData : EventDataBase
 	virtual ~AssetLoadedEventData( );
 	virtual void EventDataBase::VSerialize(std::ostream & out) const;
 
+    const CORE_ASSET_TYPE GetAssetType ();
+};
+
+struct AssetLoadFailedEventData : public AssetLoadedEventData
+{
+    virtual const EventType VGetEventType(void) const;
 };

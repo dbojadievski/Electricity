@@ -38,12 +38,22 @@ AssetLoadedEventData::VSerialize(std::ostream & out) const
 	out << "ENTITY_ASSET_LOADED " << this->m_pAssetDescriptorExtended;
 }
 
-
+const CORE_ASSET_TYPE
+AssetLoadedEventData::GetAssetType ()
+{
+    return this->m_pAssetDescriptorExtended->GetAssetType ();
+}
 
 AssetLoadedEventData::AssetLoadedEventData(){}
 AssetLoadedEventData::AssetLoadedEventData(const AssetDescriptor * pAssetDescriptor)
 {
 	assert(pAssetDescriptor);
 	this->m_pAssetDescriptorExtended = (AssetDescriptor *) pAssetDescriptor;
+}
+
+const EventType
+AssetLoadFailedEventData::VGetEventType (void) const
+{
+    return EventType::EVENT_TYPE_ASSET_LOAD_FAILED;
 }
 #pragma endregion

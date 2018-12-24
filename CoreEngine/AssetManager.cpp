@@ -1,5 +1,6 @@
 #include "AssetManager.h"
 
+#include "AssetEvents.h"
 #include "TextureAssetDescriptor.h"
 #include <string>
 #include <iostream>
@@ -19,6 +20,14 @@ AssetManager::Init()
 {
 	this->VRegisterShaders();
     this->VRegisterTextures ();
+
+    for (auto it = this->m_ShaderMap.begin (); it != this->m_ShaderMap.end (); it++)
+    {
+        ShaderAssetDescriptor * pShaderDesc = it->second;
+        assert (pShaderDesc);
+        if (pShaderDesc)
+            this->LoadAsset (pShaderDesc);
+    }
 }
 
 void
@@ -56,8 +65,8 @@ AssetManager::VRegisterTextures ()
     }
 
     return err_code;
-
 }
+
 CORE_ERROR
 AssetManager::VRegisterShaders()
 {
@@ -112,15 +121,15 @@ AssetManager::LoadAsset(AssetDescriptor * pAssetDescriptor)
 	CORE_ASSET_TYPE assetType = pAssetDescriptor->GetAssetType();
 	switch (assetType)
 	{
-	case CORE_ASSET_TYPE::ASSET_TYPE_SHADER:
-		this->LoadShader( (ShaderAssetDescriptor * )pAssetDescriptor);
-		break;
+	    case CORE_ASSET_TYPE::ASSET_TYPE_SHADER:
+		    this->LoadShader( (ShaderAssetDescriptor * )pAssetDescriptor);
+		    break;
         case CORE_ASSET_TYPE::ASSET_TYPE_TEXTURE:
             this->LoadTexture ((TextureAssetDescriptor *)pAssetDescriptor);
             break;
-	default:
-		assert(0);
-		break;
+	    default:
+		    assert(0);
+		    break;
 	}
 
 	end:
@@ -183,7 +192,7 @@ AssetManager::LoadShader(ShaderAssetDescriptor * pShaderDescriptor)
 		{
 			string shaderPath = pShaderDescriptor->GetPath();
 			string shaderSource = ReadFile(shaderPath);
-			ShaderAssetDescriptorExtended * pEx = new ShaderAssetDescriptorExtended(shaderPath, identifier, shaderSource);
+			ShaderAssetDescriptorExtended * pEx = new ShaderAssetDescriptorExtended(shaderPath, identifier);
 			auto pair = make_pair(identifier, pEx);
 			this->m_LoadedShaderMap.insert(pair);
 
@@ -221,4 +230,36 @@ AssetManager::LoadTexture (TextureAssetDescriptor * pTextureDescriptor)
     }
 
     return errCode;
+}
+
+void
+AssetManager::OnAssetLoadFailed (AssetLoadFailedEventData *pEventData)
+{
+    assert (pEventData);
+
+    switch (pEventData->GetAssetType ())
+    {
+        case ASSET_TYPE_TEXTURE:
+            this->UnloadTexture (this->m_LoadedTextureMap.at (pEventData->m_pAssetDescriptorExtended->GetIdentifier ()));
+            break;
+        case ASSET_TYPE_SHADER:
+            this->UnloadShader(this->m_LoadedShaderMap.at(pEventData->m_pAssetDescriptorExtended->GetIdentifier()));
+            break;
+    }
+}
+
+void 
+AssetManager::UnloadShader (ShaderAssetDescriptor * pDesc)
+{
+    CORE_ID identifier = pDesc->GetIdentifier ();
+    this->m_LoadedShaderMap.erase (identifier);
+    delete pDesc;
+}
+
+void
+AssetManager::UnloadTexture (TextureAssetDescriptor * pDesc)
+{
+    CORE_ID identifier = pDesc->GetIdentifier ();
+    this->m_LoadedTextureMap.erase (identifier);
+    delete pDesc;
 }

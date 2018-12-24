@@ -22,6 +22,7 @@
 #include "DirectionalLight.h"
 #include "LightManager.h"
 
+#include "AssetDescriptor.h"
 
 struct ShaderDescriptor
 {
@@ -169,6 +170,11 @@ private:
 	/*Event handlers. */
 	void OnResolutionChanged(IEventData * pData);
 	void OnKeyDown(IEventData * pData);
+    void OnAssetLoaded (IEventData * pEvent);
+
+    CORE_BOOLEAN LoadShader (AssetDescriptor * pDescriptor);
+    CORE_BOOLEAN LoadTexture (AssetDescriptor * pDescriptor);
+
 public:
 	DirectX11Renderer(IEventManager * pEventManager);
 	void Init();

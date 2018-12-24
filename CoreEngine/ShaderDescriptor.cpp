@@ -2,6 +2,8 @@
 
 ShaderAssetDescriptor::ShaderAssetDescriptor(const string & path, CORE_ID identifier)
 {
+    this->m_AssetType   = ASSET_TYPE_SHADER;
+
 	this->m_Path        = path;
 	this->m_Identifier  = identifier;
 }
@@ -13,13 +15,6 @@ ShaderAssetDescriptor::GetAssetType()
 }
 
 
-ShaderAssetDescriptorExtended::ShaderAssetDescriptorExtended(const string & path, CORE_ID identifier, const string & shaderSource) : ShaderAssetDescriptor(path, identifier)
+ShaderAssetDescriptorExtended::ShaderAssetDescriptorExtended(const string & path, CORE_ID identifier) : ShaderAssetDescriptor(path, identifier)
 {
-	this->m_ShaderSource = shaderSource;
-}
-
-string
-ShaderAssetDescriptorExtended::GetSource()
-{
-	return this->m_ShaderSource;
 }
