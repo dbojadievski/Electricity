@@ -8,6 +8,8 @@
 #include "ResolutionChangedEventData.h"
 #include "KeyEvents.h"
 
+#include "CoreEngine.h"
+
 // include the Direct3D Library file
 #pragma comment (lib, "d3d11.lib")
 
@@ -355,6 +357,7 @@ DirectX11Renderer::InitRenderables()
 	InitCubeGeometry();
 #endif
 	InitTerrain();
+    
 }
 
 void 
@@ -992,6 +995,9 @@ DirectX11Renderer::OnAssetLoaded (IEventData * pEvent)
             case ASSET_TYPE_TEXTURE:
                 assetLoaded                 = this->LoadTexture (pDescriptor);
                 break;
+            case ASSET_TYPE_MESH:
+                assetLoaded                 = this->LoadMesh (pDescriptor);
+                break;
             default:
                 assert (false);
         }
@@ -1004,6 +1010,23 @@ DirectX11Renderer::OnAssetLoaded (IEventData * pEvent)
 
         }
     }
+}
+
+CORE_BOOLEAN
+DirectX11Renderer::LoadMesh (AssetDescriptor * pDescriptor)
+{
+    auto manager    = g_Engine.GetAssetManager ();
+    CoreMesh * pMesh = manager->GetMesh (pDescriptor);
+    DirectX11Renderable * pRenderable = new DirectX11Renderable (pMesh, this->m_TextureMap.at(1), this->m_pBasicShader);
+    this->m_Renderables.push_back (pRenderable);
+
+    XMMATRIX childTransform = XMMatrixRotationX (0.3f) * XMMatrixRotationY (-0.6f) * XMMatrixRotationZ (0.46f) * XMMatrixTranslation (-7.f, 2.f, -3.f);
+    pRenderable->Instantiate (1, childTransform, NULL);
+    pRenderable->Buffer (this->m_pDevice, this->m_pDeviceContext);
+    pRenderable->ActivateBuffers (this->m_pDeviceContext);
+
+    CORE_BOOLEAN wasInserted = this->m_RenderSet.Insert (pRenderable);
+    return false;
 }
 
 CORE_BOOLEAN

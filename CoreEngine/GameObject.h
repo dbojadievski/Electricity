@@ -8,16 +8,18 @@
 
 using namespace std;
 
+typedef map<EComponentType, ComponentList *> ComponentMap;
+
 #define COMPONENT_DELETE_ALL 0
 class GameObject
 {
 	friend class EntitySystem;
 private:
-	string * m_pTag;
-	CORE_ID m_Identifier;
-	GameObject * m_pParent;
-	vector<GameObject *> m_Children;
-	map<EComponentType, ComponentList *> m_Components;
+	string *                m_pTag;
+	CORE_ID                 m_Identifier;
+	GameObject *            m_pParent;
+	vector<GameObject *>    m_Children;
+	ComponentMap            m_Components;
 
 public:
 	GameObject(const string * pTag = NULL, const GameObject * pParent = NULL);

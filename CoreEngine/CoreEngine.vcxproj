@@ -174,16 +174,24 @@
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshAssetDescriptor.h" />
+    <ClInclude Include="Model.h" />
     <ClInclude Include="MouseEvents.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="DirectX11RenderableInstance.h" />
     <ClInclude Include="ResolutionChangedEventData.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="runme.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneNode.h" />
     <ClInclude Include="ShaderDescriptor.h" />
+    <ClInclude Include="ShaderType.h" />
+    <ClInclude Include="ShaderTypeConverter.h" />
     <ClInclude Include="StringUtils.h" />
     <ClInclude Include="TextureAssetDescriptor.h" />
+    <ClInclude Include="TextureType.h" />
     <ClInclude Include="TimeUtils.h" />
+    <ClInclude Include="tinyxml2.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
@@ -213,15 +221,21 @@
     <ClCompile Include="KeyEvents.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="MeshAssetDescriptor.cpp" />
+    <ClCompile Include="Model.cpp" />
     <ClCompile Include="MouseEvents.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="DirectX11RenderableInstance.cpp" />
     <ClCompile Include="ResolutionChangedEventData.cpp" />
     <ClCompile Include="runme.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneNode.cpp" />
     <ClCompile Include="ShaderDescriptor.cpp" />
+    <ClCompile Include="ShaderTypeConverter.cpp" />
     <ClCompile Include="StringUtils.cpp" />
     <ClCompile Include="TextureAssetDescriptor.cpp" />
     <ClCompile Include="TimeUtils.cpp" />
+    <ClCompile Include="tinyxml2.cpp" />
     <ClCompile Include="Vertex.cpp" />
   </ItemGroup>
   <ItemGroup>

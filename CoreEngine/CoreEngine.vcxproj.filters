@@ -303,6 +303,30 @@
     <ClInclude Include="TextureAssetDescriptor.h">
       <Filter>Header Files\AssetManagement\AssetDescriptors</Filter>
     </ClInclude>
+    <ClInclude Include="tinyxml2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderTypeConverter.h">
+      <Filter>Header Files\Utils\Asset Loading</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderType.h">
+      <Filter>Header Files\AssetManagement</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureType.h">
+      <Filter>Header Files\AssetManagement</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneNode.h">
+      <Filter>Header Files\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Header Files\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshAssetDescriptor.h">
+      <Filter>Header Files\AssetManagement\AssetDescriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Header Files\AssetManagement\AssetDescriptors</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TimeUtils.cpp">
@@ -398,9 +422,6 @@
     <ClCompile Include="FileReader.cpp">
       <Filter>Source Files\Utils\File System</Filter>
     </ClCompile>
-    <ClCompile Include="AssetManager.cpp">
-      <Filter>Source Files\AssetManagement</Filter>
-    </ClCompile>
     <ClCompile Include="ShaderDescriptor.cpp">
       <Filter>Source Files\AssetManagement\AssetDescriptors</Filter>
     </ClCompile>
@@ -411,6 +432,27 @@
       <Filter>Source Files\Infrastructure\Event\EventType</Filter>
     </ClCompile>
     <ClCompile Include="TextureAssetDescriptor.cpp">
+      <Filter>Source Files\AssetManagement\AssetDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxml2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderTypeConverter.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneNode.cpp">
+      <Filter>Source Files\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Source Files\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshAssetDescriptor.cpp">
+      <Filter>Source Files\AssetManagement\AssetDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetManager.cpp">
+      <Filter>Source Files\AssetManagement\AssetDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
       <Filter>Source Files\AssetManagement\AssetDescriptors</Filter>
     </ClCompile>
   </ItemGroup>

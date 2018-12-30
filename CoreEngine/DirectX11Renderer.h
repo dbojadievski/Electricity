@@ -174,6 +174,8 @@ private:
 
     CORE_BOOLEAN LoadShader (AssetDescriptor * pDescriptor);
     CORE_BOOLEAN LoadTexture (AssetDescriptor * pDescriptor);
+    CORE_BOOLEAN LoadMesh (AssetDescriptor * pDescriptor);
+
 
 public:
 	DirectX11Renderer(IEventManager * pEventManager);

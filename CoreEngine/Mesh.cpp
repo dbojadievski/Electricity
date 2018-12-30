@@ -36,12 +36,62 @@ Mesh::AddIndice(unsigned long int indice)
 	this->m_NumIndices++;
 }
 
+void
+Mesh::AddNormal (VEC3 * pNormal)
+{
+    this->m_Normals.push_back (*pNormal);
+    this->m_NumNormals++;
+}
+
+void
+Mesh::AddSubMesh (const Mesh * pSubMesh)
+{
+    assert (pSubMesh);
+    if (!pSubMesh)  
+        goto end;
+
+    this->m_SubMeshes.push_back ( (Mesh *) pSubMesh);
+
+    end:;
+}
+
+Mesh *
+Mesh::GetSubMeshAt (const size_t idx)
+{
+    Mesh * pMesh        = NULL;
+    
+    size_t numSubMeshes = this->m_SubMeshes.size ();
+    if (numSubMeshes > idx)
+        pMesh = this->m_SubMeshes[idx];
+
+    return pMesh;
+}
+
+CORE_ERROR
+Mesh::EraseSubMeshAt (const size_t idx)
+{
+    CORE_ERROR retVal       = ERR_OK;
+
+    size_t numSubMeshes     = this->m_SubMeshes.size ();
+    if (numSubMeshes <= idx)
+    {
+        retVal              = ERR_PARAM_OUT_OF_RANGE;
+        goto end;
+    }
+
+    this->m_SubMeshes.erase (this->m_SubMeshes.begin() + idx);
+
+    end:
+    return retVal;
+}
+
 Mesh::Mesh(EMeshType type)
 {
-	this->m_NumIndices = 0;
+	this->m_NumIndices  = 0;
 	this->m_NumVertices = 0;
+    this->m_NumNormals  = 0;
 
-	this->m_Type = type;
+	this->m_Type        = type;
 }
 
 Mesh::~Mesh()
@@ -60,6 +110,18 @@ Mesh::GetIndiceCount()
 	return (this->m_NumIndices);
 }
 
+size_t
+Mesh::GetNormalCount ()
+{
+    return (this->m_NumNormals);
+}
+
+size_t
+Mesh::GetSubMeshCount ()
+{
+    size_t size     = this->m_SubMeshes.size ();
+    return size;
+}
 size_t
 Mesh::GetVertexArraySize()
 {

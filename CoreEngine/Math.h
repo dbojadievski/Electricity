@@ -12,6 +12,8 @@ typedef FLOAT2 VEC2;
 typedef FLOAT3 VEC3;
 typedef FLOAT4 VEC4;
 
+typedef XMVECTOR FASTVEC;
+
 typedef XMINT2 INT2;
 typedef XMINT3 INT3;
 typedef XMINT4 INT4;
@@ -26,3 +28,6 @@ typedef DirectX::XMVECTOR FASTVEC;
 
 typedef DirectX::XMFLOAT3X3 MAT3;
 typedef DirectX::XMFLOAT4X4 MAT4;
+typedef FASTMAT4 Transform;
+
+#define IdentityTransform XMMatrixIdentity

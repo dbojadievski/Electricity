@@ -29,6 +29,8 @@
 #include <windowsx.h>
 
 #include "DirectX11Renderer.h"
+#include "SceneNode.h"
+#include "Scene.h"
 
 using namespace fastdelegate;
 
@@ -121,6 +123,18 @@ void TestConsole(IConsole * pConsole, TestSystem * pSystem)
 	assert(isRegistered);
 
 	pConsole->VParseCommand("test_command");
+}
+
+void TestSceneNodes ()
+{
+    SceneNode * pParent = new SceneNode (1);
+    SceneNode * pChild = new SceneNode (2);
+    CoreScene coreScene;
+    coreScene.Add (pParent);
+
+    pParent->Attach (pChild);
+    pParent->Detach (pChild);
+    delete pChild;
 }
 
 void TestLoadAsset()

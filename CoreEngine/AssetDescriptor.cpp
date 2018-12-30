@@ -1,5 +1,11 @@
 #include "AssetDescriptor.h"
 
+string
+AssetDescriptor::GetName ()
+{
+    return this->m_Name;
+}
+
 string 
 AssetDescriptor::GetPath()
 {

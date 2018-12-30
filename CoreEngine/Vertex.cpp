@@ -1,6 +1,6 @@
 #include "Vertex.h"
 
-Vertex::Vertex()
+Vertex::Vertex () : Vertex (0, 0, 0, 0, 0, 0, 0, 0)
 {
 }
 

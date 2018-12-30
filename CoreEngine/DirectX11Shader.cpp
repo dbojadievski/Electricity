@@ -55,8 +55,8 @@ DirectX11Shader::GetVertexShaderBufferPointer()
 {
 	DirectXShaderBufferDescriptor buffDescriptor;
 	
-	buffDescriptor.m_pBuffer = this->m_pVertexShaderBlob->GetBufferPointer();
-	buffDescriptor.m_size = this->m_pVertexShaderBlob->GetBufferSize();
+	buffDescriptor.m_pBuffer    = this->m_pVertexShaderBlob->GetBufferPointer();
+	buffDescriptor.m_size       = this->m_pVertexShaderBlob->GetBufferSize();
 
 	return buffDescriptor;
 }
@@ -102,8 +102,6 @@ DirectX11Shader::GetInputLayout()
 {
 	return this->m_pInputLayout;
 }
-
-
 
 ID3D11Buffer *
 DirectX11Shader::GetFrameConstantBuffer()

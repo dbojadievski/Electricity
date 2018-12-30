@@ -19,7 +19,9 @@ protected:
 	CORE_ID m_Identifier;
 	CORE_ASSET_TYPE m_AssetType;
 	string m_Path;
+    string m_Name;
 public:
+    string GetName ();
 	string GetPath();
 	CORE_ID GetIdentifier();
 	CORE_ASSET_TYPE GetAssetType();

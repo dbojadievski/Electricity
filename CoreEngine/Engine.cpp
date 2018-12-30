@@ -111,6 +111,12 @@ CoreEngine::GetEntitySystem() const
 	return (EntitySystem * ) this->m_pEntitySystem;
 }
 
+IAssetManager *
+CoreEngine::GetAssetManager () const
+{
+    return (IAssetManager *)this->m_pAssetManager;
+}
+
 void
 CoreEngine::RegisterCommands()
 {
