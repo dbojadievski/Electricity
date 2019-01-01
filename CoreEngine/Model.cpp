@@ -72,6 +72,45 @@ ModelAssetDescriptor::AddTexture (TextureAssetDescriptor * pDesc)
     return isAdded;
 }
 
+size_t
+ModelAssetDescriptor::NumMeshes ()
+{
+    return this->m_Meshes.size ();
+}
+
+size_t
+ModelAssetDescriptor::NumTextures ()
+{
+    return this->m_Textures.size ();
+}
+
+MeshAssetDescriptor *
+ModelAssetDescriptor::GetMeshAt (size_t idx)
+{
+    assert (idx < this->m_Meshes.size ());
+
+    MeshAssetDescriptor * pRetVal = NULL;
+    size_t numMeshes = this->m_Meshes.size ();
+    if (idx < numMeshes)
+        pRetVal = this->m_Meshes[idx];
+    
+    return pRetVal;
+}
+
+TextureAssetDescriptor *
+ModelAssetDescriptor::GetTextureAt (size_t idx)
+{
+    assert (idx < this->m_Textures.size ());
+
+    TextureAssetDescriptor * pRetVal = NULL;
+    size_t numTexes = this->m_Textures.size ();
+    if (idx < numTexes)
+        pRetVal = this->m_Textures[idx];
+
+    return pRetVal;
+}
+
+
 ModelAssetDescriptor::ModelAssetDescriptor (string & name, CORE_ID id)
 {
     this->m_Name        = name;

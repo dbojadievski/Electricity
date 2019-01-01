@@ -22,6 +22,14 @@ StructuredBuffer<DirectionalLight> lightBuffer;
 Texture2D ObjTexture;
 SamplerState ObjSamplerState;
 
+struct VS_INPUT
+{
+	float4 position : POSITION;
+	float2 texCoord0 : TEXCOORD0;
+	float2 texCoord1 : TEXCOORD1;
+	float3 normal: NORMAL;
+};
+
 struct VOut
 {
 	float4 position : SV_POSITION;
@@ -29,21 +37,21 @@ struct VOut
 	float3 normal: NORMAL;
 };
 
-VOut VShader(float4 position : POSITION, float2 texCoord : TEXCOORD, float3 normal : NORMAL)
+VOut VShader(VS_INPUT input)
 {
 	VOut output;
 
-	output.position = mul(position, WVP);
-	output.texCoord = texCoord;
-	output.normal = mul(normal, World);
+	output.position 	= mul(input.position, WVP);
+	output.texCoord 	= input.texCoord0;
+	output.normal 		= mul(input.normal, World);
 	return output;
 }
 
 
-float4 PShader(float4 position : SV_POSITION, float2 texCoord : TEXCOORD, float3 normal : NORMAL) : SV_TARGET
+float4 PShader(VOut input) : SV_TARGET
 {
-	normal 				= normalize(normal);
-	float4 diffuse 		= ObjTexture.Sample(ObjSamplerState, texCoord);
+	input.normal 		= normalize(input.normal);
+	float4 diffuse 		= ObjTexture.Sample(ObjSamplerState, input.texCoord);
 	float3 finalColour 	= diffuse;
 	float3 ambient 		= diffuse;
 	float3 saturation 	= float3(0, 0, 0);
@@ -53,7 +61,7 @@ float4 PShader(float4 position : SV_POSITION, float2 texCoord : TEXCOORD, float3
 	lightBuffer.GetDimensions(numLights, stride);
 	
 	finalColour 		= diffuse * light.colourAmbient;
-	finalColour 		+= saturate(dot(light.direction, normal) * light.colourDiffuse * diffuse);
+	finalColour 		+= saturate(dot(light.direction, input.normal) * light.colourDiffuse * diffuse);
 	
 	return float4(finalColour.r, finalColour.g, finalColour.b, diffuse.a);
 }

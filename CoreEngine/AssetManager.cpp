@@ -302,9 +302,9 @@ AssetManager::VRegisterModels (XMLNode * pXmlModelsList)
                 pChild = pChild->NextSibling ();
             }
 
-            auto pair = make_pair (id++, pModelDesc);
+            auto pair   = make_pair (id++, pModelDesc);
             this->m_ModelMap.insert (pair);
-            pModelNode = pModelNode->NextSibling ();
+            pModelNode  = pModelNode->NextSibling ();
         }
     }
 
@@ -354,6 +354,8 @@ AssetManager::LoadAsset(AssetDescriptor * pAssetDescriptor)
         case CORE_ASSET_TYPE::ASSET_TYPE_MESH:
             this->LoadMesh ((MeshAssetDescriptor *)pAssetDescriptor);
             break;
+        case CORE_ASSET_TYPE::ASSET_TYPE_MODEL:
+            this->LoadModel ((ModelAssetDescriptor *)pAssetDescriptor);
 	    default:
 		    assert(0);
 		    break;
@@ -395,6 +397,43 @@ AssetManager::IsLoaded( __PARAM_IN__ AssetDescriptor * pAssetDescriptor, __PARAM
                 retVal      = (itMesh != this->m_LoadedMeshes.end ());
                 break;
             }
+            case CORE_ASSET_TYPE::ASSET_TYPE_MODEL:
+            /* NOTE(Dino): A model is loaded if and only if every sub-asset is loaded. */
+            {
+                CORE_BOOLEAN isModelLoaded            = true;
+                ModelAssetDescriptor * pModelDesc   = (ModelAssetDescriptor *) pAssetDescriptor;
+
+                size_t numMeshes    = pModelDesc->NumMeshes ();
+                for (size_t meshIdx = 0; meshIdx < numMeshes; meshIdx++)
+                {
+                    MeshAssetDescriptor * pMeshDesc = pModelDesc->GetMeshAt (meshIdx);
+                    CORE_BOOLEAN isLoaded           = false;
+                    CORE_ERROR err                  = this->IsLoaded (pMeshDesc, isLoaded);
+                    if (err != ERR_OK || !isLoaded)
+                    {
+                        isModelLoaded  = false;
+                        break;
+                    }
+                }
+
+                if (isModelLoaded)
+                {
+                    size_t numTexes = pModelDesc->NumTextures ();
+                    for (size_t texIdx = 0; texIdx < numTexes; texIdx++)
+                    {
+                        TextureAssetDescriptor * pTexDesc = pModelDesc->GetTextureAt (texIdx);
+                        CORE_BOOLEAN isLoaded               = false;
+                        CORE_ERROR err = this->IsLoaded (pTexDesc, isLoaded);
+                        if (err != ERR_OK || !isLoaded)
+                        {
+                            isModelLoaded = false;
+                            break;
+                        }
+                    }
+                }
+
+                retVal = isModelLoaded;
+            }
 		    default:
 		    {
 			    assert(false);
@@ -402,6 +441,7 @@ AssetManager::IsLoaded( __PARAM_IN__ AssetDescriptor * pAssetDescriptor, __PARAM
 		    }
 		}
 	}
+
 	return errCode;
 
 }
@@ -503,6 +543,34 @@ end:
     return errCode;
 }
 
+CORE_ERROR
+AssetManager::LoadModel (ModelAssetDescriptor * pModelDesc)
+{
+    assert (pModelDesc);
+
+    CORE_ERROR retVal   = ERR_OK;
+    if (!pModelDesc)
+        retVal          = ERR_PARAM_INVALID;
+    else
+    {
+        size_t numMeshes    = pModelDesc->NumMeshes ();
+        for (size_t meshIdx = 0; meshIdx < numMeshes; meshIdx++)
+        {
+            MeshAssetDescriptor * pMesh = pModelDesc->GetMeshAt (meshIdx);
+            retVal                      = this->LoadMesh (pMesh);
+        }
+
+        size_t numTexes         = pModelDesc->NumTextures ();
+        for (size_t texIdx      = 0; texIdx < numTexes; texIdx++)
+        {
+            TextureAssetDescriptor * pTex   = pModelDesc->GetTextureAt (texIdx);
+            retVal                          = this->LoadTexture (pTex);
+        }
+    }
+
+    return retVal;
+}
+
 void
 AssetManager::OnAssetLoadFailed (AssetLoadFailedEventData *pEventData)
 {
@@ -585,12 +653,13 @@ LoadMeshFromPath (const string * path, vector<CoreMesh *> * pImportedMeshes)
                         pCoreVertex->m_Position.y = pMesh->mVertices[currVertex].y;
                         pCoreVertex->m_Position.z = pMesh->mVertices[currVertex].z;
 
-                        if (pMesh->mNumUVComponents[0] >= 2)
+                        for (size_t uvIdx = 0; uvIdx < CoreTextureChannels::NUM_CHANNELS; uvIdx++)
+                        if (pMesh->mNumUVComponents[uvIdx] >= 2)
                         {
-                            aiVector3D * pTexCoords     = pMesh->mTextureCoords[0];
+                            aiVector3D * pTexCoords     = pMesh->mTextureCoords[uvIdx];
                             aiVector3D * pCoords        = &pTexCoords[currVertex];
-                            pCoreVertex->m_TextureCoordinates.x = pCoords->x;
-                            pCoreVertex->m_TextureCoordinates.y = pCoords->y;
+                            pCoreVertex->m_TextureCoordinates[uvIdx].x = pCoords->x;
+                            pCoreVertex->m_TextureCoordinates[uvIdx].y = pCoords->y;
                         }
                         
                         if (pMesh->HasNormals ())

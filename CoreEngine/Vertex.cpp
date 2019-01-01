@@ -2,12 +2,18 @@
 
 Vertex::Vertex () : Vertex (0, 0, 0, 0, 0, 0, 0, 0)
 {
+    for (size_t idx = 0; idx < CoreTextureChannels::NUM_CHANNELS; idx++)
+    {
+        this->m_TextureCoordinates[idx].x = 0;
+        this->m_TextureCoordinates[idx].y = 0;
+    }
 }
 
 Vertex::Vertex(const Vertex & original)
 {
 	this->SetPosition(original.m_Position);
-	this->SetTextureCoordinates(original.m_TextureCoordinates);
+    for (size_t i = 0; i < 8; i++)
+	    this->SetTextureCoordinates(original.m_TextureCoordinates[i], i);
 }
 
 Vertex::Vertex(const VEC3 & position, const VEC2 & textureCoordinates, const VEC3& normal)
@@ -30,10 +36,10 @@ Vertex::Vertex(CORE_REAL x, CORE_REAL y, CORE_REAL z, CORE_REAL u, CORE_REAL v, 
 
 
 void 
-Vertex::SetTextureCoordinates(const VEC2 & texCoords)
+Vertex::SetTextureCoordinates(const VEC2 & texCoords, size_t channel)
 {
-	this->m_TextureCoordinates.x = texCoords.x;
-	this->m_TextureCoordinates.y = texCoords.y;
+	this->m_TextureCoordinates[channel].x = texCoords.x;
+	this->m_TextureCoordinates[channel].y = texCoords.y;
 }
 
 void

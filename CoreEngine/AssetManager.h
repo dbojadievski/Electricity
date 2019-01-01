@@ -26,7 +26,7 @@ typedef map<CORE_ID, TextureAssetDescriptor/*Extended*/ *>  LoadedTextureMap;
 
 class AssetManager : public IAssetManager
 {
-	IEventManager *              m_pEventManager;
+	IEventManager *     m_pEventManager;
 	
 	ShaderMap           m_ShaderMap;
     TextureMap          m_TextureMap;
@@ -42,6 +42,7 @@ class AssetManager : public IAssetManager
 	CORE_ERROR LoadShader(ShaderAssetDescriptor * pShaderAsssetDescriptor);
     CORE_ERROR AssetManager::LoadTexture (TextureAssetDescriptor * pTextureDescriptor);
     CORE_ERROR LoadMesh (MeshAssetDescriptor * pMesh);
+    CORE_ERROR LoadModel (ModelAssetDescriptor * pModelDesc);
 
     /* Event handlers*/
     void OnAssetLoadFailed (AssetLoadFailedEventData *pEventData);

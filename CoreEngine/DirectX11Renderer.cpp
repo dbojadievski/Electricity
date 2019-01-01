@@ -304,13 +304,13 @@ DirectX11Renderer::InitShaders()
 	this->RegisterShader(pShader);
 	this->m_pActiveShader = pShader;
 
-	ShaderDescriptor * pRedShaderDescriptor     = new ShaderDescriptor(11, "VShader", L"Assets\\Shaders\\red.shader", "PShader", L"Assets\\Shaders\\red.shader");
+	/*ShaderDescriptor * pRedShaderDescriptor     = new ShaderDescriptor(11, "VShader", L"Assets\\Shaders\\red.shader", "PShader", L"Assets\\Shaders\\red.shader");
 	this->m_pRedShader                          = this->CreateShader(pRedShaderDescriptor);
 	this->SetShader(this->m_pRedShader);
 
 	ShaderDescriptor * pGreenShaderDescriptor   = new ShaderDescriptor(12, "VShader", L"Assets\\Shaders\\green.shader", "PShader", L"Assets\\Shaders\\green.shader");
 	this->m_pGreenShader                        = this->CreateShader(pGreenShaderDescriptor);
-
+*/
     ShaderDescriptor * pTexturingShader = new ShaderDescriptor (13, "VShader", L"Assets\\Shaders\\shaders.shader", "PShader", L"Assets\\Shaders\\shaders.shader");
     DirectX11Shader * pTexShader        = this->CreateShader (pTexturingShader);
     this->m_pBasicShader                = pTexShader;
@@ -337,9 +337,16 @@ DirectX11Renderer::CreateShader(ShaderDescriptor * pDescriptor)
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+        { "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 3, DXGI_FORMAT_R32G32_FLOAT, 0, 36, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 4, DXGI_FORMAT_R32G32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 5, DXGI_FORMAT_R32G32_FLOAT, 0, 52, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 6, DXGI_FORMAT_R32G32_FLOAT, 0, 60, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 7, DXGI_FORMAT_R32G32_FLOAT, 0, 68, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 76, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
-
+        
 	DirectXShaderBufferDescriptor descriptor = pRetVal->GetVertexShaderBufferPointer();
 	ID3D11InputLayout * pLayout = NULL;
 	HRESULT res = this->m_pDevice->CreateInputLayout(inputElementDescriptor, ARRAYSIZE(inputElementDescriptor), descriptor.m_pBuffer, descriptor.m_size, &pLayout);
