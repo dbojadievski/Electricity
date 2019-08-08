@@ -23,6 +23,9 @@
 #include "LightManager.h"
 
 #include "AssetDescriptor.h"
+#include "MeshAssetDescriptor.h"
+
+#include "IRenderer.h"
 
 struct ShaderDescriptor
 {
@@ -50,7 +53,7 @@ struct ShaderDescriptor
 	}
 };
 
-class DirectX11Renderer : IEngineSystem
+class DirectX11Renderer : IRenderer
 {
 private:
 
@@ -167,10 +170,17 @@ private:
 	void RenderAllSimple(CORE_DOUBLE dT);
 	void RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShaderSwitches, size_t &numTextureSwitches, size_t &numRenderableInstances, const FASTMAT4 &cameraViewProjectionMatrix);
 	
+	/*Simple fetch functions.*/
+	virtual void GetRenderablesByMesh(MeshAssetDescriptor * pMeshDesc, vector<Renderable *> * pRenderables);
+
 	/*Event handlers. */
 	void OnResolutionChanged(IEventData * pData);
 	void OnKeyDown(IEventData * pData);
-    void OnAssetLoaded (IEventData * pEvent);
+    
+	void OnAssetLoaded (IEventData * pEvent);
+	
+	void OnEntityRegistered(IEventData * pEvent);
+	void OnEntityDeRegistered(IEventData * pEvent);
 
     CORE_BOOLEAN LoadShader (AssetDescriptor * pDescriptor);
     CORE_BOOLEAN LoadTexture (AssetDescriptor * pDescriptor);
@@ -179,9 +189,9 @@ private:
 
 public:
 	DirectX11Renderer(IEventManager * pEventManager);
-	void Init();
-	void Update(CORE_DOUBLE dT);
-	void ShutDown();
+	virtual void Init();
+	virtual void Update(CORE_DOUBLE dT);
+	virtual void ShutDown();
 	
 	void ChangeResolution(CORE_DWORD width, CORE_DWORD height);
 };

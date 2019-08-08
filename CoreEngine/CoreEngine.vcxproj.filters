@@ -133,6 +133,15 @@
     <Filter Include="Assets">
       <UniqueIdentifier>{ba5b8b8b-1b7d-4369-a088-a7d4674ce850}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Rendering\Cross-Platform\Renderables">
+      <UniqueIdentifier>{c083e4ac-2c5b-42b5-953c-aef4faa01166}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Component Model\Components">
+      <UniqueIdentifier>{89b13de7-6759-4183-bd02-cb15859ba99f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Component Model\Components">
+      <UniqueIdentifier>{aa99dda5-0905-4861-b1ae-8d8eadf34afb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TimeUtils.h">
@@ -327,6 +336,15 @@
     <ClInclude Include="Model.h">
       <Filter>Header Files\AssetManagement\AssetDescriptors</Filter>
     </ClInclude>
+    <ClInclude Include="Renderable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderableComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IRenderer.h">
+      <Filter>Header Files\Rendering\Cross-Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TimeUtils.cpp">
@@ -449,11 +467,20 @@
     <ClCompile Include="MeshAssetDescriptor.cpp">
       <Filter>Source Files\AssetManagement\AssetDescriptors</Filter>
     </ClCompile>
-    <ClCompile Include="AssetManager.cpp">
-      <Filter>Source Files\AssetManagement\AssetDescriptors</Filter>
-    </ClCompile>
     <ClCompile Include="Model.cpp">
       <Filter>Source Files\AssetManagement\AssetDescriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetManager.cpp">
+      <Filter>Source Files\AssetManagement</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderableComponent.cpp">
+      <Filter>Source Files\Component Model</Filter>
+    </ClCompile>
+    <ClCompile Include="IRenderer.cpp">
+      <Filter>Source Files\Rendering\Cross-Platform</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -60,21 +60,19 @@ DirectX11Renderable::ActivateBuffers(ID3D11DeviceContext * pDeviceContext)
 	pDeviceContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 }
 
-DirectX11Renderable::DirectX11Renderable(Mesh * pMesh, DirectX11Texture2D * pTexture, DirectX11Shader * pShader, CORE_BOOLEAN isTransparent, D3D11_PRIMITIVE_TOPOLOGY topology)
+DirectX11Renderable::DirectX11Renderable(Mesh * pMesh, DirectX11Texture2D * pTexture, DirectX11Shader * pShader, CORE_BOOLEAN isTransparent, D3D11_PRIMITIVE_TOPOLOGY topology) : Renderable(pMesh, isTransparent)
 {
 	assert(pMesh);
 	assert(pShader);
 	assert(pTexture);
 	assert(topology);
 
-	this->m_pMesh = pMesh;
 	this->m_pShader = pShader;
 	this->m_pTexture = pTexture;
 
 	this->m_pVertexBuffer = NULL;
 	this->m_pIndexBuffer = NULL;
 	this->m_Topology = topology;
-	this->m_IsTransparent = isTransparent;
 }
 
 DirectX11Renderable::~DirectX11Renderable()
@@ -117,6 +115,12 @@ DirectX11Renderable::Instantiate(CORE_ID id, FASTMAT4 transform, DirectX11Render
 	return pInstance;
 }
 
+DWORD
+DirectX11Renderable::GetInstanceCount()
+{
+	return this->m_pInstances.size();
+}
+
 DirectX11RenderableInstanceIterator
 DirectX11Renderable::GetInstances()
 {
@@ -142,10 +146,4 @@ const DirectX11Texture2D *
 DirectX11Renderable::GetTexture()
 {
 	return (const DirectX11Texture2D *)this->m_pTexture;
-}
-
-CORE_BOOLEAN
-DirectX11Renderable::IsTransparent()
-{
-	return this->m_IsTransparent;
 }

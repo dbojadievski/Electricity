@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{4E874611-51B1-4058-A5CD-2C09F03999C7}</ProjectGuid>
     <RootNamespace>CoreEngine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <ProjectName>Electricity</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -170,6 +170,7 @@
     <ClInclude Include="InputBase.h" />
     <ClInclude Include="inputHeaders.h" />
     <ClInclude Include="InstanceUniformDescriptor.h" />
+    <ClInclude Include="IRenderer.h" />
     <ClInclude Include="KeyEvents.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="Math.h" />
@@ -179,6 +180,8 @@
     <ClInclude Include="MouseEvents.h" />
     <ClInclude Include="PointLight.h" />
     <ClInclude Include="DirectX11RenderableInstance.h" />
+    <ClInclude Include="Renderable.h" />
+    <ClInclude Include="RenderableComponent.h" />
     <ClInclude Include="ResolutionChangedEventData.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="runme.h" />
@@ -218,6 +221,7 @@
     <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="FileReader.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="IRenderer.cpp" />
     <ClCompile Include="KeyEvents.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -226,6 +230,8 @@
     <ClCompile Include="MouseEvents.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="DirectX11RenderableInstance.cpp" />
+    <ClCompile Include="Renderable.cpp" />
+    <ClCompile Include="RenderableComponent.cpp" />
     <ClCompile Include="ResolutionChangedEventData.cpp" />
     <ClCompile Include="runme.cpp" />
     <ClCompile Include="Scene.cpp" />

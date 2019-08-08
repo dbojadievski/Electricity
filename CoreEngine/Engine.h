@@ -5,12 +5,12 @@
 #include "Console.h"
 #include "EventManager.h"
 #include "EntitySystem.h"
-#include "DirectX11Renderer.h"
 #include "InputBase.h"
 #include "TimeUtils.h"
 #include "AssetManager.h"
 #include <assert.h>
 #include <vector>
+#include "IRenderer.h"
 class CoreEngine
 {
 private:
@@ -23,6 +23,7 @@ private:
 	const IConsole * m_pConsole;
 	const EntitySystem * m_pEntitySystem;
 	const IAssetManager * m_pAssetManager;
+	const IRenderer * m_pRenderer;
 	IEventManager * m_pEventManager;
 	InputBase * m_pInput;
 	Timer * m_pTimer;
@@ -45,4 +46,5 @@ public:
 	IEventManager * GetEventManager() const;
 	IAssetManager * GetAssetManager() const;
 	EntitySystem * GetEntitySystem() const;
+	IRenderer * GetRenderSystem() const;
 };

@@ -10,6 +10,11 @@
 
 using namespace fastdelegate;
 
+
+typedef ConsoleCommandParameterDescriptor	CCommandParamDesc;
+typedef ConsoleCommandParameterList			CCommandParamList;
+typedef ConsoleCommandParameterBase			CCommandParamBase;
+
 CORE_BOOLEAN 
 Console::VRegisterCommand(ConsoleCommand * pCommand) 
 {
@@ -76,7 +81,7 @@ Console::ParseCommandParameters(ConsoleCommand * pCommandDescriptor, list<string
 					string * pParamText = (*it);
 					assert(pParamText);
 					
-					ConsoleCommandParameterBase * pParamDescriptor = (*(pCommandDescriptor->m_pParameters))[currParamIdx];
+					CCommandParamBase * pParamDescriptor = (*(pCommandDescriptor->m_pParameters))[currParamIdx];
 					assert(pParamDescriptor);
 
 					CORE_DWORD asDword = -1;
@@ -84,29 +89,29 @@ Console::ParseCommandParameters(ConsoleCommand * pCommandDescriptor, list<string
 					CORE_BOOLEAN asBoolean = false;
 					CORE_STRING pStrAsString = NULL;
 
-					ConsoleCommandParameterBase * pParam = NULL;
+					CCommandParamBase * pParam = NULL;
 					switch (pParamDescriptor->m_Type)
 					{
 						case EConsoleCommandParameterType::PARAM_DWORD32:
 							asDword = stoi(*pParamText);
-							pParam = (ConsoleCommandParameterBase *) new ConsoleCommandParameter<CORE_DWORD>(pParamDescriptor->m_pStrName, pParamDescriptor->m_Type, asDword);
+							pParam = (CCommandParamBase *) new ConsoleCommandParameter<CORE_DWORD>(pParamDescriptor->m_pStrName, pParamDescriptor->m_Type, asDword);
 							break;
 						case EConsoleCommandParameterType::PARAM_REAL32:
 							asReal = stof(*pParamText);
-							pParam = (ConsoleCommandParameterBase *) new ConsoleCommandParameter<CORE_REAL>(pParamDescriptor->m_pStrName, pParamDescriptor->m_Type, asReal);
+							pParam = (CCommandParamBase *) new ConsoleCommandParameter<CORE_REAL>(pParamDescriptor->m_pStrName, pParamDescriptor->m_Type, asReal);
 							break;
 						case EConsoleCommandParameterType::PARAM_BOOLEAN:
 							if (pParamText->compare("true"))
-								pParam = (ConsoleCommandParameterBase *) new ConsoleCommandParameter<CORE_BOOLEAN>(pParamDescriptor->m_pStrName, pParamDescriptor->m_Type, true);
+								pParam = (CCommandParamBase *) new ConsoleCommandParameter<CORE_BOOLEAN>(pParamDescriptor->m_pStrName, pParamDescriptor->m_Type, true);
 							else if (pParamText->compare("false"))
-								pParam = (ConsoleCommandParameterBase *) new ConsoleCommandParameter<CORE_BOOLEAN>(pParamDescriptor->m_pStrName, pParamDescriptor->m_Type, false);
+								pParam = (CCommandParamBase *) new ConsoleCommandParameter<CORE_BOOLEAN>(pParamDescriptor->m_pStrName, pParamDescriptor->m_Type, false);
 							else
 								assert(false);
 							break;
 						case EConsoleCommandParameterType::PARAM_STRING:
 							/*NOTE(Dino): We're copying the text value of the token because the caller needs to release the token objects themselves. */
 							string * pTokenValue(pParamText);
-							pParam = (ConsoleCommandParameterBase *) new ConsoleCommandParameter<string>(pParamDescriptor->m_pStrName, pParamDescriptor->m_Type, *pTokenValue);
+							pParam = (CCommandParamBase *) new ConsoleCommandParameter<string>(pParamDescriptor->m_pStrName, pParamDescriptor->m_Type, *pTokenValue);
 							break;
 					}
 					pRetVal->push_back(pParam);
@@ -131,8 +136,10 @@ Console::VParseCommand(CORE_STRING pStrCmdText)
 	CORE_BOOLEAN isCommandValid = false;
 	if (pStrCmdText)
 	{
+		string ret = "\\n";
 		list<string *> * pTokens = tokenize(pStrCmdText);
-
+		
+		pTokens->remove(&ret);
 		size_t numTokens = 0;
 		if (pTokens && (numTokens = pTokens->size()))
 		{
@@ -150,7 +157,7 @@ Console::VParseCommand(CORE_STRING pStrCmdText)
 				if (isCommandValid)
 				{
 					/*TODO(Dino): Queue command! The command queue simply needs to be a list of key-value pairs, between the */
-					std::pair<ConsoleCommand *, ConsoleCommandParameterList *> pair = std::make_pair(pCommand, pParams);
+					std::pair<ConsoleCommand *, CCommandParamList *> pair = std::make_pair(pCommand, pParams);
 					this->m_Queue.push(pair);
 				}
 			}
@@ -209,9 +216,9 @@ Console::RegisterAllCommands()
 		CORE_BOOLEAN wasRegistered = false;
 
 		CORE_STRING pStrCommandText = "entity_create";
-		ConsoleCommandParameterDescriptor * pParamEntityName = new ConsoleCommandParameterDescriptor("entity_name", EConsoleCommandParameterType::PARAM_STRING);
+		CCommandParamDesc * pParamEntityName = new CCommandParamDesc("entity_name", EConsoleCommandParameterType::PARAM_STRING);
 
-		ConsoleCommandParameterList * pParamsList = new ConsoleCommandParameterList();
+		CCommandParamList * pParamsList = new CCommandParamList();
 		pParamsList->push_back(pParamEntityName);
 
 		CommandHandlerDelegate  commandDelegate = MakeDelegate(this, &Console::OnEntityCreateHandler);
@@ -229,9 +236,9 @@ Console::RegisterAllCommands()
 		CORE_BOOLEAN wasRegistered = false;
 
 		CORE_STRING pStrCommandText = "entity_destroy";
-		ConsoleCommandParameterDescriptor * pParamEntityName = new ConsoleCommandParameterDescriptor("entity_name", EConsoleCommandParameterType::PARAM_STRING);
+		CCommandParamDesc * pParamEntityName = new CCommandParamDesc("entity_name", EConsoleCommandParameterType::PARAM_STRING);
 
-		ConsoleCommandParameterList * pParamsList = new ConsoleCommandParameterList();
+		CCommandParamList * pParamsList = new CCommandParamList();
 		pParamsList->push_back(pParamEntityName);
 
 		CommandHandlerDelegate  commandDelegate = MakeDelegate(this, &Console::OnEntityDestroyHandler);
@@ -249,10 +256,10 @@ Console::RegisterAllCommands()
 		CORE_BOOLEAN wasRegistered = false;
 
 		CORE_STRING pStrCommandText = "entity_link";
-		ConsoleCommandParameterDescriptor * pParamParentName = new ConsoleCommandParameterDescriptor("parent_name", EConsoleCommandParameterType::PARAM_STRING);
-		ConsoleCommandParameterDescriptor * pParamChildName = new ConsoleCommandParameterDescriptor("child_name", EConsoleCommandParameterType::PARAM_STRING);
+		CCommandParamDesc * pParamParentName = new CCommandParamDesc("parent_name", EConsoleCommandParameterType::PARAM_STRING);
+		CCommandParamDesc * pParamChildName = new CCommandParamDesc("child_name", EConsoleCommandParameterType::PARAM_STRING);
 
-		ConsoleCommandParameterList * pParamsList = new ConsoleCommandParameterList();
+		CCommandParamList * pParamsList = new CCommandParamList();
 		pParamsList->push_back(pParamParentName);
 		pParamsList->push_back(pParamChildName);
 
@@ -273,9 +280,9 @@ Console::RegisterAllCommands()
 		CORE_BOOLEAN wasRegistered = false;
 
 		CORE_STRING pStrCommandText = "entity_unlink";
-		ConsoleCommandParameterDescriptor * pParentEntityName = new ConsoleCommandParameterDescriptor("entity_name", EConsoleCommandParameterType::PARAM_STRING);
+		CCommandParamDesc * pParentEntityName = new CCommandParamDesc("entity_name", EConsoleCommandParameterType::PARAM_STRING);
 
-		ConsoleCommandParameterList * pParamsList = new ConsoleCommandParameterList();
+		CCommandParamList * pParamsList = new CCommandParamList();
 		pParamsList->push_back(pParentEntityName);
 
 		CommandHandlerDelegate  commandDelegate = MakeDelegate(this, &Console::OnEntitiesUnLinkHandler);
@@ -289,6 +296,25 @@ Console::RegisterAllCommands()
 		//this->VParseCommand("entity_unlink my_child_entity");
 	}
 
+	{
+		CORE_BOOLEAN wasRegistered		= false;
+		
+		CORE_STRING pStrCommandText		= "renderable_instantiate";
+		CCommandParamDesc * pRenderableName = new CCommandParamDesc("renderable_name", EConsoleCommandParameterType::PARAM_STRING);
+
+		CCommandParamList * pParamsList = new CCommandParamList();
+		pParamsList->push_back(pRenderableName);
+
+		CommandHandlerDelegate commandDelegate = MakeDelegate(this, &Console::OnRenderableInstantiateHandler);
+		CommandHandlerDelegate * pCommandDelegate = new CommandHandlerDelegate(commandDelegate);
+
+		ConsoleCommand * pCommand = new ConsoleCommand(pStrCommandText, pParamsList, pCommandDelegate);
+		wasRegistered = this->VRegisterCommand(pCommand);
+		assert(wasRegistered);
+
+		//NOTE(Dino): Use renderable_instantiate as this->ParseCommand("renderable_instantiate renderable_name");
+	}
+
 #pragma region Unit testing. If the debug build does not assert, then all is well.
 	{
 #if DEBUG
@@ -298,6 +324,7 @@ Console::RegisterAllCommands()
 		this->VParseCommand("entity_unlink child");
 		this->VParseCommand("entity_destroy parent");
 		this->VParseCommand("entity_destroy child");
+		this->VParseCommand("renderable_instantiate crate1");
 #endif
 	}
 #pragma endregion

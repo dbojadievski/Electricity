@@ -28,7 +28,9 @@ private:
 
     Mesh * m_pParentMesh;
     vector<Mesh *> m_SubMeshes;
+
 public:
+	string m_Name;
 	void AddIndice(unsigned long int indice);
 	void AddIndice(unsigned long int indice1, unsigned long int indice2);
 	void AddIndice(unsigned long int indice1, unsigned long int indice2, unsigned long int indice3);

@@ -56,9 +56,9 @@ public:
 
     virtual CoreMesh * AssetManager::GetMesh (AssetDescriptor * pDescriptor);
 
-    MeshAssetDescriptor * GetMeshDescriptor (const string & name);
-    TextureAssetDescriptor * GetTextureDescriptor (const string & name);
-    ShaderAssetDescriptor * GetShaderDescriptor (const string & name);
+	virtual MeshAssetDescriptor * GetMeshDescriptor(const string & name);
+    virtual TextureAssetDescriptor * GetTextureDescriptor (const string & name);
+    virtual ShaderAssetDescriptor * GetShaderDescriptor (const string & name);
 
 
     virtual void IEngineSystem::Init(void);

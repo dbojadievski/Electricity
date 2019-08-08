@@ -3,6 +3,9 @@
 #include "CoreEngine.h"
 #include <string>
 #include "EntityEvents.h"
+#include "RenderableComponent.h"
+
+//#include "AssetLoader.h"
 using namespace std;
 
 void
@@ -184,6 +187,47 @@ Console::OnEntitiesUnLinkHandler(ConsoleCommandParameterList * pParams) const
 					}
 				}
 			}
+		}
+	}
+}
+
+void
+Console::OnRenderableInstantiateHandler(ConsoleCommandParameterList * pParams) const 
+{
+	CORE_BOOLEAN wasInstantiated = false;
+
+	assert(pParams);
+	assert(pParams->size() == 1);
+
+	if (pParams && pParams->size() == 1)
+	{
+		ConsoleCommandParameterBase * pRenderableName = pParams->at(0);
+		assert(pRenderableName);
+
+		CORE_BOOLEAN isParamValid = ((pRenderableName->m_Type == PARAM_STRING) && (pRenderableName->m_pStrName == "renderable_name"));
+		assert(isParamValid);
+		if (isParamValid)
+		{
+			ConsoleCommandParameter<string> *pRenderableNameCast = (ConsoleCommandParameter<string> *) pRenderableName;
+			string renderableTag = pRenderableNameCast->GetValue();
+
+			AssetDescriptor * pRenderableDesc = NULL;
+			auto desc = g_Engine.GetAssetManager()->GetMeshDescriptor(renderableTag);
+			Entity * pEntity = new Entity(&renderableTag);
+			
+			vector<Renderable *> renderables;
+			g_Engine.GetRenderSystem()->GetRenderablesByMesh(desc, &renderables);
+			if (!renderables.empty())
+			{
+				Renderable * pRenderable = renderables.at(0);
+				IComponent * pComponent = new RenderableComponent(pEntity, pRenderable);
+				pComponent->m_Identifier = 1;
+				//TODO(Dino): Register renderable component.
+				pEntity->RegisterComponent(pComponent);
+			}
+
+			EntitySystem * pEntitySystem = g_Engine.GetEntitySystem();
+			pEntitySystem->RegisterEntity(pEntity);
 		}
 	}
 }

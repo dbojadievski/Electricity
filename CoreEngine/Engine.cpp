@@ -1,5 +1,5 @@
 #include "Engine.h"
-
+#include "DirectX11Renderer.h"
 CoreEngine::CoreEngine()
 {
 	this->m_IsRunning = false;
@@ -19,6 +19,7 @@ CoreEngine::Init()
 	
 	DirectX11Renderer * pRenderer = new DirectX11Renderer(this->m_pEventManager);
 	IEngineSystem * pRendererSystem = (IEngineSystem *)pRenderer;
+	this->m_pRenderer = (IRenderer *) pRendererSystem;
 	this->m_Systems.push_back(pRendererSystem);
 	
 	this->m_pInput = new InputBase(this->m_pEventManager);
@@ -115,6 +116,12 @@ IAssetManager *
 CoreEngine::GetAssetManager () const
 {
     return (IAssetManager *)this->m_pAssetManager;
+}
+
+IRenderer *
+CoreEngine::GetRenderSystem() const
+{
+	return (IRenderer *) this->m_pRenderer;
 }
 
 void

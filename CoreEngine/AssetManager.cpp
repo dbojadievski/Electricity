@@ -530,6 +530,7 @@ AssetManager::LoadMesh (MeshAssetDescriptor * pMeshDescriptor)
             {
                 CoreMesh * pMesh = *it;
                 assert (pMesh);
+				pMesh->m_Name = pMeshDescriptor->GetName();
                 auto pair = make_pair (identifier, pMesh);
                 this->m_LoadedMeshes.insert (pair);
             }

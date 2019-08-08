@@ -7,7 +7,8 @@
 #include "AssetEvents.h"
 #include "ResolutionChangedEventData.h"
 #include "KeyEvents.h"
-
+#include "EntityEvents.h"
+#include "RenderableComponent.h"
 #include "CoreEngine.h"
 
 // include the Direct3D Library file
@@ -69,6 +70,9 @@ DirectX11Renderer::InitEventHandlers()
 
     EventListenerDelegate assetLoadedDelegate = MakeDelegate (this, &DirectX11Renderer::OnAssetLoaded);
     this->m_pEventManager->VAddListener (assetLoadedDelegate, EventType::EVENT_TYPE_ASSET_LOADED);
+
+	EventListenerDelegate entityRegisteredDelegate = MakeDelegate(this, &DirectX11Renderer::OnEntityRegistered);
+	this->m_pEventManager->VAddListener(entityRegisteredDelegate, EventType::EVENT_TYPE_ENTITY_REGISTERED);
 }
 
 void 
@@ -359,7 +363,7 @@ DirectX11Renderer::CreateShader(ShaderDescriptor * pDescriptor)
 void 
 DirectX11Renderer::InitRenderables()
 {
-#define ENABLE_CUBES
+//#define ENABLE_CUBES
 #ifdef ENABLE_CUBES
 	InitCubeGeometry();
 #endif
@@ -862,6 +866,8 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 			{
 				DirectX11Renderable * pRenderable = pRenderables->at(i);
 				assert(pRenderable);
+				if (pRenderable->GetInstanceCount() == 0)
+					continue;
 				pRenderable->ActivateBuffers(this->m_pDeviceContext);
 
 				DirectX11RenderableInstanceIterator instanceIterator = pRenderable->GetInstances();
@@ -954,7 +960,26 @@ DirectX11Renderer::ReloadLightBuffer()
 	this->UpdateFrameUniforms();
 }
 
-DirectX11Renderer::DirectX11Renderer(IEventManager * pManager)
+void
+DirectX11Renderer::GetRenderablesByMesh(MeshAssetDescriptor * pMeshDesc, vector<Renderable *> * pRenderables)
+{
+	assert(pMeshDesc);
+	assert(pRenderables);
+
+	if (pMeshDesc && pRenderables)
+	{
+		for (auto renderableIterator = this->m_Renderables.begin(); renderableIterator != this->m_Renderables.end(); renderableIterator++)
+		{
+			Renderable * pRenderable = (*renderableIterator);
+			const Mesh const * pMesh = pRenderable->GetMesh();
+			if (pMesh->m_Name == pMeshDesc->GetName())
+				pRenderables->push_back(pRenderable);
+		}
+
+	}
+}
+
+DirectX11Renderer::DirectX11Renderer(IEventManager * pManager) : IRenderer()
 {
 	assert(pManager);
 	this->m_pEventManager = pManager;
@@ -1019,6 +1044,33 @@ DirectX11Renderer::OnAssetLoaded (IEventData * pEvent)
     }
 }
 
+
+void
+DirectX11Renderer::OnEntityRegistered(IEventData * pEvent)
+{
+	assert(pEvent);
+	if (pEvent)
+	{
+		CORE_BOOLEAN entityRegistered			= false;
+		EntityRegisteredEventData * pEventData	= (EntityRegisteredEventData *)pEvent;
+		CORE_ID entityID						= pEventData->m_Identifier;
+		Entity * pEntity;
+		CORE_ERROR err							= g_Engine.GetEntitySystem()->GetEntityByIdentifier(entityID, &pEntity);
+		assert(err == ERR_OK);
+		if (err == ERR_OK)
+		{
+			RenderableComponent * pRComponent	= (RenderableComponent * )pEntity->GetComponentByType(COMPONENT_TYPE_RENDERABLE);
+			if (pRComponent)
+			{
+				DirectX11Renderable * pRenderable = (DirectX11Renderable *) pRComponent->GetRenderable();
+				pRenderable->Instantiate(entityID, XMMatrixTranslation(0.0f, 0.0f, 0.0f), NULL);
+				pRenderable->Buffer (this->m_pDevice, this->m_pDeviceContext);
+				pRenderable->ActivateBuffers (this->m_pDeviceContext);
+			}
+		}
+	}
+}
+
 CORE_BOOLEAN
 DirectX11Renderer::LoadMesh (AssetDescriptor * pDescriptor)
 {
@@ -1027,13 +1079,21 @@ DirectX11Renderer::LoadMesh (AssetDescriptor * pDescriptor)
     DirectX11Renderable * pRenderable = new DirectX11Renderable (pMesh, this->m_TextureMap.at(1), this->m_pBasicShader);
     this->m_Renderables.push_back (pRenderable);
 
-    XMMATRIX childTransform = XMMatrixRotationX (0.3f) * XMMatrixRotationY (-0.6f) * XMMatrixRotationZ (0.46f) * XMMatrixTranslation (-7.f, 2.f, -3.f);
-    pRenderable->Instantiate (1, childTransform, NULL);
-    pRenderable->Buffer (this->m_pDevice, this->m_pDeviceContext);
-    pRenderable->ActivateBuffers (this->m_pDeviceContext);
+	/*
+	 * NOTE(Dino):
+	 * This code instantiating the renderable is strictly for testing purposes. Use a console command to instantiate further on.
+	 */
+    //XMMATRIX childTransform = XMMatrixRotationX (0.3f) * XMMatrixRotationY (-0.6f) * XMMatrixRotationZ (0.46f) * XMMatrixTranslation (-7.f, 2.f, -3.f);
+    //pRenderable->Instantiate (1, childTransform, NULL);
+    //pRenderable->Buffer (this->m_pDevice, this->m_pDeviceContext);
+    //pRenderable->ActivateBuffers (this->m_pDeviceContext);
 
     CORE_BOOLEAN wasInserted = this->m_RenderSet.Insert (pRenderable);
-    return false;
+	assert(wasInserted);
+	if (!wasInserted)
+		delete pRenderable;
+
+    return wasInserted;
 }
 
 CORE_BOOLEAN

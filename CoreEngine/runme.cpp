@@ -123,6 +123,7 @@ void TestConsole(IConsole * pConsole, TestSystem * pSystem)
 	assert(isRegistered);
 
 	pConsole->VParseCommand("test_command");
+	pConsole->VParseCommand("renderable_instantiate crate1");
 }
 
 void TestSceneNodes ()
@@ -188,6 +189,34 @@ void TestComponentSystem()
 
 }
 
+HANDLE hConOut;
+HANDLE hConIn;
+
+DWORD	thread_id;
+HANDLE	hConsoleThread;
+DWORD WINAPI ProcessConsoleInput(LPVOID lpParam)
+{
+	CORE_BOOLEAN isParsed	= FALSE;
+	
+	DWORD dwSize;
+	LPSTR lpBuff			= "Command: ";
+
+	char input[255]			= { 0 };
+	DWORD charsRead			= 0;
+	while (1)
+	{
+		WriteConsole(hConOut, lpBuff, lstrlen(lpBuff), &dwSize, NULL);
+		ReadConsole(hConIn, &input, 255, &charsRead, NULL);
+		if (!charsRead)
+			continue;
+
+
+		char * pSub = strstr(input, "\r\n");
+		pSub[0] = 0;
+		g_Engine.GetConsole()->VParseCommand(input);
+	}
+}
+
 LRESULT CALLBACK WindowProc(HWND hWnd,
 	UINT message,
 	WPARAM wParam,
@@ -202,18 +231,27 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	///*NOTE(Dino):Set up the console, so we can do debug logging. */
 	AllocConsole();
 
-	HANDLE handle_out = GetStdHandle(STD_OUTPUT_HANDLE);
-	int hCrt = _open_osfhandle((long)handle_out, _O_TEXT);
+	hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	int hCrt = _open_osfhandle((long)hConOut, _O_TEXT);
 	FILE* hf_out = _fdopen(hCrt, "w");
 	setvbuf(hf_out, NULL, _IONBF, 1);
 	*stdout = *hf_out;
 
-	HANDLE handle_in = GetStdHandle(STD_INPUT_HANDLE);
-	hCrt = _open_osfhandle((long)handle_in, _O_TEXT);
+	hConIn = GetStdHandle(STD_INPUT_HANDLE);
+	hCrt = _open_osfhandle((long)hConIn, _O_TEXT);
 	FILE* hf_in = _fdopen(hCrt, "r");
 	setvbuf(hf_in, NULL, _IONBF, 128);
 	*stdin = *hf_in;
 
+	hConsoleThread = CreateThread(NULL, 0, ProcessConsoleInput, 0, 0, &thread_id);
+	if (hConsoleThread == NULL)
+	{
+		printf("Error starting console thread. Exiting");
+		char * in;
+		scanf(in);
+		ExitProcess(1);
+	}
+	WaitForSingleObject(hConsoleThread, 0);
 	// the handle for the window, filled by a function
 	HWND hWnd;
 	// this struct holds information for the window class
