@@ -122,16 +122,7 @@ Console::OnEntitiesLinkHandler(ConsoleCommandParameterList * pParams) const
 			assert(errParent == ERR_OK && errChild == ERR_OK);
 			if (errParent == ERR_OK && errChild == ERR_OK)
 			{
-				CORE_BOOLEAN wasAdopted = Entity::AdoptChild(pParent, pChild);
-				if (wasAdopted)
-				{
-					IEventManager * pEventManager = g_Engine.GetEventManager();
-					assert(pEventManager);
-					EntityLinkedEventData * pEventData = new EntityLinkedEventData();
-					pEventData->m_ParentIdentifier = pParent->GetIdentifier();
-					pEventData->m_ChildIdentifier = pChild->GetIdentifier();
-					pEventManager->VQueueEvent(pEventData);
-				}
+				CORE_BOOLEAN wasAdopted = pEntitySystem->Link(pParent, pChild, &wasAdopted);
 			}
 		}
 	}
@@ -168,24 +159,8 @@ Console::OnEntitiesUnLinkHandler(ConsoleCommandParameterList * pParams) const
 			assert(errChild == ERR_OK);
 			if (errChild == ERR_OK)
 			{
+				pEntitySystem->UnLink(pChild, &wasUnLinked);
 				pParent = pChild->GetParent();
-				if (pParent)
-				{
-					CORE_ID parentIdentifier = pParent->GetIdentifier();
-					CORE_ERROR errParent = pEntitySystem->GetEntityByIdentifier(pParent->GetIdentifier(), &pParent);
-					assert(errParent == ERR_OK);
-					wasUnLinked = Entity::OrphanChild(pChild);
-					if (wasUnLinked)
-					{
-						EntityUnLinkedEventData * pEventData = new EntityUnLinkedEventData();
-						pEventData->m_ChildIdentifier = pChild->GetIdentifier();
-						pEventData->m_ParentIdentifier = parentIdentifier;
-						
-						IEventManager * pEventManager = g_Engine.GetEventManager();
-						assert(pEventManager);
-						pEventManager->VQueueEvent(pEventData);
-					}
-				}
 			}
 		}
 	}

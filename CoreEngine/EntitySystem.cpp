@@ -59,6 +59,55 @@ EntitySystem::UnRegisterEntity(CORE_ID identifier)
 }
 
 CORE_ERROR
+EntitySystem::Link(GameObject * pParent, GameObject * pChild, __PARAM_OUT__ CORE_BOOLEAN * pResult)
+{
+	CORE_ERROR errCode = CORE_ERROR::ERR_OK;
+	assert(pParent);
+	assert(pChild);
+
+	if (pParent && pChild)
+	{
+		this->UnLink(pChild, pResult);
+		*pResult = GameObject::AdoptChild(pParent, pChild);
+		if (*pResult)
+		{
+			EntityLinkedEventData * pEntityLinkedEventData = new EntityLinkedEventData();
+			pEntityLinkedEventData->m_ChildIdentifier = pChild->m_Identifier;
+			pEntityLinkedEventData->m_ParentIdentifier = pParent->m_Identifier;
+			this->m_pEventManager->VQueueEvent(pEntityLinkedEventData);
+		}
+	}
+	else
+		errCode = CORE_ERROR::ERR_PARAM_INVALID;
+
+	return errCode;
+}
+
+CORE_ERROR
+EntitySystem::UnLink(GameObject * pChild, __PARAM_OUT__ CORE_BOOLEAN * pResult)
+{
+	CORE_ERROR errCode = CORE_ERROR::ERR_OK;
+	assert(pChild);
+
+	if (pChild)
+	{
+		CORE_ID parentID = -1;
+		if (pChild->m_pParent)
+			parentID = pChild->GetParent()->GetIdentifier();
+		*pResult = GameObject::OrphanChild(pChild);
+		if (*pResult)
+		{
+			EntityUnLinkedEventData * pEntityUnLinkedEventData = new EntityUnLinkedEventData();
+			pEntityUnLinkedEventData->m_ChildIdentifier = pChild->GetIdentifier();
+			pEntityUnLinkedEventData->m_ParentIdentifier = parentID;
+			this->m_pEventManager->VQueueEvent(pEntityUnLinkedEventData);
+		}
+	}
+
+	return errCode;
+}
+
+CORE_ERROR
 EntitySystem::GetEntityByIdentifier(CORE_ID identifier, __PARAM_OUT__ Entity ** pEntity)
 {
 	assert(identifier);
