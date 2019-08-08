@@ -182,6 +182,9 @@ private:
 	void OnEntityRegistered(IEventData * pEvent);
 	void OnEntityDeRegistered(IEventData * pEvent);
 
+	void OnEntityComponentRegistered (IEventData * pEvent);
+	void OnEntityComponentDeRegistered (IEventData * pEvent);
+
     CORE_BOOLEAN LoadShader (AssetDescriptor * pDescriptor);
     CORE_BOOLEAN LoadTexture (AssetDescriptor * pDescriptor);
     CORE_BOOLEAN LoadMesh (AssetDescriptor * pDescriptor);

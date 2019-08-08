@@ -60,7 +60,7 @@ DirectX11Renderable::ActivateBuffers(ID3D11DeviceContext * pDeviceContext)
 	pDeviceContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 }
 
-DirectX11Renderable::DirectX11Renderable(Mesh * pMesh, DirectX11Texture2D * pTexture, DirectX11Shader * pShader, CORE_BOOLEAN isTransparent, D3D11_PRIMITIVE_TOPOLOGY topology) : Renderable(pMesh, isTransparent)
+DirectX11Renderable::DirectX11Renderable(Mesh * pMesh, DirectX11Texture2D * pTexture, DirectX11Shader * pShader, CORE_BOOLEAN isTransparent, D3D11_PRIMITIVE_TOPOLOGY topology) : Renderable(pMesh->GetIdentifier(), pTexture->m_Identifier, pShader->GetIdentifier(), isTransparent)
 {
 	assert(pMesh);
 	assert(pShader);
@@ -73,6 +73,7 @@ DirectX11Renderable::DirectX11Renderable(Mesh * pMesh, DirectX11Texture2D * pTex
 	this->m_pVertexBuffer = NULL;
 	this->m_pIndexBuffer = NULL;
 	this->m_Topology = topology;
+	this->m_pMesh = pMesh;
 }
 
 DirectX11Renderable::~DirectX11Renderable()
@@ -146,4 +147,10 @@ const DirectX11Texture2D *
 DirectX11Renderable::GetTexture()
 {
 	return (const DirectX11Texture2D *)this->m_pTexture;
+}
+
+const Mesh *
+DirectX11Renderable::GetMesh ()
+{
+	return (const Mesh * ) this->m_pMesh;
 }

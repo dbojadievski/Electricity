@@ -38,7 +38,7 @@ class AssetManager : public IAssetManager
 	LoadedShaderMap     m_LoadedShaderMap;
     LoadedTextureMap    m_LoadedTextureMap;
 	
-    CORE_ID GetNextIdentifier(const CORE_ASSET_TYPE assetType) const;
+    CORE_ID GetNextIdentifier(const CORE_ASSET_TYPE assetType);
 	CORE_ERROR LoadShader(ShaderAssetDescriptor * pShaderAsssetDescriptor);
     CORE_ERROR AssetManager::LoadTexture (TextureAssetDescriptor * pTextureDescriptor);
     CORE_ERROR LoadMesh (MeshAssetDescriptor * pMesh);
@@ -49,7 +49,12 @@ class AssetManager : public IAssetManager
 public:
 
 	AssetManager(IEventManager * pEVentManager);
-    virtual CORE_ERROR AssetManager::VRegisterTextures (XMLNode * pXmlTextureList);
+	void RegisterTexture (TextureAssetDescriptor * pTex);
+	void RegisterMesh (MeshAssetDescriptor * pTex);
+	void RegisterShader (ShaderAssetDescriptor * pTex);
+	void RegisterModel (ModelAssetDescriptor * pTex);
+
+	virtual CORE_ERROR AssetManager::VRegisterTextures (XMLNode * pXmlTextureList);
     virtual CORE_ERROR AssetManager::VRegisterShaders (XMLNode * pXmlShaders);
     virtual CORE_ERROR AssetManager::VRegisterMeshes (XMLNode * pXmlMeshList);
     virtual CORE_ERROR AssetManager::VRegisterModels (XMLNode * pXmlModelList);
@@ -70,4 +75,6 @@ public:
     void UnloadShader (ShaderAssetDescriptor * pDesc);
     void UnloadTexture (TextureAssetDescriptor *pDesc);
     void UnloadMesh (MeshAssetDescriptor * pDesc);
+
+	CORE_ERROR LoadMeshFromPath (const string * path, vector<CoreMesh *> * pImportedMeshes);
 };

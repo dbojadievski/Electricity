@@ -3,7 +3,7 @@
 #include "TextureAssetDescriptor.h"
 #include "ShaderDescriptor.h"
 #include "MeshAssetDescriptor.h"
-class ModelAssetDescriptor : AssetDescriptor
+class ModelAssetDescriptor : public AssetDescriptor
 {
 private:
     vector<MeshAssetDescriptor *>   m_Meshes;

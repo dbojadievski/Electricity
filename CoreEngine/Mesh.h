@@ -29,6 +29,7 @@ private:
     Mesh * m_pParentMesh;
     vector<Mesh *> m_SubMeshes;
 
+	CORE_ID m_MeshID;
 public:
 	string m_Name;
 	void AddIndice(unsigned long int indice);
@@ -54,8 +55,8 @@ public:
     
 
 	size_t GetIndexArraySize();
-
-	Mesh(EMeshType type = EMeshType::MESH_TYPE_TRIANGLE);
+	CORE_ID GetIdentifier ();
+	Mesh(CORE_ID meshID, EMeshType type = EMeshType::MESH_TYPE_TRIANGLE);
 	~Mesh();
 
 	Vertex * GetVerticesRaw();

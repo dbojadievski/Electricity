@@ -28,7 +28,6 @@ using namespace fs;
 using namespace tinyxml2;
 
 
-CORE_ERROR LoadMeshFromPath (const string * path, vector<CoreMesh *> * pImportedMeshes);
 #pragma region System methods.
 
 void 
@@ -103,13 +102,11 @@ AssetManager::ShutDown()
 #pragma endregion
 
 
-CORE_ERROR LoadMeshFromPath (const string * path, vector<CoreMesh *> * pImportedMeshes);
 
 CORE_ERROR
 AssetManager::VRegisterShaders (XMLNode * pXmlShaderList)
 {
     CORE_ERROR retVal       = ERR_OK;
-    CORE_ID shaderId = 1;
 
     XMLNode * pShaderNode = pXmlShaderList->FirstChild ();
     while (pShaderNode)
@@ -157,8 +154,9 @@ AssetManager::VRegisterShaders (XMLNode * pXmlShaderList)
             inputType = ConvertStringToShaderInputType (pStrInputType);
 
 
+		CORE_ID shaderId = GetNextIdentifier(ASSET_TYPE_SHADER);
         ShaderAssetDescriptor * pDesc = new ShaderAssetDescriptor (name, path, shaderId, type, inputType, entryPoint);
-        auto pair = make_pair (shaderId++, pDesc);
+        auto pair = make_pair (shaderId, pDesc);
         this->m_ShaderMap.insert (pair);
 
         pShaderNode = pShaderNode->NextSibling ();
@@ -166,6 +164,47 @@ AssetManager::VRegisterShaders (XMLNode * pXmlShaderList)
 
     return retVal;
 }
+
+void
+AssetManager::RegisterTexture (TextureAssetDescriptor * pDesc)
+{
+	assert (pDesc);
+	CORE_ID id = pDesc->GetIdentifier ();
+	auto pair = make_pair (id, pDesc);
+	this->m_TextureMap.insert (pair);
+	this->m_CurrentIdentifiers.insert_or_assign (CORE_ASSET_TYPE::ASSET_TYPE_TEXTURE, id);
+}
+
+void
+AssetManager::RegisterMesh (MeshAssetDescriptor * pMesh)
+{
+	assert (pMesh);
+	CORE_ID id = pMesh->GetIdentifier ();
+	auto pair = make_pair (id, pMesh);
+	this->m_MeshMap.insert (pair);
+	this->m_CurrentIdentifiers.insert_or_assign (ASSET_TYPE_MESH, id);
+}
+
+void
+AssetManager::RegisterShader (ShaderAssetDescriptor * pDesc)
+{
+	assert (pDesc);
+	CORE_ID id = pDesc->GetIdentifier ();
+	auto pair = make_pair (id, pDesc);
+	this->m_ShaderMap.insert (pair);
+	this->m_CurrentIdentifiers.insert_or_assign (CORE_ASSET_TYPE::ASSET_TYPE_SHADER, id);
+}
+
+void
+AssetManager::RegisterModel (ModelAssetDescriptor * pDesc)
+{
+	assert (pDesc);
+	CORE_ID id = pDesc->GetIdentifier ();
+	auto pair = make_pair (id, pDesc);
+	this->m_ModelMap.insert (pair);
+	this->m_CurrentIdentifiers.insert_or_assign (CORE_ASSET_TYPE::ASSET_TYPE_MODEL, id);
+}
+
 
 CORE_ERROR
 AssetManager::VRegisterTextures (XMLNode * pXmlTextureList)
@@ -176,7 +215,6 @@ AssetManager::VRegisterTextures (XMLNode * pXmlTextureList)
         assert (false);
     else
     {
-        CORE_ID id = 1;
         XMLNode * pTexNode = pXmlTextureList->FirstChild ();
         while (pTexNode)
         {
@@ -205,9 +243,10 @@ AssetManager::VRegisterTextures (XMLNode * pXmlTextureList)
 
             if (loadedTextures == ERR_OK)
             {
+				CORE_ID id = this->GetNextIdentifier(ASSET_TYPE_TEXTURE);
                 TextureAssetDescriptor * pTexDesc = new TextureAssetDescriptor (name, path, id, texType);
-                auto pair = make_pair (id++, pTexDesc);
-                this->m_TextureMap.insert (pair);
+				this->RegisterTexture (pTexDesc);
+
 
                 pTexNode = pTexNode->NextSibling ();
             }
@@ -226,10 +265,10 @@ AssetManager::VRegisterMeshes (XMLNode * pXmlMeshesList)
 
     if (pXmlMeshesList && !pXmlMeshesList->NoChildren ())
     {
-        CORE_ID id = 1;
         XMLNode * pMeshNode = pXmlMeshesList->FirstChild ();
         while (pMeshNode)
         {
+			CORE_ID id = this->GetNextIdentifier(ASSET_TYPE_MESH);
             string name, path;
             
             XMLElement * pMeshEl    = pMeshNode->ToElement ();
@@ -249,8 +288,7 @@ AssetManager::VRegisterMeshes (XMLNode * pXmlMeshesList)
             if (loadedMeshes == ERR_OK)
             {
                 MeshAssetDescriptor * pDesc = new MeshAssetDescriptor (name, path, id);
-                auto pair = make_pair (id++, pDesc);
-                this->m_MeshMap.insert (pair);
+				this->RegisterMesh (pDesc);
 
                 pMeshNode = pMeshNode->NextSibling ();
             }
@@ -302,7 +340,7 @@ AssetManager::VRegisterModels (XMLNode * pXmlModelsList)
                 pChild = pChild->NextSibling ();
             }
 
-            auto pair   = make_pair (id++, pModelDesc);
+            auto pair   = make_pair (id, pModelDesc);
             this->m_ModelMap.insert (pair);
             pModelNode  = pModelNode->NextSibling ();
         }
@@ -318,14 +356,14 @@ AssetManager::AssetManager(IEventManager * pEventManager)
 }
 
 CORE_ID
-AssetManager::GetNextIdentifier(const CORE_ASSET_TYPE assetType) const
+AssetManager::GetNextIdentifier(const CORE_ASSET_TYPE assetType)
 {
 	CORE_ID retVal = 1;
 	
 	auto iter = this->m_CurrentIdentifiers.find(assetType);
-	if (iter != this->m_CurrentIdentifiers.end())
-		retVal = ( iter->second + 1 );
-
+	if (iter != this->m_CurrentIdentifiers.end ())
+		retVal = (iter->second + 1);
+	
 	return retVal;
 }
 
@@ -621,7 +659,7 @@ AssetManager::UnloadMesh (MeshAssetDescriptor * pMesh)
 }
 
 CORE_ERROR 
-LoadMeshFromPath (const string * path, vector<CoreMesh *> * pImportedMeshes)
+AssetManager::LoadMeshFromPath (const string * path, vector<CoreMesh *> * pImportedMeshes)
 {
     CORE_ERROR errCode  = ERR_FAILED;
 
@@ -636,7 +674,8 @@ LoadMeshFromPath (const string * path, vector<CoreMesh *> * pImportedMeshes)
 
     if (scene)
     {
-        CoreMesh * pParentMesh      = new CoreMesh ();
+		CORE_ID id = this->GetNextIdentifier (CORE_ASSET_TYPE::ASSET_TYPE_MESH);
+        CoreMesh * pParentMesh      = new CoreMesh (id);
 
         // here we process the scene.
         for (size_t i = 0; i < scene->mNumMeshes; i++)
@@ -644,7 +683,7 @@ LoadMeshFromPath (const string * path, vector<CoreMesh *> * pImportedMeshes)
             aiMesh * pMesh = scene->mMeshes[i];
             if (pMesh)
             {
-                CoreMesh * pCoreMesh = new CoreMesh ();
+                CoreMesh * pCoreMesh = new CoreMesh (GetNextIdentifier(ASSET_TYPE_MESH));
 
                 if (pMesh->mNumVertices > 0)
                     for (size_t currVertex = 0; currVertex < pMesh->mNumVertices; currVertex++)
