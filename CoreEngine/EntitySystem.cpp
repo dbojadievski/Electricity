@@ -72,8 +72,8 @@ EntitySystem::Link(GameObject * pParent, GameObject * pChild, __PARAM_OUT__ CORE
 		if (*pResult)
 		{
 			EntityLinkedEventData * pEntityLinkedEventData = new EntityLinkedEventData();
-			pEntityLinkedEventData->m_ChildIdentifier = pChild->m_Identifier;
-			pEntityLinkedEventData->m_ParentIdentifier = pParent->m_Identifier;
+			pEntityLinkedEventData->m_ChildIdentifier = pChild->GetIdentifier();
+			pEntityLinkedEventData->m_ParentIdentifier = pParent->GetIdentifier();
 			this->m_pEventManager->VQueueEvent(pEntityLinkedEventData);
 		}
 	}
