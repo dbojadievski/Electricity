@@ -2,10 +2,11 @@
 
 
 
-Renderable::Renderable(Mesh * pMesh, CORE_BOOLEAN isTransparent)
+Renderable::Renderable(CORE_ID meshID, CORE_ID textureID, CORE_ID shaderID, CORE_BOOLEAN isTransparent)
 {
-	assert(pMesh);
-	this->m_pMesh = pMesh;
+	this->m_MeshID = meshID;
+	this->m_ShaderID = shaderID;
+	this->m_TextureID = textureID;
 	this->m_IsTransparent = isTransparent;
 }
 
@@ -19,12 +20,4 @@ Renderable::~Renderable()
 {
 	this->m_IsTransparent	= false;
 	this->m_RenderableID	= 0;
-
-	delete this->m_pMesh;
-}
-
-Mesh *
-Renderable::GetMesh() const
-{
-	return this->m_pMesh;
 }

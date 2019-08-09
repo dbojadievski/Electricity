@@ -7,13 +7,16 @@ class Renderable
 
 protected:
 	CORE_ID			m_RenderableID;
-	Mesh *			m_pMesh;
 	CORE_BOOLEAN	m_IsTransparent;
+
+	CORE_ID m_MeshID;
+	CORE_ID m_TextureID;
+	CORE_ID m_ShaderID;
+
 public:
-	Renderable(Mesh * pMesh, CORE_BOOLEAN isTransparent);
+	Renderable(CORE_ID meshID, CORE_ID textureID, CORE_ID shaderID, CORE_BOOLEAN isTransparent);
 	virtual ~Renderable();
 
 	CORE_BOOLEAN IsTransparent() const;
-	Mesh * GetMesh()const;
 };
 

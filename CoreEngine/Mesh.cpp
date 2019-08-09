@@ -85,8 +85,10 @@ Mesh::EraseSubMeshAt (const size_t idx)
     return retVal;
 }
 
-Mesh::Mesh(EMeshType type)
+Mesh::Mesh(CORE_ID meshID, EMeshType type)
 {
+	this->m_MeshID		= meshID;
+
 	this->m_NumIndices  = 0;
 	this->m_NumVertices = 0;
     this->m_NumNormals  = 0;
@@ -151,4 +153,9 @@ unsigned long int *
 Mesh::GetIndicesRaw()
 {
 	return this->m_Indices.data();
+}
+CORE_ID
+Mesh::GetIdentifier ()
+{
+	return this->m_MeshID;
 }

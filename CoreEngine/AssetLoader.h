@@ -13,7 +13,7 @@
 Mesh *
 ProcessMesh(aiMesh * pMesh, const aiScene * pScene)
 {
-	Mesh * pCoreMesh = new Mesh();
+	Mesh * pCoreMesh = new Mesh(-1);
 
 	CORE_BOOLEAN hasNormals = pMesh->HasNormals();
 	CORE_BOOLEAN hasTexCoords = pMesh->HasTextureCoords(0);

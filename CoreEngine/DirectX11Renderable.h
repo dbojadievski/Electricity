@@ -20,9 +20,9 @@ class DirectX11Renderable : public Renderable
 
 	friend class DirectX11Renderable;
 private:
-
-	DirectX11Shader * m_pShader;
-	DirectX11Texture2D * m_pTexture;
+	Mesh *					m_pMesh;
+	DirectX11Shader *		m_pShader;
+	DirectX11Texture2D *	m_pTexture;
 	
 
 	DirectX11Buffer * m_pVertexBuffer;
@@ -49,4 +49,5 @@ public:
 
 	const DirectX11Shader * GetShader();
 	const DirectX11Texture2D * GetTexture();
+	const Mesh * GetMesh ();
 };

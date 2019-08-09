@@ -5,6 +5,7 @@
 #include "MeshAssetDescriptor.h"
 #include "TextureAssetDescriptor.h"
 #include "ShaderDescriptor.h"
+#include "Model.h"
 #include "Mesh.h"
 
 class IAssetManager : IEngineSystem
@@ -15,4 +16,5 @@ public:
 	virtual MeshAssetDescriptor		*	GetMeshDescriptor(const string & name) = 0;
 	virtual TextureAssetDescriptor	*	GetTextureDescriptor(const string & name) = 0;
 	virtual ShaderAssetDescriptor	*	GetShaderDescriptor(const string & name) = 0;
+	virtual ModelAssetDescriptor	*	GetModelDescriptor(const string & name) = 0;
 };

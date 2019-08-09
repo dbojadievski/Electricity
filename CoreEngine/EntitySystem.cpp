@@ -72,8 +72,8 @@ EntitySystem::Link(GameObject * pParent, GameObject * pChild, __PARAM_OUT__ CORE
 		if (*pResult)
 		{
 			EntityLinkedEventData * pEntityLinkedEventData = new EntityLinkedEventData();
-			pEntityLinkedEventData->m_ChildIdentifier = pChild->m_Identifier;
-			pEntityLinkedEventData->m_ParentIdentifier = pParent->m_Identifier;
+			pEntityLinkedEventData->m_ChildIdentifier = pChild->GetIdentifier();
+			pEntityLinkedEventData->m_ParentIdentifier = pParent->GetIdentifier();
 			this->m_pEventManager->VQueueEvent(pEntityLinkedEventData);
 		}
 	}
@@ -156,8 +156,43 @@ EntitySystem::GetEntityByTag(string const * pTag, __PARAM_OUT__ Entity ** pEntit
 	return errCode;
 }
 
+CORE_BOOLEAN
+EntitySystem::RegisterComponent(GameObject * pEntity, IComponent * pComponent)
+{
+	CORE_BOOLEAN wasRegistered = pEntity->RegisterComponent(pComponent);
+
+	if (wasRegistered)
+	{
+		auto * pEventData = new EntityComponentAddedEventData();
+		pEventData->m_ComponentType = pComponent->m_Type;
+		pEventData->m_pComponent = pComponent;
+		pEventData->m_EntityIdentifier = pEntity->GetIdentifier();
+		this->m_pEventManager->VQueueEvent(pEventData);
+	}
+
+	return wasRegistered;
+}
+
+CORE_BOOLEAN
+EntitySystem::UnRegisterComponent(GameObject * pEntity, IComponent * pComponent)
+{
+	CORE_BOOLEAN wasUnRegistered = pEntity->UnregisterComponent(pComponent->m_Type, pComponent->m_Identifier);
+	if (wasUnRegistered)
+	{
+		//auto * pEventData = new EntityComponentRemovedEventData();
+		//pEventData->m_ComponentType = pComponent->m_Type;
+		//pEventData->m_pComponent = pComponent;
+		//pEventData->m_EntityIdentifier = pEntity->GetIdentifier();
+		//this->m_pEventManager->VQueueEvent(pEventData);
+	}
+
+	return wasUnRegistered;
+}
+
 #pragma endregion
 
+
+#pragma region Elementary engine system events.
 void
 EntitySystem::Init(){}
 
@@ -173,3 +208,5 @@ EntitySystem::ShutDown()
 	pEventData->m_Identifier = -1;
 	this->m_pEventManager->VQueueEvent(pEventData);
 }
+
+#pragma endregion

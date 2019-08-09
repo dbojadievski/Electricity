@@ -39,6 +39,25 @@ ModelAssetDescriptor::HasTexture (TextureAssetDescriptor * pTexDesc)
 }
 
 CORE_BOOLEAN
+ModelAssetDescriptor::HasShader(ShaderAssetDescriptor * pShaderDesc)
+{
+	assert(pShaderDesc);
+
+	CORE_BOOLEAN hasShader = false;
+	for (auto it = this->m_Shaders.begin(); it != this->m_Shaders.end(); ++it)
+	{
+		ShaderAssetDescriptor * pDesc = *it;
+		if (pDesc->GetIdentifier() == pShaderDesc->GetIdentifier())
+		{
+			hasShader = true;
+			break;
+		}
+	}
+
+	return hasShader;
+}
+
+CORE_BOOLEAN
 ModelAssetDescriptor::AddMesh (MeshAssetDescriptor * pMeshDesc)
 {
     assert (pMeshDesc);
@@ -72,6 +91,22 @@ ModelAssetDescriptor::AddTexture (TextureAssetDescriptor * pDesc)
     return isAdded;
 }
 
+CORE_BOOLEAN
+ModelAssetDescriptor::AddShader(ShaderAssetDescriptor *pDesc)
+{
+	assert(pDesc);
+
+	CORE_BOOLEAN isAdded = false;
+	CORE_BOOLEAN alreadyAdded = this->HasShader(pDesc);
+	if (!alreadyAdded)
+	{
+		this->m_Shaders.push_back(pDesc);
+		isAdded = true;
+	}
+
+	return isAdded;
+}
+
 size_t
 ModelAssetDescriptor::NumMeshes ()
 {
@@ -82,6 +117,13 @@ size_t
 ModelAssetDescriptor::NumTextures ()
 {
     return this->m_Textures.size ();
+}
+
+size_t
+ModelAssetDescriptor::NumShaders()
+{
+	size_t numShaders = this->m_Shaders.size();
+	return numShaders;
 }
 
 MeshAssetDescriptor *
@@ -110,9 +152,22 @@ ModelAssetDescriptor::GetTextureAt (size_t idx)
     return pRetVal;
 }
 
+ShaderAssetDescriptor *
+ModelAssetDescriptor::GetShaderAt(size_t idx)
+{
+	assert(idx < this->m_Shaders.size());
+
+	ShaderAssetDescriptor * pRetVal = NULL;
+	size_t numShaders = this->NumShaders();
+	if (idx < numShaders)
+		pRetVal = this->m_Shaders[idx];
+
+	return pRetVal;
+}
+
 
 ModelAssetDescriptor::ModelAssetDescriptor (string & name, CORE_ID id)
 {
-    this->m_Name        = name;
+    this->m_Name        =  string(name);
     this->m_Identifier  = id;
 }

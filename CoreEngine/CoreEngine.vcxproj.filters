@@ -142,6 +142,9 @@
     <Filter Include="Source Files\Component Model\Components">
       <UniqueIdentifier>{aa99dda5-0905-4861-b1ae-8d8eadf34afb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\SceneManagement">
+      <UniqueIdentifier>{c3b20b4f-b16a-4b80-8aa0-a62d5e3e8eb3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TimeUtils.h">
@@ -336,14 +339,23 @@
     <ClInclude Include="Model.h">
       <Filter>Header Files\AssetManagement\AssetDescriptors</Filter>
     </ClInclude>
-    <ClInclude Include="Renderable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderableComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="IRenderer.h">
       <Filter>Header Files\Rendering\Cross-Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderableComponent.h">
+      <Filter>Header Files\Component Model\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderable.h">
+      <Filter>Header Files\Rendering\Cross-Platform\Renderables</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneManagement.h">
+      <Filter>Header Files\SceneManagement</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformComponent.h">
+      <Filter>Header Files\Component Model\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneEvents.h">
+      <Filter>Header Files\Infrastructure\Event\EventTypes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -476,19 +488,67 @@
     <ClCompile Include="AssetManager.cpp">
       <Filter>Source Files\AssetManagement</Filter>
     </ClCompile>
-    <ClCompile Include="RenderableComponent.cpp">
-      <Filter>Source Files\Component Model</Filter>
-    </ClCompile>
     <ClCompile Include="IRenderer.cpp">
       <Filter>Source Files\Rendering\Cross-Platform</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <ClCompile Include="RenderableComponent.cpp">
+      <Filter>Source Files\Component Model\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ConsoleCommandImplementationScene.cpp">
+      <Filter>Source Files\Infrastructure\Console\Command Implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneManagement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IComponent.cpp">
+      <Filter>Source Files\Component Model</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformComponent.cpp">
+      <Filter>Source Files\Component Model\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneEvents.cpp">
+      <Filter>Source Files\Infrastructure\Event\EventType</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Electricity.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Assets\Models\Crate\Crate1.3ds" />
+    <None Include="Assets\Models\Crate\Crate1.blend" />
+    <None Include="Assets\Models\Crate\Crate1.mtl" />
+    <None Include="Assets\Models\Dwarf\dwarf.3ds" />
+    <None Include="Assets\Models\Dwarf\dwarf.blend" />
+    <None Include="Assets\Models\Dwarf\dwarf.mtl" />
+    <None Include="Assets\Shaders\terrain.hlsl" />
+    <None Include="Assets\Shaders\shaders.hlsl" />
+    <None Include="Assets\Shaders\red.hlsl" />
+    <None Include="Assets\Shaders\green.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="Assets\assetList.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\Textures\crate.dds" />
+    <Image Include="Assets\Textures\grass.dds" />
+    <Image Include="Assets\Textures\texture.dds" />
+    <Image Include="Assets\Textures\wood.dds" />
+    <Image Include="Assets\Models\Crate\crate_1.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Assets\Models\Crate\CrateImage1.JPG">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Assets\Models\Crate\CrateImage2.JPG">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Xsd Include="Assets\Scenes\TestScene.xml">
+      <Filter>Header Files</Filter>
+    </Xsd>
   </ItemGroup>
 </Project>

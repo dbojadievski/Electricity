@@ -140,9 +140,7 @@ private:
 	void SetRasterizerToWireFrame();
 	void InitShaders();
 	DirectX11Shader * CreateShader(ShaderDescriptor * pDescriptor);
-	void InitRenderables();
 	void InitTerrain();
-	void InitCubeGeometry();
 	void InitTextures();
 	void InitLights();
     void InitFrameUniformBuffer ();
@@ -181,6 +179,9 @@ private:
 	
 	void OnEntityRegistered(IEventData * pEvent);
 	void OnEntityDeRegistered(IEventData * pEvent);
+
+	void OnEntityComponentRegistered (IEventData * pEvent);
+	void OnEntityComponentDeRegistered (IEventData * pEvent);
 
     CORE_BOOLEAN LoadShader (AssetDescriptor * pDescriptor);
     CORE_BOOLEAN LoadTexture (AssetDescriptor * pDescriptor);

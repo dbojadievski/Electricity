@@ -3,7 +3,6 @@
 #include "CoreEngine.h"
 #include <string>
 #include "EntityEvents.h"
-#include "RenderableComponent.h"
 
 //#include "AssetLoader.h"
 using namespace std;
@@ -188,21 +187,20 @@ Console::OnRenderableInstantiateHandler(ConsoleCommandParameterList * pParams) c
 
 			AssetDescriptor * pRenderableDesc = NULL;
 			auto desc = g_Engine.GetAssetManager()->GetMeshDescriptor(renderableTag);
-			Entity * pEntity = new Entity(&renderableTag);
-			
-			vector<Renderable *> renderables;
-			g_Engine.GetRenderSystem()->GetRenderablesByMesh(desc, &renderables);
-			if (!renderables.empty())
+			if (desc != NULL)
 			{
-				Renderable * pRenderable = renderables.at(0);
-				IComponent * pComponent = new RenderableComponent(pEntity, pRenderable);
-				pComponent->m_Identifier = 1;
-				//TODO(Dino): Register renderable component.
-				pEntity->RegisterComponent(pComponent);
-			}
+				Entity * pEntity = new Entity(&renderableTag);
+			
+				vector<Renderable *> renderables;
+				g_Engine.GetRenderSystem()->GetRenderablesByMesh(desc, &renderables);
+				if (!renderables.empty())
+				{
+					Renderable * pRenderable = renderables.at(0);
+				}
 
-			EntitySystem * pEntitySystem = g_Engine.GetEntitySystem();
-			pEntitySystem->RegisterEntity(pEntity);
+				EntitySystem * pEntitySystem = g_Engine.GetEntitySystem();
+				pEntitySystem->RegisterEntity(pEntity);
+			}
 		}
 	}
 }

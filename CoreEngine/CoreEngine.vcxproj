@@ -186,6 +186,8 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="runme.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneEvents.h" />
+    <ClInclude Include="SceneManagement.h" />
     <ClInclude Include="SceneNode.h" />
     <ClInclude Include="ShaderDescriptor.h" />
     <ClInclude Include="ShaderType.h" />
@@ -195,6 +197,7 @@
     <ClInclude Include="TextureType.h" />
     <ClInclude Include="TimeUtils.h" />
     <ClInclude Include="tinyxml2.h" />
+    <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
@@ -206,6 +209,7 @@
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="ConsoleCommand.cpp" />
     <ClCompile Include="ConsoleCommandImplementationEntity.cpp" />
+    <ClCompile Include="ConsoleCommandImplementationScene.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="DirectInput.cpp" />
     <ClCompile Include="DirectX11Buffer.cpp" />
@@ -221,6 +225,7 @@
     <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="FileReader.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="IComponent.cpp" />
     <ClCompile Include="IRenderer.cpp" />
     <ClCompile Include="KeyEvents.cpp" />
     <ClCompile Include="LightManager.cpp" />
@@ -235,6 +240,8 @@
     <ClCompile Include="ResolutionChangedEventData.cpp" />
     <ClCompile Include="runme.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneEvents.cpp" />
+    <ClCompile Include="SceneManagement.cpp" />
     <ClCompile Include="SceneNode.cpp" />
     <ClCompile Include="ShaderDescriptor.cpp" />
     <ClCompile Include="ShaderTypeConverter.cpp" />
@@ -242,18 +249,52 @@
     <ClCompile Include="TextureAssetDescriptor.cpp" />
     <ClCompile Include="TimeUtils.cpp" />
     <ClCompile Include="tinyxml2.cpp" />
+    <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="Vertex.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Electricity.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Models\Crate\Crate1.3ds" />
+    <None Include="Assets\Models\Crate\Crate1.blend" />
+    <None Include="Assets\Models\Crate\Crate1.mtl" />
+    <None Include="Assets\Models\Dwarf\dwarf.3ds" />
+    <None Include="Assets\Models\Dwarf\dwarf.blend" />
+    <None Include="Assets\Models\Dwarf\dwarf.mtl" />
+    <None Include="Assets\Shaders\green.hlsl" />
+    <None Include="Assets\Shaders\red.hlsl" />
+    <None Include="Assets\Shaders\shaders.hlsl" />
+    <None Include="Assets\Shaders\terrain.hlsl" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="Assets\assetList.xml">
+      <DeploymentContent>true</DeploymentContent>
+    </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\Models\Crate\CrateImage1.JPG" />
+    <Image Include="Assets\Models\Crate\CrateImage2.JPG" />
+    <Image Include="Assets\Models\Crate\crate_1.jpg" />
+    <Image Include="Assets\Textures\crate.dds" />
+    <Image Include="Assets\Textures\grass.dds" />
+    <Image Include="Assets\Textures\texture.dds" />
+    <Image Include="Assets\Textures\wood.dds" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xsd Include="Assets\Scenes\TestScene.xml">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <DeploymentContent>true</DeploymentContent>
+      <FileType>Document</FileType>
+    </Xsd>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Assimp.redist.3.0.0\build\native\Assimp.redist.targets" Condition="Exists('..\packages\Assimp.redist.3.0.0\build\native\Assimp.redist.targets')" />
-    <Import Project="..\packages\Assimp.symbols.3.0.0\build\native\Assimp.symbols.targets" Condition="Exists('..\packages\Assimp.symbols.3.0.0\build\native\Assimp.symbols.targets')" />
     <Import Project="..\packages\Assimp.3.0.0\build\native\Assimp.targets" Condition="Exists('..\packages\Assimp.3.0.0\build\native\Assimp.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
@@ -261,7 +302,6 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Assimp.redist.3.0.0\build\native\Assimp.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Assimp.redist.3.0.0\build\native\Assimp.redist.targets'))" />
-    <Error Condition="!Exists('..\packages\Assimp.symbols.3.0.0\build\native\Assimp.symbols.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Assimp.symbols.3.0.0\build\native\Assimp.symbols.targets'))" />
     <Error Condition="!Exists('..\packages\Assimp.3.0.0\build\native\Assimp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Assimp.3.0.0\build\native\Assimp.targets'))" />
   </Target>
 </Project>
