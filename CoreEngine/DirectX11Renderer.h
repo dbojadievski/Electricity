@@ -140,9 +140,7 @@ private:
 	void SetRasterizerToWireFrame();
 	void InitShaders();
 	DirectX11Shader * CreateShader(ShaderDescriptor * pDescriptor);
-	void InitRenderables();
 	void InitTerrain();
-	void InitCubeGeometry();
 	void InitTextures();
 	void InitLights();
     void InitFrameUniformBuffer ();

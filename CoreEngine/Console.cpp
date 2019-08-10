@@ -315,6 +315,24 @@ Console::RegisterAllCommands()
 		//NOTE(Dino): Use renderable_instantiate as this->ParseCommand("renderable_instantiate renderable_name");
 	}
 
+	{
+		CORE_BOOLEAN wasRegistered = false;
+
+		CORE_STRING pStrCommandText = "scene_load";
+		CCommandParamDesc * pSceneName = new CCommandParamDesc("scene_name", EConsoleCommandParameterType::PARAM_STRING);
+
+		CCommandParamList * pParamsList = new CCommandParamList();
+		pParamsList->push_back(pSceneName);
+
+		CommandHandlerDelegate commandDelegate = MakeDelegate(this, &Console::OnSceneLoadHandler);
+		CommandHandlerDelegate * pCommandDelegate = new CommandHandlerDelegate(commandDelegate);
+		
+		ConsoleCommand * pCommand = new ConsoleCommand(pStrCommandText, pParamsList, pCommandDelegate);
+		wasRegistered = this->VRegisterCommand(pCommand);
+
+		//NOTE(Dino): Use scene_load as this->ParseCommand("scene_load test");
+	}
+
 #pragma region Unit testing. If the debug build does not assert, then all is well.
 	{
 #if DEBUG

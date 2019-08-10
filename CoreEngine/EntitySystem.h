@@ -5,6 +5,7 @@
 #include "EventManager.h"
 
 #include "GameObject.h"
+
 class EntitySystem : public IEngineSystem
 {
 	/*
@@ -36,8 +37,12 @@ public:
 
 	CORE_ERROR Link(GameObject * pParent, GameObject * pChild, __PARAM_OUT__ CORE_BOOLEAN * pResult);
 	CORE_ERROR UnLink(GameObject * pChild, __PARAM_OUT__ CORE_BOOLEAN * pResult);
-	CORE_ERROR AreRelated(GameObject * pParent, GameObject * pChild, __PARAM_OUT__ CORE_BOOLEAN * pResult);
+
+	CORE_BOOLEAN RegisterComponent(GameObject * pObject, IComponent * pComponent);
+	CORE_BOOLEAN UnRegisterComponent(GameObject * pObject, IComponent * pComponent);
 #pragma endregion
+
+
 #pragma region Basic engine system events.
 	virtual void IEngineSystem::Init();
 	virtual void IEngineSystem::Update(CORE_DOUBLE dT);

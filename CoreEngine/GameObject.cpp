@@ -28,7 +28,7 @@ GameObject::GetIdentifier() const
 
 GameObject::GameObject(const string * pTag, const GameObject * pParent)
 {	
-	this->m_pTag = (string *)pTag;
+	this->m_pTag = new string( *pTag);
 	this->m_pParent = (GameObject *)pParent;
 }
 
@@ -107,10 +107,11 @@ GameObject::GetComponentByType(const EComponentType componentType)
 	return retVal;
 }
 
-void
-GameObject::RegisterComponent(const IComponent * pComponent)
+CORE_BOOLEAN
+GameObject::RegisterComponent(IComponent * pComponent)
 {
 	assert(pComponent);
+	CORE_BOOLEAN wasRegistered = false;
 
 	ComponentList * pComponentList = NULL;
 
@@ -127,13 +128,21 @@ GameObject::RegisterComponent(const IComponent * pComponent)
 	size_t numComponentsOfType = pComponentList->size();
 	CORE_BOOLEAN areMultipleInstancesAllowed = pComponent->AreMultipleInstancesAllowed();
 	
-	if(numComponentsOfType == 0 || areMultipleInstancesAllowed)
+	if (numComponentsOfType == 0 || areMultipleInstancesAllowed)
+	{
 		pComponentList->push_back((IComponent *) pComponent);
+		//pComponent->m_pOwner = this;
+		wasRegistered = true;
+	}
+
+	return wasRegistered;
 }
 
-void
-GameObject::UnregisterComponent(const EComponentType componentType, CORE_ID identifier)
+CORE_BOOLEAN
+GameObject::UnregisterComponent(EComponentType componentType, CORE_ID identifier)
 {
+	CORE_BOOLEAN wasUnregistered = false;
+
 	auto componentListIt = this->m_Components.find(componentType);
 	if (componentListIt != this->m_Components.end())
 	{
@@ -150,6 +159,7 @@ GameObject::UnregisterComponent(const EComponentType componentType, CORE_ID iden
 					IComponent * pComponent = pComponentList->at(currComponentIdx);
 					assert(pComponent);
 					delete pComponent;
+					wasUnregistered = true;
 				}
 
 				delete pComponentList;
@@ -166,12 +176,15 @@ GameObject::UnregisterComponent(const EComponentType componentType, CORE_ID iden
 						/*Delete component.*/
 						pComponentList->erase(pComponentList->begin() + currComponentIdx);
 						delete pComponent;
+						wasUnregistered = true;
 						break;
 					}
 				}
 			}
 		}
 	}
+
+	return wasUnregistered;
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * */

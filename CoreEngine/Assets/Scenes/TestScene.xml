@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<scenes>
+  <scene name="test">
+    <entities>
+      <entity name="crate">
+        <components>
+          <transformComponent>
+            <translation x="5" y="0" z="0" />
+            <rotation x="0" y="0" z="0" />
+            <scale x="1" y="1" z="1"/>
+          </transformComponent>
+          <renderableComponent />
+        </components>
+      </entity>
+    </entities>
+  </scene>
+</scenes>

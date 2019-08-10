@@ -11,7 +11,7 @@ DirectX11Renderable::Render(ID3D11DeviceContext * pDeviceContext)
 	size_t indiceCount = this->m_pMesh->GetIndiceCount();
 	size_t vertexCount = this->m_pMesh->GetVertexCount();
 
-	pDeviceContext->DrawIndexed(indiceCount, 0, 0);
+	pDeviceContext->DrawIndexed((UINT) indiceCount, 0, 0);
 }
 
 void
@@ -30,7 +30,7 @@ DirectX11Renderable::Buffer(ID3D11Device * pDevice, ID3D11DeviceContext * pDevic
 
 		D3D11_SUBRESOURCE_DATA vertexData;
 		vertexData.pSysMem = pVertices;
-		this->m_pVertexBuffer = DirectX11Buffer::CreateVertexBuffer(pDevice, sizeof(Vertex) * numVertices, false, false, &vertexData);
+		this->m_pVertexBuffer = DirectX11Buffer::CreateVertexBuffer(pDevice, (UINT)( sizeof(Vertex) * numVertices), false, false, &vertexData);
 	}
 
 	{
@@ -41,7 +41,7 @@ DirectX11Renderable::Buffer(ID3D11Device * pDevice, ID3D11DeviceContext * pDevic
 		unsigned long int * pIndices = this->m_pMesh->GetIndicesRaw();
 		D3D11_SUBRESOURCE_DATA instanceData;
 		instanceData.pSysMem = pIndices;
-		this->m_pIndexBuffer = DirectX11Buffer::CreateIndexBuffer(pDevice, sizeof(unsigned long int) * numIndices, false, &instanceData);
+		this->m_pIndexBuffer = DirectX11Buffer::CreateIndexBuffer(pDevice, (UINT)(sizeof(unsigned long int) * numIndices), false, &instanceData);
 	}
 }
 
@@ -51,7 +51,7 @@ DirectX11Renderable::ActivateBuffers(ID3D11DeviceContext * pDeviceContext)
 	assert(pDeviceContext);
 
 	UINT offset = 0;
-	UINT stride = this->m_pMesh->GetVertexSize();
+	UINT stride = (UINT) this->m_pMesh->GetVertexSize();
 
 	ID3D11Buffer * pVertexBuffer = this->m_pVertexBuffer->GetRawPointer();
 	ID3D11Buffer * pIndexBuffer = this->m_pIndexBuffer->GetRawPointer();
@@ -119,7 +119,7 @@ DirectX11Renderable::Instantiate(CORE_ID id, FASTMAT4 transform, DirectX11Render
 DWORD
 DirectX11Renderable::GetInstanceCount()
 {
-	return this->m_pInstances.size();
+	return (DWORD) this->m_pInstances.size();
 }
 
 DirectX11RenderableInstanceIterator

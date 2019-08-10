@@ -28,8 +28,8 @@ public:
 	void Update(float dT);
 
 	IComponent * GetComponentByType(const EComponentType componentType);
-	void RegisterComponent(const IComponent * pComponent);
-	void UnregisterComponent(const EComponentType componentType, CORE_ID identifier = COMPONENT_DELETE_ALL);
+	CORE_BOOLEAN RegisterComponent(IComponent * pComponent);
+	CORE_BOOLEAN UnregisterComponent(EComponentType componentType, CORE_ID identifier = COMPONENT_DELETE_ALL);
 
 	static CORE_BOOLEAN AdoptChild(GameObject * pParent, GameObject * pChild);
 	static CORE_BOOLEAN OrphanChild(GameObject * pChild);

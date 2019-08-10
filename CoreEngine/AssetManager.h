@@ -1,4 +1,5 @@
 #pragma once
+#include "tinyxml2.h"
 #include "IAssetManager.h"
 #include "IEventManager.h"
 #include "AssetEvents.h"
@@ -9,7 +10,6 @@
 #include <map>
 #include "CoreHeaders.h"
 #include "Model.h"
-#include "tinyxml2.h"
 
 using namespace tinyxml2;
 
@@ -22,7 +22,7 @@ typedef map<CORE_ID, ModelAssetDescriptor *>     ModelMap;
 
 typedef map<CORE_ID, CoreMesh *>                            LoadedMeshMap;
 typedef map<CORE_ID, ShaderAssetDescriptorExtended *>       LoadedShaderMap;
-typedef map<CORE_ID, TextureAssetDescriptor/*Extended*/ *>  LoadedTextureMap;
+typedef map<CORE_ID, TextureAssetDescriptorExtended *>  LoadedTextureMap;
 
 class AssetManager : public IAssetManager
 {
@@ -43,9 +43,11 @@ class AssetManager : public IAssetManager
     CORE_ERROR AssetManager::LoadTexture (TextureAssetDescriptor * pTextureDescriptor);
     CORE_ERROR LoadMesh (MeshAssetDescriptor * pMesh);
     CORE_ERROR LoadModel (ModelAssetDescriptor * pModelDesc);
+	ShaderAssetDescriptor * GetShaderDescriptor(const string & name, const SHADER_TYPE type);
 
     /* Event handlers*/
     void OnAssetLoadFailed (AssetLoadFailedEventData *pEventData);
+	void OnSceneLoaded(IEventData *pEventData);
 public:
 
 	AssetManager(IEventManager * pEVentManager);
@@ -64,7 +66,7 @@ public:
 	virtual MeshAssetDescriptor * GetMeshDescriptor(const string & name);
     virtual TextureAssetDescriptor * GetTextureDescriptor (const string & name);
     virtual ShaderAssetDescriptor * GetShaderDescriptor (const string & name);
-
+	virtual ModelAssetDescriptor * GetModelDescriptor(const string & name);
 
     virtual void IEngineSystem::Init(void);
 	virtual void IEngineSystem::Update(CORE_DOUBLE dT);

@@ -36,6 +36,7 @@ DirectX11Renderer::Init()
 {
 	InitEventHandlers();
 	InitDirect3D();
+	InitTerrain();
     InitLights ();
 }
 
@@ -154,7 +155,6 @@ DirectX11Renderer::InitDirect3D()
 	InitDepthBuffer();
 	InitShaders();
 	InitTextures();
-	InitRenderables();
 	InitCamera();
 	InitBlendStates();
 	InitTextRenderer();
@@ -286,7 +286,7 @@ DirectX11Renderer::InitShaders()
 {
 	this->m_pActiveShader = NULL;
 
-	DirectX11Shader * pShader = new DirectX11Shader(L"Assets\\Shaders\\red.shader", "VShader", L"Assets\\Shaders\\red.shader", "PShader", 1);
+	DirectX11Shader * pShader = new DirectX11Shader(L"Assets\\Shaders\\red.hlsl", "VShader", L"Assets\\Shaders\\red.hlsl", "PShader", 1);
 	
 	ID3D11VertexShader ** pVertexShader = pShader->GetVertexShader();
 	DirectXShaderBufferDescriptor vertexShaderDescriptor = pShader->GetVertexShaderBufferPointer();
@@ -314,14 +314,7 @@ DirectX11Renderer::InitShaders()
 	this->RegisterShader(pShader);
 	this->m_pActiveShader = pShader;
 
-	/*ShaderDescriptor * pRedShaderDescriptor     = new ShaderDescriptor(11, "VShader", L"Assets\\Shaders\\red.shader", "PShader", L"Assets\\Shaders\\red.shader");
-	this->m_pRedShader                          = this->CreateShader(pRedShaderDescriptor);
-	this->SetShader(this->m_pRedShader);
-
-	ShaderDescriptor * pGreenShaderDescriptor   = new ShaderDescriptor(12, "VShader", L"Assets\\Shaders\\green.shader", "PShader", L"Assets\\Shaders\\green.shader");
-	this->m_pGreenShader                        = this->CreateShader(pGreenShaderDescriptor);
-*/
-    ShaderDescriptor * pTexturingShader = new ShaderDescriptor (13, "VShader", L"Assets\\Shaders\\shaders.shader", "PShader", L"Assets\\Shaders\\shaders.shader");
+    ShaderDescriptor * pTexturingShader = new ShaderDescriptor (13, "VShader", L"Assets\\Shaders\\shaders.hlsl", "PShader", L"Assets\\Shaders\\shaders.hlsl");
     DirectX11Shader * pTexShader        = this->CreateShader (pTexturingShader);
     this->m_pBasicShader                = pTexShader;
     this->RegisterShader (pTexShader);
@@ -364,13 +357,6 @@ DirectX11Renderer::CreateShader(ShaderDescriptor * pDescriptor)
 
 	this->RegisterShader(pRetVal);
 	return pRetVal;
-}
-
-void 
-DirectX11Renderer::InitRenderables()
-{
-	InitTerrain();
-    
 }
 
 void 
@@ -824,7 +810,7 @@ DirectX11Renderer::ReloadLightBuffer()
 	size_t numLights = this->m_Lights.size();
 
 	D3D11_SUBRESOURCE_DATA resourceData;
-	resourceData.SysMemPitch = (numLights * sizeof(DirectionalLight));
+	resourceData.SysMemPitch = (UINT) (numLights * sizeof(DirectionalLight));
 	resourceData.SysMemSlicePitch = sizeof(DirectionalLight);
 	resourceData.pSysMem = &this->m_Light;
 
@@ -852,7 +838,7 @@ DirectX11Renderer::GetRenderablesByMesh(MeshAssetDescriptor * pMeshDesc, vector<
 		for (auto renderableIterator = this->m_Renderables.begin(); renderableIterator != this->m_Renderables.end(); renderableIterator++)
 		{
 			DirectX11Renderable * pRenderable = (*renderableIterator);
-			const Mesh const * pMesh = pRenderable->GetMesh();
+			const Mesh * const  pMesh = pRenderable->GetMesh();
 			if (pMesh->m_Name == pMeshDesc->GetName())
 				pRenderables->push_back(pRenderable);
 		}
@@ -943,10 +929,10 @@ DirectX11Renderer::OnEntityRegistered(IEventData * pEvent)
 			RenderableComponent * pRComponent	= (RenderableComponent * )pEntity->GetComponentByType(COMPONENT_TYPE_RENDERABLE);
 			if (pRComponent)
 			{
-				DirectX11Renderable * pRenderable = (DirectX11Renderable *) pRComponent->GetRenderable();
+	/*			DirectX11Renderable * pRenderable = (DirectX11Renderable *) pRComponent->GetRenderable();
 				pRenderable->Instantiate(entityID, XMMatrixTranslation(0.0f, 0.0f, 0.0f), NULL);
 				pRenderable->Buffer (this->m_pDevice, this->m_pDeviceContext);
-				pRenderable->ActivateBuffers (this->m_pDeviceContext);
+				pRenderable->ActivateBuffers (this->m_pDeviceContext);*/
 			}
 		}
 	}
@@ -965,8 +951,8 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 			RenderableComponent * pComponent		= (RenderableComponent *) pEventData->m_pComponent;
 			assert (pComponent);
 			
-			DirectX11Renderable * pRenderable		= (DirectX11Renderable *) pComponent->GetRenderable ();
-			assert (pRenderable);
+			//DirectX11Renderable * pRenderable		= (DirectX11Renderable *) pComponent->GetRenderable ();
+			//assert (pRenderable);
 			
 		}
 	}
@@ -1024,7 +1010,8 @@ DirectX11Renderer::LoadTexture (AssetDescriptor * pDescriptor)
     assert (pDescriptor);
     if (pDescriptor)
     {
-        wstring wst(pDescriptor->GetPath ().begin (), pDescriptor->GetPath ().end ());
+		auto path = pDescriptor->GetPath();
+        wstring wst(path.begin (), path.end ());
         DirectX11Texture2D  * pGrassTex = DirectX11Texture2D::FromDDSFile (this->m_pDevice, wst.c_str(), pDescriptor->GetIdentifier());
         assert (pGrassTex);
         if (pGrassTex)

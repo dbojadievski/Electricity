@@ -16,7 +16,6 @@ DirectX11Texture2D::FromDDSFile(ID3D11Device * pDevice, const wchar_t * szFileNa
 
 	assert(pDevice);
 	assert(szFileName);
-
 	HRESULT texResult = CreateDDSTextureFromFile(pDevice, szFileName, &pRetVal->m_pResource, &pRetVal->m_pShaderResourceView);
 	assert(texResult == S_OK);
 	if (texResult != S_OK)

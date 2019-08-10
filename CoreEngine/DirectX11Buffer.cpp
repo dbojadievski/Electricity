@@ -101,7 +101,7 @@ DirectX11Buffer::CreateInstanceBuffer(ID3D11Device * pDevice, size_t instanceWid
 	DirectX11Buffer * pRetVal = new DirectX11Buffer();
 
 	pRetVal->m_Descriptor.Usage = D3D11_USAGE_DEFAULT;
-	pRetVal->m_Descriptor.ByteWidth = instanceWidth * instanceCount;
+	pRetVal->m_Descriptor.ByteWidth = (UINT)(instanceWidth * instanceCount);
 	pRetVal->m_Descriptor.BindFlags = D3D10_BIND_VERTEX_BUFFER;
 	pRetVal->m_Descriptor.CPUAccessFlags = willCpuUpdate;
 	pRetVal->m_Descriptor.MiscFlags = 0;

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <assets>
     <shaders>
-        <shader name="basicVShader" path="Assets\\Shaders\\shaders.shader" entryPoint="VShader" type="vertex" input="vertex" />
-        <shader name="basicPShader" path="Assets\\Shaders\\shaders.shader" entryPoint="PShader" type="pixel" input="vertex" />
-        <shader name="redVShader" path="Assets\\Shaders\\red.shader" entryPoint="VShader" type="vertex" input="vertex" />
-        <shader name="redPShader" path="Assets\\Shaders\\red.shader" entryPoint="PShader" type="pixel" input="vertex" />
+        <shader name="basicVShader" path="Assets\\Shaders\\shaders.hlsl" entryPoint="VShader" type="vertex" input="vertex" />
+        <shader name="basicPShader" path="Assets\\Shaders\\shaders.hlsl" entryPoint="PShader" type="pixel" input="vertex" />
+        <shader name="redVShader" path="Assets\\Shaders\\red.hlsl" entryPoint="VShader" type="vertex" input="vertex" />
+        <shader name="redPShader" path="Assets\\Shaders\\red.hlsl" entryPoint="PShader" type="pixel" input="vertex" />
     </shaders>
     <textures>
         <texture name="grass" path="Assets\\textures\\grass.dds" type="2D" />
@@ -18,8 +18,12 @@
     </meshes>
     <models>
         <model name="crate">
-            <mesh name="crate1" />
-            <texture name="crate1" />
+          <mesh name="crate1" />
+          <texture name="crate1" />
+          <shaders>
+            <shader name="basicVShader" type="vertex" />
+            <shader name="basicPShader" type="pixel" />
+          </shaders>
         </model>
     </models>
 </assets>

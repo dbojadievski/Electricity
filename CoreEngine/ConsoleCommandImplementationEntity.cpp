@@ -3,7 +3,6 @@
 #include "CoreEngine.h"
 #include <string>
 #include "EntityEvents.h"
-#include "RenderableComponent.h"
 
 //#include "AssetLoader.h"
 using namespace std;
@@ -197,10 +196,6 @@ Console::OnRenderableInstantiateHandler(ConsoleCommandParameterList * pParams) c
 				if (!renderables.empty())
 				{
 					Renderable * pRenderable = renderables.at(0);
-					IComponent * pComponent = new RenderableComponent(pEntity, pRenderable);
-					pComponent->m_Identifier = 1;
-					//TODO(Dino): Register renderable component.
-					pEntity->RegisterComponent(pComponent);
 				}
 
 				EntitySystem * pEntitySystem = g_Engine.GetEntitySystem();
