@@ -19,6 +19,7 @@ class DirectX11Shader
 	ID3D11PixelShader *m_pPixelShader;
 
 	CORE_ID m_Identifier;
+
 	ID3D10Blob * m_pVertexShaderBlob;
 	ID3D10Blob * m_pPixelShaderBlob;
 

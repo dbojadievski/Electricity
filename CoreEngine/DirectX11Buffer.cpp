@@ -219,4 +219,9 @@ DirectX11Buffer::Release ()
 {
     this->m_pBuffer->Release ();
 }
+
+DirectX11Buffer::~DirectX11Buffer ()
+{
+	this->m_pBuffer->Release ();
+}
 #pragma endregion

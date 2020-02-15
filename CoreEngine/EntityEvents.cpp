@@ -219,5 +219,8 @@ EntityComponentRemovedEventData::VGetTimeStamp() const
 {
 	return this->m_timeStamp;
 }
-EntityComponentRemovedEventData::~EntityComponentRemovedEventData() { }
+EntityComponentRemovedEventData::~EntityComponentRemovedEventData() 
+{
+	delete this->m_pComponent;
+}
 #pragma endregion

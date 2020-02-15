@@ -158,7 +158,7 @@ GameObject::UnregisterComponent(EComponentType componentType, CORE_ID identifier
 				{
 					IComponent * pComponent = pComponentList->at(currComponentIdx);
 					assert(pComponent);
-					delete pComponent;
+					//delete pComponent;
 					wasUnregistered = true;
 				}
 

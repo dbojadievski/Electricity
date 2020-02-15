@@ -17,7 +17,7 @@ public:
     ShaderAssetDescriptor (const string & name, const string & path, CORE_ID identifier, CORE_SHADER_TYPE shaderType, CORE_SHADER_INPUT_TYPE shaderInputType, const string & entryPoint);
 
 	CORE_ASSET_TYPE         GetAssetType();
-    CORE_SHADER_TYPE        GetShaderType ();
+    CORE_SHADER_TYPE        GetShaderType () const;
     CORE_SHADER_INPUT_TYPE  GetShaderInputType ();
     CORE_STRING             GetEntryPoint ();
 };

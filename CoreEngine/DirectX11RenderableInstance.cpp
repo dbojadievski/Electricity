@@ -23,7 +23,7 @@ DirectX11RenderableInstance::DirectX11RenderableInstance(DirectX11Renderable * p
 
 DirectX11RenderableInstance::~DirectX11RenderableInstance()
 {
-	delete this->m_pRenderable;
+	this->m_pRenderable = NULL;
 	auto childIt = this->m_Children.begin();
 	while (childIt != this->m_Children.end())
 	{

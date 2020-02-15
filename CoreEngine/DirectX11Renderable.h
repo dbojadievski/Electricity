@@ -39,10 +39,13 @@ public:
 
 	void Buffer(ID3D11Device * pDevice, ID3D11DeviceContext * pDeviceContext);
 	void ActivateBuffers(ID3D11DeviceContext * pDeviceContext);
+	void DeactivateBuffers ();
 
 	void Render(ID3D11DeviceContext * pDeviceContext);
 
 	DirectX11RenderableInstance * Instantiate(CORE_ID id, FASTMAT4 transform, DirectX11RenderableInstance * pParent = NULL);
+	CORE_BOOLEAN DeInstantiate (CORE_ID id);
+
 	DWORD								GetInstanceCount();
 	DirectX11RenderableInstanceIterator GetInstances();
 	DirectX11RenderableInstanceIterator GetInstancesEnd();

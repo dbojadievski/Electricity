@@ -714,48 +714,51 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 
 		DirectX11RenderablesPerTextureSet * pPerTexSet = &(*perShaderIterator->second);
 		auto pPerTexSetIter = pPerTexSet->begin();
-		CORE_ID textureId = pPerTexSetIter->first;
-		assert(textureId);
-		auto textureIter = this->m_TextureMap.find(textureId);
-		assert(textureIter != this->m_TextureMap.end());
-		const DirectX11Texture2D * pTexture = textureIter->second;
-		assert(pTexture);
-		if (this->m_pActiveTexture != pTexture)
+		if (pPerTexSetIter != pPerTexSet->end ())
 		{
-			++numTextureSwitches;
-			this->SetTexture((DirectX11Texture2D *)pTexture);
-		}
-
-		while (pPerTexSetIter != pPerTexSet->end())
-		{
-			DirectX11RenderableList * pRenderables = pPerTexSetIter->second;
-			for (size_t i = 0; i < pRenderables->size(); i++)
+			CORE_ID textureId = pPerTexSetIter->first;
+			assert(textureId);
+			auto textureIter = this->m_TextureMap.find(textureId);
+			assert(textureIter != this->m_TextureMap.end());
+			const DirectX11Texture2D * pTexture = textureIter->second;
+			assert(pTexture);
+			if (this->m_pActiveTexture != pTexture)
 			{
-				DirectX11Renderable * pRenderable = pRenderables->at(i);
-				assert(pRenderable);
-				if (pRenderable->GetInstanceCount() == 0)
-					continue;
-				pRenderable->ActivateBuffers(this->m_pDeviceContext);
-
-				DirectX11RenderableInstanceIterator instanceIterator = pRenderable->GetInstances();
-				while (instanceIterator != pRenderable->GetInstancesEnd())
-				{
-					++numRenderableInstances;
-					DirectX11RenderableInstance * pRenderableInstance = *instanceIterator;
-					const FASTMAT4 * const  pInstanceTransform = pRenderableInstance->GetCachedTransform();
-					FASTMAT4 modelViewProjectionMatrix = *pInstanceTransform * this->m_CameraView * cameraViewProjectionMatrix;
-					this->m_PerObjectBuffer.WorldViewProjection = FASTMAT_TRANSPOSE(modelViewProjectionMatrix);
-					this->m_PerObjectBuffer.World =  FASTMAT_TRANSPOSE(*pInstanceTransform);
-					ID3D11Buffer * pUniformBufferPointer = this->m_pUniformBuffer->GetRawPointer();
-					this->m_pDeviceContext->UpdateSubresource(pUniformBufferPointer, 0, NULL, &this->m_PerObjectBuffer, 0, 0);
-					this->m_pDeviceContext->VSSetConstantBuffers(0, 1, &pUniformBufferPointer);
-
-					assert(pRenderableInstance);
-					instanceIterator++;
-					pRenderable->Render(this->m_pDeviceContext);
-				}
+				++numTextureSwitches;
+				this->SetTexture((DirectX11Texture2D *)pTexture);
 			}
-			pPerTexSetIter++;
+
+			while (pPerTexSetIter != pPerTexSet->end())
+			{
+				DirectX11RenderableList * pRenderables = pPerTexSetIter->second;
+				for (size_t i = 0; i < pRenderables->size(); i++)
+				{
+					DirectX11Renderable * pRenderable = pRenderables->at(i);
+					assert(pRenderable);
+					if (pRenderable->GetInstanceCount() == 0)
+						continue;
+					pRenderable->ActivateBuffers(this->m_pDeviceContext);
+
+					DirectX11RenderableInstanceIterator instanceIterator = pRenderable->GetInstances();
+					while (instanceIterator != pRenderable->GetInstancesEnd())
+					{
+						++numRenderableInstances;
+						DirectX11RenderableInstance * pRenderableInstance = *instanceIterator;
+						const FASTMAT4 * const  pInstanceTransform = pRenderableInstance->GetCachedTransform();
+						FASTMAT4 modelViewProjectionMatrix = *pInstanceTransform * this->m_CameraView * cameraViewProjectionMatrix;
+						this->m_PerObjectBuffer.WorldViewProjection = FASTMAT_TRANSPOSE(modelViewProjectionMatrix);
+						this->m_PerObjectBuffer.World =  FASTMAT_TRANSPOSE(*pInstanceTransform);
+						ID3D11Buffer * pUniformBufferPointer = this->m_pUniformBuffer->GetRawPointer();
+						this->m_pDeviceContext->UpdateSubresource(pUniformBufferPointer, 0, NULL, &this->m_PerObjectBuffer, 0, 0);
+						this->m_pDeviceContext->VSSetConstantBuffers(0, 1, &pUniformBufferPointer);
+
+						assert(pRenderableInstance);
+						instanceIterator++;
+						pRenderable->Render(this->m_pDeviceContext);
+					}
+				}
+				pPerTexSetIter++;
+			}
 		}
 		perShaderIterator++;
 	}
@@ -901,7 +904,7 @@ DirectX11Renderer::OnAssetLoaded (IEventData * pEvent)
 				//assetLoaded					= this->LoadModel(pDescriptor);
 				break;
 			case ASSET_TYPE_PASS:
-				assetLoaded = this->LoadPass(pDescriptor);
+				assetLoaded					= this->LoadPass(pDescriptor);
 				break;
             default:
                 assert (false);
@@ -978,18 +981,35 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 						auto findResult = this->m_TextureMap.find(pTex->GetIdentifier());
 						pDxTex			= findResult->second;
 					}
-					for (size_t idx		= 0; idx < pData->NumShaders(); idx++)
+
+					DirectX11Shader * pPxShader = NULL;
+					DirectX11Shader * pVxShader = NULL;
+					for (size_t idx		= 1; idx < pData->NumShaders(); idx++)
 					{
 						auto pShader	= pData->GetShaderAt(idx);
 						if (pShader)
 						{
 							auto pDxShader		= this->m_ShaderMap.find(pShader->GetIdentifier())->second;
-							//TODO(Dino): Make this work with multipass rendering.
+							CORE_SHADER_TYPE type = pShader->GetShaderType ();
+							if (type == CORE_SHADER_TYPE::SHADER_TYPE_PIXEL)
+								pPxShader		= pDxShader;
+							else if (type == CORE_SHADER_TYPE::SHADER_TYPE_VERTEX)
+								pVxShader		= pDxShader;
+
 							auto pRenderable	= new DirectX11Renderable(pMeshData, pDxTex, pDxShader);
 							this->m_Renderables.push_back(pRenderable);
 							auto pair = make_pair(pModel->GetIdentifier(), pRenderable);
 							this->m_ModelToRenderableMap.insert(pair);
 							this->GetRenderablesByMesh(pMesh, &renderables);
+
+							/*
+							 * NOTE(Dino):
+							 * For now, our renderer doesn't understand multipass rendering.
+							 * To it, a Shader has a minimum of pixel and vertex shader.
+							 * But, out asset system does! And so, our model has TWO shaders instead of one.
+							 * This means that, left to its own devices, our renderer will happily create TWO renderables.
+							 * We'll skip this for now, until we teach our renderer what a pass is.
+							 */
 						}
 					}
 
@@ -999,8 +1019,14 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 						auto * pPass	= pData->GetPassAt(passIdx);
 						auto pShader	= pPass->GetPixelShader();
 						auto vShader	= pPass->GetVertexShader();
+						
+						for (auto it = this->m_ShaderMap.begin (); it != this->m_ShaderMap.end (); it++)
+						{
+							auto pSh = (*it).second;
+							//if(pSh->)
+						}
 					}
-					}
+				}
 
 				{
 					// The renderable is already registered. Now we can instantiate it.
@@ -1030,10 +1056,33 @@ DirectX11Renderer::OnEntityComponentDeRegistered (IEventData * pEvent)
 		{
 			RenderableComponent * pComponent = (RenderableComponent *)pEventData->m_pComponent;
 			assert (pComponent);
-			auto pModelDesc = pComponent->GetModel();
-			auto modelID	= pModelDesc->GetIdentifier();
-			auto result		= this->m_ModelToRenderableMap.find(modelID);
+			auto pModelDesc			= pComponent->GetModel();
+			auto modelID			= pModelDesc->GetIdentifier();
+			auto result				= this->m_ModelToRenderableMap.find(modelID);
+			if ((*result).second)
+			{
+				auto pRenderable	= (*result).second;
+				auto pInstances		= pRenderable->GetInstances ();
+				pRenderable->DeInstantiate (pComponent->m_Identifier);
 
+				if (!pRenderable->GetInstanceCount ())
+				{
+					this->m_ModelToRenderableMap.erase (modelID);
+				
+				
+					for (auto it = this->m_Renderables.begin (); it != this->m_Renderables.end (); it++)
+					{
+						if ((*it) == pRenderable)
+						{
+							this->m_Renderables.erase (it);
+							break;
+						}
+					}
+
+					this->m_RenderSet.Remove(pRenderable);
+					delete pRenderable;
+				}
+			}
 		}
 	}
 }
@@ -1106,6 +1155,11 @@ CORE_BOOLEAN
 DirectX11Renderer::LoadPass(AssetDescriptor * pDescriptor)
 {
 	CORE_BOOLEAN retVal					= false;
+
+	auto pPassDesc						= (ShaderPassDescriptor *) pDescriptor;
+	CORE_ID pixId						= pPassDesc->GetPixelShader ();
+	CORE_ID vertId						= pPassDesc->GetVertexShader ();
+	
 	return retVal;
 }
 
@@ -1114,6 +1168,9 @@ DirectX11Renderer::LoadShader (AssetDescriptor * pDescriptor)
 {
     CORE_BOOLEAN retVal                 = false;
     
+	auto * pShaderDesc					= (ShaderAssetDescriptor *)pDescriptor;
+
+
     ShaderDescriptor shaderDesc;
     shaderDesc.m_Identifier             = pDescriptor->GetIdentifier ();
     string filePath                     = pDescriptor->GetPath ();
@@ -1122,7 +1179,7 @@ DirectX11Renderer::LoadShader (AssetDescriptor * pDescriptor)
     shaderDesc.m_PixelShaderEntryPoint  = "PShader";
     shaderDesc.m_VertexShaderPath       = (wchar_t *)widePath.c_str ();
     shaderDesc.m_VertexShaderEntryPoint = "VShader";
-    
+ 
     DirectX11Shader * pShader           = this->CreateShader (&shaderDesc);
     assert (pShader);
     if (pShader)

@@ -60,6 +60,12 @@ DirectX11Renderable::ActivateBuffers(ID3D11DeviceContext * pDeviceContext)
 	pDeviceContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 }
 
+void
+DirectX11Renderable::DeactivateBuffers ()
+{
+	this->m_pIndexBuffer->Release();
+}
+
 DirectX11Renderable::DirectX11Renderable(Mesh * pMesh, DirectX11Texture2D * pTexture, DirectX11Shader * pShader, CORE_BOOLEAN isTransparent, D3D11_PRIMITIVE_TOPOLOGY topology) : Renderable(pMesh->GetIdentifier(), pTexture->m_Identifier, pShader->GetIdentifier(), isTransparent)
 {
 	assert(pMesh);
@@ -114,6 +120,26 @@ DirectX11Renderable::Instantiate(CORE_ID id, FASTMAT4 transform, DirectX11Render
 	this->m_pInstances.push_back(pInstance);
 
 	return pInstance;
+}
+
+CORE_BOOLEAN
+DirectX11Renderable::DeInstantiate (CORE_ID id)
+{
+	CORE_BOOLEAN result = false;
+
+	for (auto it	= this->m_pInstances.begin (); it != this->m_pInstances.end (); it++)
+	{
+		auto val	= (*it);
+		if (val->m_ID == id)
+		{
+			result	= true;
+			this->m_pInstances.erase (it);
+			break;
+		}
+
+	}
+
+	return result;
 }
 
 DWORD

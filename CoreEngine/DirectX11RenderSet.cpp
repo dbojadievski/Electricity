@@ -82,6 +82,8 @@ DirectX11RenderSet::Remove(DirectX11Renderable * pRenderable)
 				pRenderableList->erase(posIter);
 				wasRemoved = true;
 			}
+			if (wasRemoved && !pRenderableList->size ())
+				pPerTextureSet->erase (textureId);
 		}
 	}
 

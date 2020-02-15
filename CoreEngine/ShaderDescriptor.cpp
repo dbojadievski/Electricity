@@ -30,7 +30,7 @@ ShaderAssetDescriptor::GetShaderInputType ()
 }
 
 CORE_SHADER_TYPE
-ShaderAssetDescriptor::GetShaderType()
+ShaderAssetDescriptor::GetShaderType() const
 {
 	return this->m_ShaderType;
 }

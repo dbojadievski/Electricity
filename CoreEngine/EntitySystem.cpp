@@ -229,7 +229,7 @@ EntitySystem::UnRegisterComponent(GameObject * pEntity, IComponent * pComponent)
 	pEventData->m_EntityIdentifier = pEntity->GetIdentifier();
 	CORE_BOOLEAN wasUnRegistered = pEntity->UnregisterComponent(pComponent->m_Type, pComponent->m_Identifier);
 	if (wasUnRegistered)
-		this->m_pEventManager->VQueueEvent(pEventData);
+		this->m_pEventManager->VTriggerEvent(pEventData);
 
 	return wasUnRegistered;
 }
