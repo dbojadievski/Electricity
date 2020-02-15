@@ -9,6 +9,7 @@
 #include "KeyEvents.h"
 #include "EntityEvents.h"
 #include "RenderableComponent.h"
+#include "TransformComponent.h"
 #include "CoreEngine.h"
 
 // include the Direct3D Library file
@@ -865,10 +866,10 @@ DirectX11Renderer::OnKeyDown(IEventData * pEvent)
 	switch (pEventData->m_KeyCode)
 	{
 	case VK_UP:
-		this->m_MoveBackForward += 0.1;
+		this->m_MoveBackForward += 1;
 		break;
 	case VK_DOWN:
-		this->m_MoveBackForward -= 0.1;
+		this->m_MoveBackForward -= 1;
 		break;
 	case VK_LEFT:
 		break;
@@ -952,6 +953,10 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 			RenderableComponent * pComponent		= (RenderableComponent *) pEventData->m_pComponent;
 			assert (pComponent);
 
+			Entity * pEntity	= NULL;
+			g_Engine.GetEntitySystem()->GetEntityByIdentifier(pEventData->m_EntityIdentifier, &pEntity);
+			assert(pEntity);
+			
 			auto pModel								= pComponent->GetModel();
 			for (size_t idx							= 0; idx < pModel->NumMeshes(); idx++)
 			{
@@ -962,9 +967,6 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 				if (!renderables.size())
 				{
 					// Not loaded yet. Load it.
-					Entity * pEntity	= NULL;
-					g_Engine.GetEntitySystem()->GetEntityByIdentifier(pEventData->m_EntityIdentifier, &pEntity);
-					assert(pEntity);
 
 					auto pData			= g_Engine.GetAssetManager()->GetModelData(pModel->GetName());
 					assert(pData);
@@ -1023,7 +1025,6 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 						for (auto it = this->m_ShaderMap.begin (); it != this->m_ShaderMap.end (); it++)
 						{
 							auto pSh = (*it).second;
-							//if(pSh->)
 						}
 					}
 				}
@@ -1035,7 +1036,9 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 						auto pRenderable			= (DirectX11Renderable *) renderables.at(idx);
 						//TODO(Dino): Get transform component instead of hardcoding matrix.
 						this->m_RenderSet.Insert(pRenderable);
-						auto pRenderableInstance	= pRenderable->Instantiate(pComponent->m_Identifier, XMMatrixTranslation(0, 0, 0));
+						
+						auto * pComponent			= (TransformComponent *) pEntity->GetComponentByType (COMPONENT_TYPE_TRANSFORM);
+						auto pRenderableInstance	= pRenderable->Instantiate(pComponent->m_Identifier, XMMatrixTranslation(pComponent->m_Translation.x, pComponent->m_Translation.y, pComponent->m_Translation.z));
 						if (pRenderable->GetInstanceCount() == 1) // Just created. Let's buffer it up.
 							pRenderable->Buffer(this->m_pDevice, this->m_pDeviceContext);
 					}

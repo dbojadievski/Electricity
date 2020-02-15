@@ -5,11 +5,11 @@
 #include "tinyxml2.h"
 class TransformComponent : public IComponent
 {
-private:
+public:
 	VEC3 m_Translation;
 	VEC3 m_Rotation;
 	VEC3 m_Scale;
-public:
+	
 	TransformComponent();
 	TransformComponent(tinyxml2::XMLElement * pElement);
 	~TransformComponent();

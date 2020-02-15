@@ -62,6 +62,7 @@ InputBase::Init()
 	m_pMouse->SetDataFormat(&c_dfDIMouse);
 	m_pMouse->SetCooperativeLevel(g_Window, DISCL_EXCLUSIVE | DISCL_NOWINKEY | DISCL_FOREGROUND);
 
+
 end:
 	return;
 }
@@ -143,7 +144,7 @@ InputBase::UpdateMouseState()
 void 
 InputBase::UpdateKeyboardState()
 {
-	BYTE keyboardState[255];
+	BYTE keyboardState[255] = { 0 };
 
 	this->m_pKeyboard->Acquire();
 	this->m_pKeyboard->GetDeviceState(sizeof(keyboardState), (LPVOID)&keyboardState);
