@@ -5,9 +5,9 @@
       <entity name="crate">
         <components>
           <component type="transform">
-            <translation x="5" y="0" z="0" />
-            <rotation x="0" y="0" z="0" />
-            <scale x="1" y="1" z="1"/>
+            <translation x="0" y="0" z="0" />
+            <rotation x="7" y="0" z="3" />
+            <scale x="3" y="3" z="3"/>
           </component>
           <component type="renderable">
             <model name="crate" />

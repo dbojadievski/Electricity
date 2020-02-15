@@ -1038,7 +1038,15 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 						this->m_RenderSet.Insert(pRenderable);
 						
 						auto * pComponent			= (TransformComponent *) pEntity->GetComponentByType (COMPONENT_TYPE_TRANSFORM);
-						auto pRenderableInstance	= pRenderable->Instantiate(pComponent->m_Identifier, XMMatrixTranslation(pComponent->m_Translation.x, pComponent->m_Translation.y, pComponent->m_Translation.z));
+						FASTMAT4 transform	= FASTMAT_IDENTITY ();
+						auto rX				= XMMatrixRotationX (pComponent->m_Rotation.x);
+						auto rY				= XMMatrixRotationY (pComponent->m_Rotation.y);
+						auto rZ				= XMMatrixRotationZ (pComponent->m_Rotation.z);
+						auto rotation		= XMMatrixMultiply ((rX, rY), rZ);
+						auto translation	= XMMatrixTranslation (pComponent->m_Translation.x, pComponent->m_Translation.y, pComponent->m_Translation.z);
+						auto scale			= XMMatrixScaling (pComponent->m_Scale.x, pComponent->m_Scale.y, pComponent->m_Scale.z);
+						auto mat			= XMMatrixMultiply(scale, XMMatrixMultiply (translation, rotation));
+						auto pRenderableInstance	= pRenderable->Instantiate(pComponent->m_Identifier, mat);
 						if (pRenderable->GetInstanceCount() == 1) // Just created. Let's buffer it up.
 							pRenderable->Buffer(this->m_pDevice, this->m_pDeviceContext);
 					}
