@@ -34,14 +34,7 @@ Console::OnEntityCreateHandler(ConsoleCommandParameterList * pParams) const
 			errCode = pEntitySystem->RegisterEntity(pEntity);
 			assert(errCode == ERR_OK);
 
-			if (errCode == ERR_OK)
-			{
-				IEventManager * pEventManager = g_Engine.GetEventManager();
-				assert(pEventManager);
-				EntityRegisteredEventData * pEventData = new EntityRegisteredEventData();
-				pEventData->m_Identifier = pEntity->GetIdentifier();
-				pEventManager->VQueueEvent(pEventData);
-			}
+			/*NOTE(Dino): Now the entity system notifies the subscribers, so we don't need to raise an event from the console.*/
 		}
 	}
 }

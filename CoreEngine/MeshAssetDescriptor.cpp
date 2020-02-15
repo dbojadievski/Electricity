@@ -11,3 +11,8 @@ MeshAssetDescriptor::MeshAssetDescriptor (const string & name, const string & pa
 MeshAssetDescriptor::~MeshAssetDescriptor ()
 {
 }
+
+const string & MeshAssetDescriptorExtended::GetName() const
+{
+	return this->m_Name;
+}

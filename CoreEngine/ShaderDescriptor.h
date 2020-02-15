@@ -28,3 +28,16 @@ class ShaderAssetDescriptorExtended : public ShaderAssetDescriptor
 public:
 	ShaderAssetDescriptorExtended(const string & name, const string & path, CORE_ID identifier);
 };
+
+class ShaderPassDescriptor : public AssetDescriptor
+{
+private:
+	CORE_ID						m_VertexShader;
+	CORE_ID						m_PixelShader;
+
+public:
+	ShaderPassDescriptor(const string & name, CORE_ID identifier, CORE_ID vertexShader, CORE_ID pixelShader);
+
+	CORE_ID GetVertexShader() const;
+	CORE_ID GetPixelShader() const;
+};

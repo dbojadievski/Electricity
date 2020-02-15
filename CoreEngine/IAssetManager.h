@@ -17,4 +17,7 @@ public:
 	virtual TextureAssetDescriptor	*	GetTextureDescriptor(const string & name) = 0;
 	virtual ShaderAssetDescriptor	*	GetShaderDescriptor(const string & name) = 0;
 	virtual ModelAssetDescriptor	*	GetModelDescriptor(const string & name) = 0;
+	virtual ShaderPassDescriptor	*	GetShaderPassDescriptor(const string & name) = 0;
+
+	virtual ModelAssetDescriptorExtended * GetModelData(const string & name) = 0;
 };

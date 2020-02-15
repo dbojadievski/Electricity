@@ -175,7 +175,6 @@ GameObject::UnregisterComponent(EComponentType componentType, CORE_ID identifier
 					{
 						/*Delete component.*/
 						pComponentList->erase(pComponentList->begin() + currComponentIdx);
-						delete pComponent;
 						wasUnregistered = true;
 						break;
 					}

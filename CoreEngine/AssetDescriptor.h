@@ -12,7 +12,8 @@ enum CORE_ASSET_TYPE
     ASSET_TYPE_MODEL,
 	ASSET_TYPE_ANIMATION,
 	ASSET_TYPE_SOUND,
-	ASSET_TYPE_VIDEO
+	ASSET_TYPE_VIDEO,
+	ASSET_TYPE_PASS
 };
 class AssetDescriptor
 {
@@ -22,8 +23,8 @@ protected:
 	string m_Path;
     string m_Name;
 public:
-    string GetName ();
-	string GetPath();
-	CORE_ID GetIdentifier();
-	CORE_ASSET_TYPE GetAssetType();
+    string GetName () const;
+	string GetPath() const;
+	CORE_ID GetIdentifier() const;
+	CORE_ASSET_TYPE GetAssetType() const;
 };

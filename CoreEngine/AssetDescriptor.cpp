@@ -1,25 +1,25 @@
 #include "AssetDescriptor.h"
 
 string
-AssetDescriptor::GetName ()
+AssetDescriptor::GetName () const
 {
     return this->m_Name;
 }
 
 string 
-AssetDescriptor::GetPath()
+AssetDescriptor::GetPath() const
 {
 	return this->m_Path;
 }
 
 CORE_ID 
-AssetDescriptor::GetIdentifier()
+AssetDescriptor::GetIdentifier() const
 {
 	return this->m_Identifier;
 }
 
 CORE_ASSET_TYPE 
-AssetDescriptor::GetAssetType()
+AssetDescriptor::GetAssetType() const
 {
 	return this->m_AssetType;
 }

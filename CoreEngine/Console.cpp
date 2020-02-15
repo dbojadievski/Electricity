@@ -157,7 +157,8 @@ Console::VParseCommand(CORE_STRING pStrCmdText)
 				if (isCommandValid)
 				{
 					/*TODO(Dino): Queue command! The command queue simply needs to be a list of key-value pairs, between the */
-					std::pair<ConsoleCommand *, CCommandParamList *> pair = std::make_pair(pCommand, pParams);
+					printf("Queueing command: %s\r\n", pStrCmdText);
+					ConsoleCommandQueueEntry pair = std::make_pair(pCommand, pParams);
 					this->m_Queue.push(pair);
 				}
 			}
@@ -172,6 +173,17 @@ Console::VParseCommand(CORE_STRING pStrCmdText)
 		}
 	}
 }
+
+//void
+//Console::VQueueCommand(ConsoleCommandQueueEntry * pCommand)
+//{
+//	assert(pCommand);
+//	if (pCommand)
+//	{
+//		printf("Cmd Queued: %s", pCommand->first->m_pStrName);
+//		this->m_Queue.push(*pCommand);
+//	}
+//}
 
 const CVar * const 
 Console::VGetCVar(CORE_STRING pStrName) const

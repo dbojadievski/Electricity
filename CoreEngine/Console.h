@@ -34,6 +34,7 @@ public:
 	virtual CORE_BOOLEAN IConsole::VRegisterCommand(ConsoleCommand * pCommand);
 	virtual CORE_BOOLEAN IConsole::VUnregisterCommand(CORE_STRING pStrCommandText);
 	virtual void IConsole::VParseCommand(const char * pStrCmdText);
+	//virtual void IConsole::VQueueCommand(ConsoleCommandQueueEntry * pEntry);
 
 	virtual const CVar * const IConsole::VGetCVar(CORE_STRING pStrName) const;
 	virtual CORE_BOOLEAN IConsole::VSetCVar(const CVar * const pCVar);

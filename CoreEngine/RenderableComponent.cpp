@@ -35,6 +35,8 @@ RenderableComponent::RenderableComponent(XMLElement * pElement, IAssetManager *p
 					this->m_pModel = pDesc;
 			}
 		}
+
+		this->m_Type = COMPONENT_TYPE_RENDERABLE;
 	}
 }
 

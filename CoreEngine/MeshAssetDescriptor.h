@@ -21,5 +21,20 @@ public:
     MeshAssetDescriptorExtended (const string & name, const string & path, CORE_ID identifier, CoreMesh * pMesh) : MeshAssetDescriptor (name, path, identifier)
     {
         this->m_pMesh = pMesh;
+		this->m_Name = name;
+		this->m_Path = path;
+		this->m_Identifier = identifier;
     }
+
+	void SetName(const string & name)
+	{
+		this->m_Name = string(name.c_str());
+	}
+
+	CoreMesh * GetMesh() const
+	{
+		return m_pMesh;
+	}
+
+	const string & GetName() const;
 };

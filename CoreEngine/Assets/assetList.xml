@@ -6,6 +6,9 @@
         <shader name="redVShader" path="Assets\\Shaders\\red.hlsl" entryPoint="VShader" type="vertex" input="vertex" />
         <shader name="redPShader" path="Assets\\Shaders\\red.hlsl" entryPoint="PShader" type="pixel" input="vertex" />
     </shaders>
+    <shaderPasses>
+      <shaderPass name="basicPass" vertexShader="basicVShader" pixelShader="basicPShader" />
+    </shaderPasses>
     <textures>
         <texture name="grass" path="Assets\\textures\\grass.dds" type="2D" />
         <texture name="wood" path="Assets\\textures\\wood.dds" type="2D" />
@@ -24,6 +27,9 @@
             <shader name="basicVShader" type="vertex" />
             <shader name="basicPShader" type="pixel" />
           </shaders>
+          <shaderPasses>
+            <shaderPass name="basicPass" />
+          </shaderPasses>
         </model>
     </models>
 </assets>

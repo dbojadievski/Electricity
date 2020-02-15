@@ -44,6 +44,8 @@ TransformComponent::TransformComponent(XMLElement * pComponent)
 			z = pElemScale->FloatAttribute("z", 0);
 			this->m_Scale = VEC3(x, y, z);
 		}
+
+		this->m_Type = COMPONENT_TYPE_TRANSFORM;
 	}
 }
 

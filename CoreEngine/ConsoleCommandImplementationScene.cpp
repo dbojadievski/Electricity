@@ -13,7 +13,7 @@ using namespace std;
 #include "SceneEvents.h"
 
 void
-ProcessEntityComponent(XMLElement * pComponentXML, __PARAM_OUT__ Entity * pEntity)
+ProcessEntityComponent(XMLElement * pComponentXML, Console * pConsole, __PARAM_OUT__ Entity * pEntity)
 {
 	assert(pComponentXML);
 	assert(pEntity);
@@ -41,7 +41,7 @@ ProcessEntityComponent(XMLElement * pComponentXML, __PARAM_OUT__ Entity * pEntit
 }
 
 void 
-ProcessEntity(XMLElement * pEntity, __PARAM_OUT__ vector<Entity *> * pEntities, Entity * pParent = NULL)
+ProcessEntity(XMLElement * pEntity, __PARAM_OUT__ vector<Entity *> * pEntities, Console  * pConsole, Entity * pParent = NULL)
 {
 	/*
 	* NOTE(Dino): Entities consist of two things:
@@ -52,12 +52,16 @@ ProcessEntity(XMLElement * pEntity, __PARAM_OUT__ vector<Entity *> * pEntities, 
 	assert(pEntities);
 
 	string name = pEntity->Attribute("name");
-	Entity * pEntityObj = new Entity(&name, pParent);
+	Entity * pEntityObj = new Entity(new string(name));
+	g_Engine.GetEntitySystem()->RegisterEntity(pEntityObj);
+	pEntities->push_back(pEntityObj);
 	if (pParent)
 	{
 		CORE_BOOLEAN linkResult;
 		g_Engine.GetEntitySystem()->Link(pParent, pEntityObj, &linkResult);
+		assert(linkResult);
 	}
+
 
 	//First, we parse components.
 	XMLElement * pComponents = pEntity->FirstChildElement("components");
@@ -65,7 +69,7 @@ ProcessEntity(XMLElement * pEntity, __PARAM_OUT__ vector<Entity *> * pEntities, 
 	XMLElement * pComponent = pComponents->FirstChildElement();
 	while (pComponent)
 	{
-		ProcessEntityComponent(pComponent, pEntityObj);
+		ProcessEntityComponent(pComponent, pConsole, pEntityObj);
 		pComponent = pComponent->NextSiblingElement();
 	}
 
@@ -76,11 +80,11 @@ ProcessEntity(XMLElement * pEntity, __PARAM_OUT__ vector<Entity *> * pEntities, 
 		XMLElement *pChild = pChildList->FirstChildElement("entity");
 		while (pChild)
 		{
-			ProcessEntity(pChild, pEntities, pEntityObj);
+			ProcessEntity(pChild, pEntities, pConsole, pEntityObj);
 			pChild = pChild->NextSiblingElement("entity");
 		}
 	}
-	pEntities->push_back(pEntityObj);
+
 
 }
 
@@ -124,7 +128,7 @@ Console::OnSceneLoadHandler(ConsoleCommandParameterList * pParams) const
 				XMLElement * pEntity = pEntities->FirstChildElement("entity");
 				while (pEntity)
 				{
-					ProcessEntity(pEntity, pEntityList);
+					ProcessEntity(pEntity, pEntityList, (Console *) this);
 					pEntity = pEntity->NextSiblingElement();
 				}
 

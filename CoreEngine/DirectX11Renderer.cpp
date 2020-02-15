@@ -897,6 +897,12 @@ DirectX11Renderer::OnAssetLoaded (IEventData * pEvent)
             case ASSET_TYPE_MESH:
                 assetLoaded                 = this->LoadMesh (pDescriptor);
                 break;
+			case ASSET_TYPE_MODEL:
+				//assetLoaded					= this->LoadModel(pDescriptor);
+				break;
+			case ASSET_TYPE_PASS:
+				assetLoaded = this->LoadPass(pDescriptor);
+				break;
             default:
                 assert (false);
         }
@@ -926,14 +932,6 @@ DirectX11Renderer::OnEntityRegistered(IEventData * pEvent)
 		assert(err == ERR_OK);
 		if (err == ERR_OK)
 		{
-			RenderableComponent * pRComponent	= (RenderableComponent * )pEntity->GetComponentByType(COMPONENT_TYPE_RENDERABLE);
-			if (pRComponent)
-			{
-	/*			DirectX11Renderable * pRenderable = (DirectX11Renderable *) pRComponent->GetRenderable();
-				pRenderable->Instantiate(entityID, XMMatrixTranslation(0.0f, 0.0f, 0.0f), NULL);
-				pRenderable->Buffer (this->m_pDevice, this->m_pDeviceContext);
-				pRenderable->ActivateBuffers (this->m_pDeviceContext);*/
-			}
 		}
 	}
 }
@@ -950,10 +948,73 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 		{
 			RenderableComponent * pComponent		= (RenderableComponent *) pEventData->m_pComponent;
 			assert (pComponent);
-			
-			//DirectX11Renderable * pRenderable		= (DirectX11Renderable *) pComponent->GetRenderable ();
-			//assert (pRenderable);
-			
+
+			auto pModel								= pComponent->GetModel();
+			for (size_t idx							= 0; idx < pModel->NumMeshes(); idx++)
+			{
+				auto pMesh							= pModel->GetMeshAt(idx);
+				auto pMeshData						= g_Engine.GetAssetManager()->GetMesh(pMesh);
+				vector<Renderable *> renderables;
+				this->GetRenderablesByMesh(pMesh, &renderables);
+				if (!renderables.size())
+				{
+					// Not loaded yet. Load it.
+					Entity * pEntity	= NULL;
+					g_Engine.GetEntitySystem()->GetEntityByIdentifier(pEventData->m_EntityIdentifier, &pEntity);
+					assert(pEntity);
+
+					auto pData			= g_Engine.GetAssetManager()->GetModelData(pModel->GetName());
+					assert(pData);
+								
+					size_t numPasses	= pData->NumPasses();
+					assert(pData->NumTextures());
+					assert(numPasses);
+					
+					auto * pTex			= pData->GetTextureAt(0);
+					DirectX11Texture2D * pDxTex = NULL;
+
+					if (pTex)
+					{
+						auto findResult = this->m_TextureMap.find(pTex->GetIdentifier());
+						pDxTex			= findResult->second;
+					}
+					for (size_t idx		= 0; idx < pData->NumShaders(); idx++)
+					{
+						auto pShader	= pData->GetShaderAt(idx);
+						if (pShader)
+						{
+							auto pDxShader		= this->m_ShaderMap.find(pShader->GetIdentifier())->second;
+							//TODO(Dino): Make this work with multipass rendering.
+							auto pRenderable	= new DirectX11Renderable(pMeshData, pDxTex, pDxShader);
+							this->m_Renderables.push_back(pRenderable);
+							auto pair = make_pair(pModel->GetIdentifier(), pRenderable);
+							this->m_ModelToRenderableMap.insert(pair);
+							this->GetRenderablesByMesh(pMesh, &renderables);
+						}
+					}
+
+					for (size_t passIdx = 0; passIdx < numPasses; passIdx++)
+					{
+						DirectX11Renderable * pRenderable = NULL;
+						auto * pPass	= pData->GetPassAt(passIdx);
+						auto pShader	= pPass->GetPixelShader();
+						auto vShader	= pPass->GetVertexShader();
+					}
+					}
+
+				{
+					// The renderable is already registered. Now we can instantiate it.
+					for (size_t idx					= 0; idx < renderables.size(); idx++)
+					{
+						auto pRenderable			= (DirectX11Renderable *) renderables.at(idx);
+						//TODO(Dino): Get transform component instead of hardcoding matrix.
+						this->m_RenderSet.Insert(pRenderable);
+						auto pRenderableInstance	= pRenderable->Instantiate(pComponent->m_Identifier, XMMatrixTranslation(0, 0, 0));
+						if (pRenderable->GetInstanceCount() == 1) // Just created. Let's buffer it up.
+							pRenderable->Buffer(this->m_pDevice, this->m_pDeviceContext);
+					}
+				}
+			}
 		}
 	}
 }
@@ -961,45 +1022,60 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 void
 DirectX11Renderer::OnEntityComponentDeRegistered (IEventData * pEvent)
 {
-	/*assert (pEvent);
+	assert (pEvent);
 	if (pEvent)
 	{
 		EntityComponentRemovedEventData * pEventData = (EntityComponentRemovedEventData *)pEvent;
 		if (pEventData->m_ComponentType == COMPONENT_TYPE_RENDERABLE)
 		{
-			RenderableComponent * pComponent = (RenderableComponent *)pEventData->;
+			RenderableComponent * pComponent = (RenderableComponent *)pEventData->m_pComponent;
 			assert (pComponent);
-
-			DirectX11Renderable * pRenderable = (DirectX11Renderable *)pComponent->GetRenderable ();
-			assert (pRenderable);
+			auto pModelDesc = pComponent->GetModel();
+			auto modelID	= pModelDesc->GetIdentifier();
+			auto result		= this->m_ModelToRenderableMap.find(modelID);
 
 		}
-	}*/
+	}
 }
 
 CORE_BOOLEAN
 DirectX11Renderer::LoadMesh (AssetDescriptor * pDescriptor)
 {
-    auto manager    = g_Engine.GetAssetManager ();
-    CoreMesh * pMesh = manager->GetMesh (pDescriptor);
-    DirectX11Renderable * pRenderable = new DirectX11Renderable (pMesh, this->m_TextureMap.at(1), this->m_pBasicShader);
-    this->m_Renderables.push_back (pRenderable);
+	MeshAssetDescriptorExtended * pDescEx = NULL;
+	assert(pDescriptor);
+	if (pDescriptor)
+	{
+		pDescEx				= (MeshAssetDescriptorExtended *)pDescriptor;
+		auto pMesh			= pDescEx->GetMesh();
+		size_t numSubMeshes = pMesh->GetSubMeshCount();
+		for (size_t idxSubs = 0; idxSubs < numSubMeshes; idxSubs++)
+		{
+			auto pSub = pMesh->GetSubMeshAt(idxSubs);
+			
+		}
+	}
 
-	/*
-	 * NOTE(Dino):
-	 * This code instantiating the renderable is strictly for testing purposes. Use a console command to instantiate further on.
-	 */
-    //XMMATRIX childTransform = XMMatrixRotationX (0.3f) * XMMatrixRotationY (-0.6f) * XMMatrixRotationZ (0.46f) * XMMatrixTranslation (-7.f, 2.f, -3.f);
-    //pRenderable->Instantiate (1, childTransform, NULL);
-    //pRenderable->Buffer (this->m_pDevice, this->m_pDeviceContext);
-    //pRenderable->ActivateBuffers (this->m_pDeviceContext);
+    return false;
+}
 
-    CORE_BOOLEAN wasInserted = this->m_RenderSet.Insert (pRenderable);
-	assert(wasInserted);
-	if (!wasInserted)
-		delete pRenderable;
+CORE_BOOLEAN
+DirectX11Renderer::LoadSubMesh(CoreMesh * pMesh, DirectX11Texture2D * pTexture, DirectX11Shader * pShader)
+{
+	CORE_BOOLEAN isLoaded	= true;
+	assert(pMesh);
 
-    return wasInserted;
+
+	auto * pRenderable	= new DirectX11Renderable(pMesh, pTexture, pShader);
+	this->m_Renderables.push_back(pRenderable);
+	auto numSubs		= pMesh->GetSubMeshCount();
+	for (auto idx		= 0; idx < numSubs; idx++)
+	{
+		auto pSubMesh	= pMesh->GetSubMeshAt(idx);
+		isLoaded		&= this->LoadSubMesh(pMesh, pTexture, pShader);
+		assert(isLoaded);
+	}
+
+	return isLoaded;
 }
 
 CORE_BOOLEAN
@@ -1023,6 +1099,14 @@ DirectX11Renderer::LoadTexture (AssetDescriptor * pDescriptor)
     }
 
     return retVal;
+}
+
+
+CORE_BOOLEAN
+DirectX11Renderer::LoadPass(AssetDescriptor * pDescriptor)
+{
+	CORE_BOOLEAN retVal					= false;
+	return retVal;
 }
 
 CORE_BOOLEAN 

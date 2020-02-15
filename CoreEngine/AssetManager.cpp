@@ -26,6 +26,7 @@
 #include "FastDelegate.h"
 
 #include "RenderableComponent.h"
+#include "EntityEvents.h"
 using namespace fastdelegate;
 
 using namespace std;
@@ -50,6 +51,13 @@ AssetManager::Init()
     else
          this->VRegisterShaders (pXmlShaderList);
 
+	CORE_ERROR loadedPasses				= ERR_OK;
+	XMLElement * pXmlPassesList			= pXmlAssetList->FirstChildElement("shaderPasses");
+	if (!pXmlPassesList || pXmlPassesList->NoChildren())
+		assert(false);
+	else
+		this->VRegisterPasses(pXmlPassesList);
+
     CORE_ERROR loadedTextures           = ERR_OK;
     XMLElement * pXmlTextureList        = pXmlAssetList->FirstChildElement ("textures");
     if (!pXmlTextureList || pXmlTextureList->NoChildren ())
@@ -69,9 +77,9 @@ AssetManager::Init()
     else
         this->VRegisterModels (pXmlModelList);
 
-    this->LoadMesh ((this->m_MeshMap.at(2)));
-
 	/* Register the asset manager to all the interesting events. */
+	auto entityLoadedDelegate = MakeDelegate(this, &AssetManager::OnEntityComponentAdded);
+	this->m_pEventManager->VAddListener(entityLoadedDelegate, EVENT_TYPE_ENTITY_COMPONENT_ADDED);
 	EventListenerDelegate sceneLoadedDelegate = MakeDelegate(this, &AssetManager::OnSceneLoaded);
 	this->m_pEventManager->VAddListener(sceneLoadedDelegate, EVENT_TYPE_SCENE_LOADED);
 }   
@@ -111,6 +119,57 @@ AssetManager::ShutDown()
 #pragma endregion
 
 
+CORE_ERROR
+AssetManager::VRegisterPasses(XMLNode * pXmlPassList)
+{
+	CORE_ERROR retVal = ERR_OK;
+		
+	XMLNode * pPassNode = pXmlPassList->FirstChild();
+	while (pPassNode)
+	{
+		string name, vs, ps;
+		XMLElement * pPassEl = pPassNode->ToElement();
+		assert(pPassEl);
+
+		const char * pStrName = pPassEl->Attribute("name");
+		assert(pStrName);
+		if (!pStrName)
+			retVal = ERR_FAILED;
+		else
+			name = string(pStrName);
+
+		const char * pStrVertex = pPassEl->Attribute("vertexShader");
+		assert(pStrVertex);
+		if (!pStrVertex)
+			retVal = ERR_FAILED;
+		else
+			vs = string(pStrVertex);
+
+		const char * pStrPixel = pPassEl->Attribute("pixelShader");
+		assert(pStrPixel);
+		if (!pStrPixel)
+			retVal = ERR_FAILED;
+		else
+			ps = string(pStrPixel);
+
+		if (retVal == ERR_OK)
+		{
+			auto pVS = this->GetShaderDescriptor(vs);
+			auto pPS = this->GetShaderDescriptor(ps);
+			assert(pVS);
+			assert(pPS);
+
+			CORE_ID passID	= GetNextIdentifier(ASSET_TYPE_PASS);
+			CORE_ID vsID	= pVS->GetIdentifier();
+			CORE_ID psID	= pPS->GetIdentifier();
+			ShaderPassDescriptor * pDesc = new ShaderPassDescriptor(name, passID, vsID, psID);
+			this->RegisterPass(pDesc);
+		}
+
+		pPassNode = pPassNode->NextSibling();
+	}
+	return retVal;
+}
 
 CORE_ERROR
 AssetManager::VRegisterShaders (XMLNode * pXmlShaderList)
@@ -201,6 +260,16 @@ AssetManager::RegisterShader (ShaderAssetDescriptor * pDesc)
 	auto pair = make_pair (id, pDesc);
 	this->m_ShaderMap.insert (pair);
 	this->m_CurrentIdentifiers.insert_or_assign (CORE_ASSET_TYPE::ASSET_TYPE_SHADER, id);
+}
+
+void
+AssetManager::RegisterPass(ShaderPassDescriptor * pDesc)
+{
+	assert(pDesc);
+	CORE_ID id = pDesc->GetIdentifier();
+	auto pair = make_pair(id, pDesc);
+	this->m_ShaderPassMap.insert(pair);
+	this->m_CurrentIdentifiers.insert_or_assign(ASSET_TYPE_PASS, id);
 }
 
 void
@@ -364,6 +433,20 @@ AssetManager::VRegisterModels (XMLNode * pXmlModelsList)
 							pShaderSet = pShaderSet->NextSibling();
 						}
 					}
+					else if (!strcmp(text, "shaderPasses"))
+					{
+						XMLNode * pShaderPasses = pChild->FirstChild();
+						while (pShaderPasses)
+						{
+							XMLElement * pPass = pShaderPasses->ToElement();
+							string name = pPass->Attribute("name");
+							ShaderPassDescriptor * pPassDescriptor = this->GetShaderPassDescriptor(name);
+							assert(pPassDescriptor);
+							pModelDesc->AddPass(pPassDescriptor);
+
+							pShaderPasses = pShaderPasses->NextSibling();
+						}
+					}
 					pChild = pChild->NextSibling ();
 				}
 
@@ -371,8 +454,7 @@ AssetManager::VRegisterModels (XMLNode * pXmlModelsList)
 				this->m_ModelMap.insert (pair);
 				pModelNode  = pModelNode->NextSibling ();
 			}
-
-			}
+		}
     }
 
     return retVal;
@@ -423,6 +505,10 @@ AssetManager::LoadAsset(AssetDescriptor * pAssetDescriptor)
             break;
         case CORE_ASSET_TYPE::ASSET_TYPE_MODEL:
             this->LoadModel ((ModelAssetDescriptor *)pAssetDescriptor);
+			break;
+		case CORE_ASSET_TYPE::ASSET_TYPE_PASS:
+			this->LoadPass((ShaderPassDescriptor *)pAssetDescriptor);
+			break;
 	    default:
 		    assert(0);
 		    break;
@@ -470,37 +556,63 @@ AssetManager::IsLoaded( __PARAM_IN__ AssetDescriptor * pAssetDescriptor, __PARAM
                 CORE_BOOLEAN isModelLoaded            = true;
                 ModelAssetDescriptor * pModelDesc   = (ModelAssetDescriptor *) pAssetDescriptor;
 
-                size_t numMeshes    = pModelDesc->NumMeshes ();
-                for (size_t meshIdx = 0; meshIdx < numMeshes; meshIdx++)
-                {
-                    MeshAssetDescriptor * pMeshDesc = pModelDesc->GetMeshAt (meshIdx);
-                    CORE_BOOLEAN isLoaded           = false;
-                    CORE_ERROR err                  = this->IsLoaded (pMeshDesc, isLoaded);
-                    if (err != ERR_OK || !isLoaded)
-                    {
-                        isModelLoaded  = false;
-                        break;
-                    }
-                }
+				/*First, we check if the model is already loaded. */
+				auto iter = this->m_LoadedModelMap.find(identifier);
+				if (iter == this->m_LoadedModelMap.end())
+				{
+					size_t numMeshes    = pModelDesc->NumMeshes ();
+					for (size_t meshIdx = 0; meshIdx < numMeshes; meshIdx++)
+					{
+						MeshAssetDescriptor * pMeshDesc = pModelDesc->GetMeshAt (meshIdx);
+						CORE_BOOLEAN isLoaded           = false;
+						CORE_ERROR err                  = this->IsLoaded (pMeshDesc, isLoaded);
+						if (err != ERR_OK || !isLoaded)
+						{
+							isModelLoaded  = false;
+							break;
+						}
+					}
 
-                if (isModelLoaded)
-                {
-                    size_t numTexes = pModelDesc->NumTextures ();
-                    for (size_t texIdx = 0; texIdx < numTexes; texIdx++)
-                    {
-                        TextureAssetDescriptor * pTexDesc = pModelDesc->GetTextureAt (texIdx);
-                        CORE_BOOLEAN isLoaded               = false;
-                        CORE_ERROR err = this->IsLoaded (pTexDesc, isLoaded);
-                        if (err != ERR_OK || !isLoaded)
-                        {
-                            isModelLoaded = false;
-                            break;
-                        }
-                    }
-                }
+					if (isModelLoaded)
+					{
+						size_t numTexes = pModelDesc->NumTextures ();
+						for (size_t texIdx = 0; texIdx < numTexes; texIdx++)
+						{
+							TextureAssetDescriptor * pTexDesc = pModelDesc->GetTextureAt (texIdx);
+							CORE_BOOLEAN isLoaded               = false;
+							CORE_ERROR err = this->IsLoaded (pTexDesc, isLoaded);
+							if (err != ERR_OK || !isLoaded)
+							{
+								isModelLoaded = false;
+								break;
+							}
+						}
+					}
+
+					if (isModelLoaded)
+					{
+						size_t numShaders		= pModelDesc->NumShaders();
+						for (size_t shaderIdx	= 0; shaderIdx < numShaders; shaderIdx++)
+						{
+							ShaderAssetDescriptor * pShaderDesc		= pModelDesc->GetShaderAt(shaderIdx);
+							CORE_BOOLEAN isLoaded					= false;
+							CORE_ERROR err							= this->IsLoaded(pShaderDesc, isLoaded);
+							if (err != ERR_OK || !isLoaded)
+							{
+								isModelLoaded	= false;
+								break;
+							}
+						}
+					}
+				}
 
                 retVal = isModelLoaded;
             }
+			case CORE_ASSET_TYPE::ASSET_TYPE_PASS:
+			{
+				retVal = (this->m_LoadedPassMap.find(pAssetDescriptor->GetIdentifier()) != this->m_LoadedPassMap.end());
+				break;
+			}
 		    default:
 		    {
 			    assert(false);
@@ -538,11 +650,38 @@ AssetManager::LoadShader(ShaderAssetDescriptor * pShaderDescriptor)
 			this->m_LoadedShaderMap.insert(pair);
 
 			AssetLoadedEventData * pAssetLoadedEventData = new AssetLoadedEventData(pShaderDescriptor);
-			this->m_pEventManager->VQueueEvent(pAssetLoadedEventData);
+			this->m_pEventManager->VTriggerEvent(pAssetLoadedEventData);
 		}
 	}
 
 	return errCode;
+}
+
+
+CORE_ERROR
+AssetManager::LoadPass(ShaderPassDescriptor * pPassDescriptor)
+{
+	assert(pPassDescriptor);
+
+	CORE_ERROR errCode = ERR_OK;
+	if (!pPassDescriptor)
+		errCode = ERR_PARAM_INVALID;
+	
+	CORE_BOOLEAN isPassLoaded = false;
+	CORE_ERROR errPassLoaded = this->IsLoaded(pPassDescriptor, isPassLoaded);
+	assert(errPassLoaded == ERR_OK);
+
+	if (!isPassLoaded)
+	{
+		CORE_ID identifier = pPassDescriptor->GetIdentifier();
+		this->m_LoadedPassMap.insert(make_pair(identifier, pPassDescriptor));
+		AssetLoadedEventData * pEvent = new AssetLoadedEventData(pPassDescriptor);
+		this->m_pEventManager->VQueueEvent(pEvent);
+		isPassLoaded = true;
+	}
+
+	return errCode;
+
 }
 
 CORE_ERROR
@@ -568,7 +707,7 @@ AssetManager::LoadTexture (TextureAssetDescriptor * pTextureDescriptor)
 			
 			this->m_LoadedTextureMap.insert(make_pair(identifier, pTextureDescriptor));
             AssetLoadedEventData * pAssetLoadedEventData = new AssetLoadedEventData (pTextureDescriptor);
-            this->m_pEventManager->VQueueEvent (pAssetLoadedEventData);
+            this->m_pEventManager->VTriggerEvent (pAssetLoadedEventData);
         }
     }
 
@@ -593,19 +732,20 @@ AssetManager::LoadMesh (MeshAssetDescriptor * pMeshDescriptor)
         if (!isMeshLoaded)
         {
             string meshPath = pMeshDescriptor->GetPath ();
-            vector<CoreMesh *> loadedMeshes;
+            vector<MeshAssetDescriptorExtended *> loadedMeshes;
             LoadMeshFromPath (&meshPath, &loadedMeshes);
             for (auto it = loadedMeshes.begin (); it != loadedMeshes.end (); ++it)
             {
-                CoreMesh * pMesh = *it;
+                auto * pMesh = *it;
                 assert (pMesh);
-				pMesh->m_Name = pMeshDescriptor->GetName();
+				pMesh->SetName(pMeshDescriptor->GetName());
+				pMesh->GetMesh()->m_Name = pMesh->GetName();
                 auto pair = make_pair (identifier, pMesh);
                 this->m_LoadedMeshes.insert (pair);
-            }
 
-            AssetLoadedEventData * pAssetLoadedEventData = new AssetLoadedEventData (pMeshDescriptor);
-            this->m_pEventManager->VQueueEvent (pAssetLoadedEventData);
+				auto pAssetLoadedEventData			= new AssetLoadedEventData(pMesh);
+				this->m_pEventManager->VTriggerEvent(pAssetLoadedEventData);
+			}
         }
     }
 
@@ -643,6 +783,59 @@ AssetManager::LoadModel (ModelAssetDescriptor * pModelDesc)
 			ShaderAssetDescriptor * pShader = pModelDesc->GetShaderAt(shaderIdx);
 			retVal							= this->LoadShader(pShader);
 		}
+
+		/*If all constituent parts are, indeed, loaded, then we can build up the loaded model descriptor and save it. */
+		if (retVal == ERR_OK)
+		{
+			CORE_ID id = pModelDesc->GetIdentifier();
+			string name = pModelDesc->GetName();
+			auto pDescEx = new ModelAssetDescriptorExtended(name, id);
+
+			size_t numMeshes = pModelDesc->NumMeshes();
+			for (size_t meshIdx = 0; meshIdx < numMeshes; meshIdx++)
+			{
+				auto pMesh = pModelDesc->GetMeshAt(meshIdx);
+				assert(pMesh);
+				CORE_ID meshID = pMesh->GetIdentifier();
+				auto pMeshEx = this->m_LoadedMeshes.at(meshID);
+				pDescEx->AddMesh(pMeshEx);
+
+			}
+
+			size_t numTexes = pModelDesc->NumTextures();
+			for (size_t texIdx = 0; texIdx < numTexes; texIdx++)
+			{
+				auto pTex = pModelDesc->GetTextureAt(texIdx);
+				assert(pTex);
+				CORE_ID texID = pTex->GetIdentifier();
+				auto pTexEx = this->m_LoadedTextureMap.at(texID);
+				pDescEx->AddTexture(pTexEx);
+			}
+
+			size_t numShaders		= pModelDesc->NumShaders();
+			for (size_t ShaderIdx	= 0; ShaderIdx < numShaders; ShaderIdx++)
+			{
+				auto pShader		= pModelDesc->GetShaderAt(ShaderIdx);
+				assert(pShader);
+				CORE_ID ShaderID	= pShader->GetIdentifier();
+				auto pShaderEx		= this->m_LoadedShaderMap.at(ShaderID);
+				pDescEx->AddShader(pShaderEx);
+			}
+
+			size_t numPasses		= pModelDesc->NumPasses();
+			for (size_t passIdx		= 0; passIdx < numPasses; passIdx++)
+			{
+				auto pPass			= pModelDesc->GetPassAt(passIdx);
+				assert(pPass);
+				pDescEx->AddPass(pPass);
+			}
+
+			auto pair				= make_pair(id, pDescEx);
+			this->m_LoadedModelMap.insert(pair);
+
+			AssetLoadedEventData *pEvent = new AssetLoadedEventData(pDescEx);
+			this->m_pEventManager->VTriggerEvent(pEvent);
+		}
     }
 
     return retVal;
@@ -662,7 +855,7 @@ AssetManager::OnAssetLoadFailed (AssetLoadFailedEventData *pEventData)
             this->UnloadShader(this->m_LoadedShaderMap.at(pEventData->m_pAssetDescriptorExtended->GetIdentifier()));
             break;
         case ASSET_TYPE_MESH:
-            //this->UnloadMesh (this->m_LoadedMeshes.at (pEventData->m_pAssetDescriptorExtended->GetIdentifier ()));
+            this->UnloadMesh (this->m_LoadedMeshes.at (pEventData->m_pAssetDescriptorExtended->GetIdentifier ()));
             break;
         default:
             assert (false);
@@ -687,17 +880,18 @@ AssetManager::UnloadTexture (TextureAssetDescriptor * pDesc)
 }
 
 void
-AssetManager::UnloadMesh (MeshAssetDescriptor * pMesh)
+AssetManager::UnloadMesh (MeshAssetDescriptor * pDesc)
 {
-    assert (pMesh);
+    assert (pDesc);
 
-    CORE_ID identifier = pMesh->GetIdentifier ();
+    CORE_ID identifier = pDesc->GetIdentifier ();
+	auto pMesh = this->m_LoadedMeshes.at(identifier);
     this->m_LoadedMeshes.erase (identifier);
     delete pMesh;
 }
 
 CORE_ERROR 
-AssetManager::LoadMeshFromPath (const string * path, vector<CoreMesh *> * pImportedMeshes)
+AssetManager::LoadMeshFromPath (const string * path, vector<MeshAssetDescriptorExtended *> * pImportedMeshes)
 {
     CORE_ERROR errCode  = ERR_FAILED;
 
@@ -782,7 +976,8 @@ AssetManager::LoadMeshFromPath (const string * path, vector<CoreMesh *> * pImpor
             pParentMesh     = child;
         }
 
-        pImportedMeshes->push_back (pParentMesh);
+		MeshAssetDescriptorExtended * pDescEx = new MeshAssetDescriptorExtended(string("UNKNOWN"), *path, id, pParentMesh);
+        pImportedMeshes->push_back (pDescEx);
         errCode     = ERR_OK;
 
     }
@@ -805,7 +1000,7 @@ AssetManager::GetMesh (AssetDescriptor * pDescriptor)
         {
             if (it->first == pDescriptor->GetIdentifier ())
             {
-                pRetVal = it->second;
+                pRetVal = it->second->GetMesh();
                 break;
             }
         }
@@ -868,25 +1063,23 @@ AssetManager::GetShaderDescriptor (const string & name)
     return retVal;
 }
 
-//ShaderAssetDescriptor *
-//AssetManager::GetShaderDescriptor (const string & name, const SHADER_TYPE type)
-//{
-//	ShaderAssetDescriptor * pRetVal = NULL;
-//
-//	for (auto it = this->m_ShaderMap.begin(); it != this->m_ShaderMap.end(); ++it)
-//	{
-//		ShaderAssetDescriptor * pDesc = it->second;
-//		assert(pDesc);
-//
-//		if (!name.compare(pDesc->GetName()) && (pDesc->GetShaderType() == type))
-//		{
-//			pRetVal = pDesc;
-//			break;
-//		}
-//	}
-//
-//	return pRetVal;
-//}
+ShaderPassDescriptor *
+AssetManager::GetShaderPassDescriptor(const string & name)
+{
+	ShaderPassDescriptor * retVal = NULL;
+
+	for (auto it = this->m_ShaderPassMap.begin(); it != this->m_ShaderPassMap.end(); ++it)
+	{
+		ShaderPassDescriptor * pDesc = it->second;
+		assert(pDesc);
+		if (!name.compare(pDesc->GetName()))
+		{
+			retVal = pDesc;
+			break;
+		}
+	}
+	return retVal;
+}
 
 ModelAssetDescriptor *
 AssetManager::GetModelDescriptor(const string & name)
@@ -906,6 +1099,43 @@ AssetManager::GetModelDescriptor(const string & name)
 	return pRetVal;
 
 }
+
+ModelAssetDescriptorExtended *
+AssetManager::GetModelData(const string & name)
+{
+	ModelAssetDescriptorExtended * pRetVal = NULL;
+	for (auto it = this->m_LoadedModelMap.begin(); it != this->m_LoadedModelMap.end(); ++it)
+	{
+		auto pDesc = it->second;
+		assert(pDesc);
+		if (!name.compare(pDesc->GetName()))
+		{
+			pRetVal = pDesc;
+			break;
+		}
+	}
+
+	return pRetVal;
+}
+
+void
+AssetManager::OnEntityComponentAdded(IEventData * pEventData)
+{
+	assert(pEventData);
+	auto pComponentEvt		= (EntityComponentAddedEventData *)pEventData;
+	if (pComponentEvt->m_ComponentType == COMPONENT_TYPE_RENDERABLE)
+	{
+		auto pComponent		= (RenderableComponent * )pComponentEvt->m_pComponent;
+		auto pModelDesc		= pComponent->GetModel();
+		CORE_BOOLEAN isLoaded = false;
+		this->IsLoaded(pModelDesc, isLoaded);
+		if (!isLoaded)
+		{
+			this->LoadAsset(pModelDesc);
+		}
+	}
+}
+
 void
 AssetManager::OnSceneLoaded(IEventData * pEventData)
 {

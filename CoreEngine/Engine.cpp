@@ -20,7 +20,7 @@ CoreEngine::Init()
 	DirectX11Renderer * pRenderer = new DirectX11Renderer(this->m_pEventManager);
 	IEngineSystem * pRendererSystem = (IEngineSystem *)pRenderer;
 	this->m_pRenderer = (IRenderer *) pRendererSystem;
-	this->m_Systems.push_back(pRendererSystem);
+	
 	
 	this->m_pInput = new InputBase(this->m_pEventManager);
 	this->m_Systems.push_back(this->m_pInput);
@@ -31,7 +31,7 @@ CoreEngine::Init()
 	IAssetManager * pAssetManager = new AssetManager(this->m_pEventManager);
 	this->m_pAssetManager = pAssetManager;
 	this->m_Systems.push_back((IEngineSystem *) pAssetManager);
-
+	this->m_Systems.push_back(pRendererSystem);
 	this->m_pAssetManager = pAssetManager;
 
 	size_t numSystems = this->m_Systems.size();

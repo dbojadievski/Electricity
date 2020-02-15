@@ -44,6 +44,52 @@ EntitySystem::UnRegisterEntity(CORE_ID identifier)
 	CORE_ERROR errCode = CORE_ERROR::ERR_OBJECT_NOT_FOUND;
 	if (identifier)
 	{
+
+		/*
+		 * NOTE(Dino):
+		 * Unregistering an entity is far more complicated than creating one.
+		 * We need to remove the entity from the list, but that's really just the tip of the iceberg.
+		 * That entity has child entities, which must also be removed.
+		 * And the entities have components, which need to be de-linked.
+		 */
+		auto it			 = this->m_Entities.find(identifier);
+		if (it == this->m_Entities.end())
+			goto end;
+
+		//NOTE(Dino): We have to copy over the pointers to a separate list, because we can't iterate and delete in one step.
+		Entity * pEntity = it->second;
+		EntityList toRemove;
+		for (size_t idx = 0; idx < pEntity->m_Children.size(); idx++)
+		{
+			auto item = pEntity->m_Children[idx];
+			toRemove.push_back(item);
+		}
+
+		for (auto it = toRemove.begin(); it != toRemove.end(); it++)
+		{
+			auto pChildEntity = (*it);
+			UnRegisterEntity(pChildEntity->GetIdentifier());
+		}
+		toRemove.clear();
+
+		ComponentList toRemoveC;
+		for (auto componentIt = pEntity->m_Components.begin(); componentIt != pEntity->m_Components.end(); componentIt++)
+		{
+			auto pComponentList = componentIt->second;
+			for (size_t idx = 0; idx < pComponentList->size(); idx++)
+			{
+				auto item = pComponentList->at(idx);
+				toRemoveC.push_back(item);
+			}
+		}
+
+		for (auto it2 = toRemoveC.begin(); it2 != toRemoveC.end(); it2++)
+		{
+			auto pC = (*it2);
+			UnRegisterComponent(pEntity, pC);
+		}
+		toRemoveC.clear();
+		
 		size_t numErased = this->m_Entities.erase(identifier);
 		if (numErased)
 		{
@@ -55,6 +101,7 @@ EntitySystem::UnRegisterEntity(CORE_ID identifier)
 		}
 	}
 
+	end:
 	return errCode;
 }
 
@@ -176,15 +223,13 @@ EntitySystem::RegisterComponent(GameObject * pEntity, IComponent * pComponent)
 CORE_BOOLEAN
 EntitySystem::UnRegisterComponent(GameObject * pEntity, IComponent * pComponent)
 {
+	auto * pEventData = new EntityComponentRemovedEventData();
+	pEventData->m_ComponentType = pComponent->m_Type;
+	pEventData->m_pComponent = pComponent;
+	pEventData->m_EntityIdentifier = pEntity->GetIdentifier();
 	CORE_BOOLEAN wasUnRegistered = pEntity->UnregisterComponent(pComponent->m_Type, pComponent->m_Identifier);
 	if (wasUnRegistered)
-	{
-		//auto * pEventData = new EntityComponentRemovedEventData();
-		//pEventData->m_ComponentType = pComponent->m_Type;
-		//pEventData->m_pComponent = pComponent;
-		//pEventData->m_EntityIdentifier = pEntity->GetIdentifier();
-		//this->m_pEventManager->VQueueEvent(pEventData);
-	}
+		this->m_pEventManager->VQueueEvent(pEventData);
 
 	return wasUnRegistered;
 }
@@ -194,7 +239,12 @@ EntitySystem::UnRegisterComponent(GameObject * pEntity, IComponent * pComponent)
 
 #pragma region Elementary engine system events.
 void
-EntitySystem::Init(){}
+EntitySystem::Init()
+{
+	EventListenerDelegate eDelegate;
+	eDelegate = fastdelegate::MakeDelegate(this, &EntitySystem::OnEntityLoaded);
+	this->m_pEventManager->VAddListener(eDelegate, EVENT_TYPE_SCENE_LOADED);
+}
 
 void
 EntitySystem::Update(CORE_DOUBLE dT) {}
@@ -209,4 +259,10 @@ EntitySystem::ShutDown()
 	this->m_pEventManager->VQueueEvent(pEventData);
 }
 
+
+void
+EntitySystem::OnEntityLoaded(IEventData *pEvent)
+{
+
+}
 #pragma endregion

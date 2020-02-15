@@ -89,6 +89,7 @@ private:
 	DirectX11Texture2D * m_pActiveTexture;
 	DirectX11Texture2DMap m_TextureMap;
 	vector<DirectX11Renderable *> m_Renderables;
+	map<CORE_ID, DirectX11Renderable *> m_ModelToRenderableMap;
 	DirectX11RenderSet m_RenderSet;
 
 	VEC4 m_ClearColour;
@@ -158,7 +159,7 @@ private:
 
 	void RegisterShader(DirectX11Shader * pShader);
 	void DeRegisterShader(CORE_ID shaderId);
-	
+		
 	void RegisterTexture(DirectX11Texture2D * pTexture);
 	void DeRegisterTexture(CORE_ID textureId);
 
@@ -185,8 +186,10 @@ private:
 
     CORE_BOOLEAN LoadShader (AssetDescriptor * pDescriptor);
     CORE_BOOLEAN LoadTexture (AssetDescriptor * pDescriptor);
+	CORE_BOOLEAN LoadSubMesh(CoreMesh * pMesh, DirectX11Texture2D * pTexture, DirectX11Shader * pShader);
     CORE_BOOLEAN LoadMesh (AssetDescriptor * pDescriptor);
-
+	CORE_BOOLEAN LoadPass (AssetDescriptor * pDescriptor);
+	CORE_BOOLEAN LoadModel (AssetDescriptor * pDescriptor);
 
 public:
 	DirectX11Renderer(IEventManager * pEventManager);

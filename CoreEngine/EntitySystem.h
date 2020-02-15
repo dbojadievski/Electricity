@@ -25,6 +25,8 @@ private:
 
 	EntityMap m_Entities;
 	IEventManager * m_pEventManager;
+
+	void OnEntityLoaded(IEventData * pEvent);
 public:
 	EntitySystem(IEventManager * pEventManager);
 
