@@ -162,6 +162,23 @@ DirectX11Renderable::GetInstancesEnd()
 	return instanceIterator;
 }
 
+DirectX11RenderableInstance *
+DirectX11Renderable::GetInstance (CORE_ID renderableComponentId) const
+{
+	DirectX11RenderableInstance * pRetVal = NULL;
+	for (auto it = this->m_pInstances.begin (); it != this->m_pInstances.end (); it++)
+	{
+		auto val = (*it);
+		if (val->m_ID == renderableComponentId)
+		{
+			pRetVal = val;
+			break;
+		}
+
+	}
+
+	return pRetVal;
+}
 
 const DirectX11Shader * 
 DirectX11Renderable::GetShader()

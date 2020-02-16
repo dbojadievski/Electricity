@@ -3,6 +3,7 @@
 #include "CoreEngine.h"
 #include <string>
 #include "EntityEvents.h"
+#include "TransformComponent.h"
 
 //#include "AssetLoader.h"
 using namespace std;
@@ -196,4 +197,61 @@ Console::OnRenderableInstantiateHandler(ConsoleCommandParameterList * pParams) c
 			}
 		}
 	}
+}
+
+void
+Console::OnEntityTranslateHandler (ConsoleCommandParameterList * pParams) const
+{
+	assert (pParams);
+	assert (pParams->size () == 4);
+
+	if (pParams && pParams->size () == 4)
+	{
+		ConsoleCommandParameterBase * pEntityName = pParams->at (0);
+		assert (pEntityName);
+		CORE_BOOLEAN isENameValid = ((pEntityName->m_Type == PARAM_STRING) && (pEntityName->m_pStrName == "entity_name"));
+		assert (isENameValid);
+
+		auto pTX = pParams->at (1);
+		assert (pTX);
+		CORE_BOOLEAN isTXValid = (pTX->m_Type == PARAM_REAL32) && (pTX->m_pStrName == "translation_x");
+		assert (isTXValid);
+
+		auto pTY = pParams->at (2);
+		assert (pTY);
+		CORE_BOOLEAN isTYValid = (pTY->m_Type == PARAM_REAL32) && (pTY->m_pStrName == "translation_y");
+		assert (isTYValid);
+
+		auto pTZ = pParams->at (3);
+		assert (pTZ);
+		CORE_BOOLEAN isTZValid = (pTZ->m_Type == PARAM_REAL32) && (pTZ->m_pStrName == "translation_z");
+		assert (isTZValid);
+
+		if (isTXValid && isTYValid && isTZValid && isENameValid)
+		{
+			auto pEName = (ConsoleCommandParameter<string> *) pEntityName;
+			auto pEntitySystem = g_Engine.GetEntitySystem ();
+			Entity * pEntity = NULL;
+			pEntitySystem->GetEntityByTag (&(pEName->GetValue()), &pEntity);
+			assert (pEntity);
+			if (pEntity)
+			{
+				auto pTransform = (TransformComponent *) pEntity->GetComponentByType (COMPONENT_TYPE_TRANSFORM);
+				assert (pTransform);
+				if (pTransform)
+				{
+					auto pTx = (ConsoleCommandParameter<CORE_REAL> *)pTX;
+					auto pTy = (ConsoleCommandParameter<CORE_REAL> *)pTY;
+					auto pTz = (ConsoleCommandParameter<CORE_REAL> *)pTZ;
+					pTransform->Translate (pTx->GetValue(), pTy->GetValue(), pTz->GetValue());
+					
+					auto pEvData					= new EntityComponentChangedEventData ();
+					pEvData->m_EntityIdentifier		= pEntity->GetIdentifier ();
+					pEvData->m_ComponentType		= COMPONENT_TYPE_TRANSFORM;
+					pEvData->m_pComponent			= pTransform;
+					g_Engine.GetEventManager ()->VQueueEvent (pEvData);
+				}
+			}
+		}
+	}	
 }

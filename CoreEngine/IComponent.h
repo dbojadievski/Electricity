@@ -18,7 +18,7 @@ class IComponent
 public:
 	EComponentType	m_Type;
 	CORE_ID			m_Identifier;
-	//Entity *		m_pOwner;
+	//Entity *		m_pOwner; // I can't decide if this is a good idea or not.
 
 	virtual void Init() = 0;
 	virtual void Update(float dT) = 0;

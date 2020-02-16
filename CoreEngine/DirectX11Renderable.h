@@ -49,6 +49,7 @@ public:
 	DWORD								GetInstanceCount();
 	DirectX11RenderableInstanceIterator GetInstances();
 	DirectX11RenderableInstanceIterator GetInstancesEnd();
+	DirectX11RenderableInstance  * GetInstance (CORE_ID renderableComponentId) const;
 
 	const DirectX11Shader * GetShader();
 	const DirectX11Texture2D * GetTexture();

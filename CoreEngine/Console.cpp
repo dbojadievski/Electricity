@@ -345,6 +345,29 @@ Console::RegisterAllCommands()
 		//NOTE(Dino): Use scene_load as this->ParseCommand("scene_load test");
 	}
 
+	{
+		CORE_BOOLEAN wasRegistered		= false;
+
+		CORE_STRING pStrCommandText		= "entity_translate";
+		auto pEntityName				= new CCommandParamDesc ("entity_name", EConsoleCommandParameterType::PARAM_STRING);
+		auto pTranslationX				= new CCommandParamDesc ("translation_x", EConsoleCommandParameterType::PARAM_REAL32);
+		auto pTranslationY				= new CCommandParamDesc ("translation_y", EConsoleCommandParameterType::PARAM_REAL32);
+		auto pTranslationZ				= new CCommandParamDesc ("translation_z", EConsoleCommandParameterType::PARAM_REAL32);
+
+		auto pParamsList				= new CCommandParamList ();
+		pParamsList->push_back (pEntityName);
+		pParamsList->push_back (pTranslationX);
+		pParamsList->push_back (pTranslationY);
+		pParamsList->push_back (pTranslationZ);
+
+		CommandHandlerDelegate commandDelegate = MakeDelegate (this, &Console::OnEntityTranslateHandler);
+		CommandHandlerDelegate * pCommandDelegate = new CommandHandlerDelegate (commandDelegate);
+
+		auto * pCommand					= new ConsoleCommand (pStrCommandText, pParamsList, pCommandDelegate);
+		wasRegistered					= this->VRegisterCommand (pCommand);
+
+	}
+
 #pragma region Unit testing. If the debug build does not assert, then all is well.
 	{
 #if DEBUG

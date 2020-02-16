@@ -219,8 +219,49 @@ EntityComponentRemovedEventData::VGetTimeStamp() const
 {
 	return this->m_timeStamp;
 }
+
 EntityComponentRemovedEventData::~EntityComponentRemovedEventData() 
 {
 	delete this->m_pComponent;
+}
+#pragma endregion
+
+#pragma region Entity component changed event data.
+IEventData *
+EntityComponentChangedEventData::VCopy (void) const
+{
+	EntityComponentChangedEventData * pCopy = new EntityComponentChangedEventData ();
+
+	pCopy->m_EntityIdentifier	= this->m_EntityIdentifier;
+	pCopy->m_ComponentType		= this->m_ComponentType;
+	pCopy->m_pComponent			= this->m_pComponent;
+
+	return pCopy;
+}
+
+const char *
+EntityComponentChangedEventData::VGetName () const
+{
+	return "EntityComponentChangedEventData";
+}
+
+const EventType
+EntityComponentChangedEventData::VGetEventType() const
+{
+	return EventType::EVENT_TYPE_ENTITY_COMPONENT_CHANGED;
+}
+
+EntityComponentChangedEventData::~EntityComponentChangedEventData (){}
+
+void
+EntityComponentChangedEventData::VSerialize (std::ostream &out) const
+{
+	out << "ENTITY_COMPONENT_CHANGED " << this->m_EntityIdentifier << " " << this->m_ComponentType;
+}
+
+float
+EntityComponentChangedEventData::VGetTimeStamp () const
+{
+	return this->m_timeStamp;
 }
 #pragma endregion

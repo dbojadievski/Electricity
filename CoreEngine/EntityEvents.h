@@ -102,3 +102,20 @@ struct EntityComponentRemovedEventData : EventDataBase
 	virtual ~EntityComponentRemovedEventData();
 	virtual void EventDataBase::VSerialize(std::ostream &out) const;
 };
+
+struct EntityComponentChangedEventData : EventDataBase
+{
+	CORE_ID m_EntityIdentifier;
+	EComponentType m_ComponentType;
+	IComponent * m_pComponent;
+
+	virtual IEventData * VCopy (void) const;
+	virtual const char * VGetName () const;
+
+	float EventDataBase::VGetTimeStamp (void) const;
+
+	virtual const EventType VGetEventType (void) const;
+
+	virtual ~EntityComponentChangedEventData ();
+	virtual void EventDataBase::VSerialize (std::ostream &out) const;
+};

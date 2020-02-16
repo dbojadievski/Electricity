@@ -34,7 +34,7 @@ DirectX11RenderableInstance::~DirectX11RenderableInstance()
 	}
 }
 
-const FASTMAT4 * const
+FASTMAT4 *
 DirectX11RenderableInstance::GetTransform()
 {
 	return &this->m_Transform;

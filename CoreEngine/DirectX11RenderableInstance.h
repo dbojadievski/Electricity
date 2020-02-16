@@ -19,7 +19,6 @@ private:
 	DirectX11RenderableInstance * m_pParent;
 	vector<DirectX11RenderableInstance *> m_Children;
 
-	void RecomputeTransform();
 
 	void AddChild(DirectX11RenderableInstance * pChild)
 	{
@@ -31,6 +30,7 @@ public:
 	~DirectX11RenderableInstance();
 
 	const FASTMAT4 * const GetCachedTransform();
-	const FASTMAT4 * const GetTransform();
+	FASTMAT4 * GetTransform();
+	void RecomputeTransform();
 };
 

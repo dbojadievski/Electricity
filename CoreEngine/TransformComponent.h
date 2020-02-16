@@ -18,5 +18,7 @@ public:
 	virtual void Update(float dT);
 	virtual void Shutdown();
 	virtual CORE_BOOLEAN AreMultipleInstancesAllowed() const;
+
+	void Translate (CORE_DOUBLE x, CORE_DOUBLE y, CORE_DOUBLE z);
 };
 

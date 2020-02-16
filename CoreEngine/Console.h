@@ -28,6 +28,7 @@ private:
 	void OnEntitiesUnLinkHandler(ConsoleCommandParameterList * pParams) const;
 	void OnRenderableInstantiateHandler(ConsoleCommandParameterList * pParams) const;
 	void OnSceneLoadHandler(ConsoleCommandParameterList * pParams) const;
+	void OnEntityTranslateHandler (ConsoleCommandParameterList * pParams) const;
 #pragma endregion
 	void RegisterAllCommands();
 public:

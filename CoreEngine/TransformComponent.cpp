@@ -49,6 +49,13 @@ TransformComponent::TransformComponent(XMLElement * pComponent)
 	}
 }
 
+void
+TransformComponent::Translate (CORE_DOUBLE x, CORE_DOUBLE y, CORE_DOUBLE z)
+{
+	this->m_Translation.x += x;
+	this->m_Translation.y += y;
+	this->m_Translation.z += z;
+}
 
 TransformComponent::~TransformComponent()
 {

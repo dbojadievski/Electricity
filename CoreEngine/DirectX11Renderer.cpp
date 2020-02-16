@@ -33,6 +33,9 @@ XMVECTOR CameraUp           = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
 
 void
+CreateMatFromTransform (TransformComponent * pComponent, XMMATRIX &mat);
+
+void
 DirectX11Renderer::Init()
 {
 	InitEventHandlers();
@@ -81,6 +84,9 @@ DirectX11Renderer::InitEventHandlers()
 
 	EventListenerDelegate entityComponentDeRegisteredDelegate = MakeDelegate (this, &DirectX11Renderer::OnEntityComponentDeRegistered);
 	this->m_pEventManager->VAddListener (entityComponentDeRegisteredDelegate, EventType::EVENT_TYPE_ENTITY_COMPONENT_REMOVED);
+
+	EventListenerDelegate entityComponentChangedDelegate = MakeDelegate (this, &DirectX11Renderer::OnEntityComponentChanged);
+	this->m_pEventManager->VAddListener (entityComponentChangedDelegate, EventType::EVENT_TYPE_ENTITY_COMPONENT_CHANGED);
 }
 
 void 
@@ -1039,14 +1045,8 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 						
 						auto * pComponent			= (TransformComponent *) pEntity->GetComponentByType (COMPONENT_TYPE_TRANSFORM);
 						FASTMAT4 transform	= FASTMAT_IDENTITY ();
-						auto rX				= XMMatrixRotationX (pComponent->m_Rotation.x);
-						auto rY				= XMMatrixRotationY (pComponent->m_Rotation.y);
-						auto rZ				= XMMatrixRotationZ (pComponent->m_Rotation.z);
-						auto rotation		= XMMatrixMultiply ((rX, rY), rZ);
-						auto translation	= XMMatrixTranslation (pComponent->m_Translation.x, pComponent->m_Translation.y, pComponent->m_Translation.z);
-						auto scale			= XMMatrixScaling (pComponent->m_Scale.x, pComponent->m_Scale.y, pComponent->m_Scale.z);
-						auto mat			= XMMatrixMultiply(scale, XMMatrixMultiply (translation, rotation));
-						auto pRenderableInstance	= pRenderable->Instantiate(pComponent->m_Identifier, mat);
+						CreateMatFromTransform (pComponent, transform);
+						auto pRenderableInstance	= pRenderable->Instantiate(pComponent->m_Identifier, transform);
 						if (pRenderable->GetInstanceCount() == 1) // Just created. Let's buffer it up.
 							pRenderable->Buffer(this->m_pDevice, this->m_pDeviceContext);
 					}
@@ -1056,6 +1056,18 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 	}
 }
 
+void
+CreateMatFromTransform (TransformComponent * pComponent, XMMATRIX &mat)
+{
+	FASTMAT4 transform	= FASTMAT_IDENTITY ();
+	auto rX				= XMMatrixRotationX (pComponent->m_Rotation.x);
+	auto rY				= XMMatrixRotationY (pComponent->m_Rotation.y);
+	auto rZ				= XMMatrixRotationZ (pComponent->m_Rotation.z);
+	auto rotation		= XMMatrixMultiply ((rX, rY), rZ);
+	auto translation	= XMMatrixTranslation (pComponent->m_Translation.x, pComponent->m_Translation.y, pComponent->m_Translation.z);
+	auto scale			= XMMatrixScaling (pComponent->m_Scale.x, pComponent->m_Scale.y, pComponent->m_Scale.z);
+	mat					= XMMatrixMultiply (scale, XMMatrixMultiply (translation, rotation));
+}
 void
 DirectX11Renderer::OnEntityComponentDeRegistered (IEventData * pEvent)
 {
@@ -1092,6 +1104,43 @@ DirectX11Renderer::OnEntityComponentDeRegistered (IEventData * pEvent)
 
 					this->m_RenderSet.Remove(pRenderable);
 					delete pRenderable;
+				}
+			}
+		}
+	}
+}
+
+void
+DirectX11Renderer::OnEntityComponentChanged (IEventData * pEvent)
+{
+	/*
+	 * TODO(Dino):
+	 * 1. Find the entity that owns this component.
+	 * 2. Find the renderable instances for this entity.
+	 * 3. Apply this transform to each of them.
+	 */
+	assert (pEvent);
+	if (pEvent)
+	{
+		auto pEventData			= (EntityComponentChangedEventData *)pEvent;
+		if (pEventData->m_ComponentType == COMPONENT_TYPE_TRANSFORM)
+		{
+			auto pTransform		= (TransformComponent *) pEventData->m_pComponent;
+			auto entityId		= pEventData->m_EntityIdentifier;
+			
+			Entity * pEntity	= NULL;
+			g_Engine.GetEntitySystem ()->GetEntityByIdentifier (entityId, &pEntity);
+			auto pCRenderable	= (RenderableComponent *) pEntity->GetComponentByType (COMPONENT_TYPE_RENDERABLE);
+			if (pCRenderable)
+			{
+				auto pModel		 = pCRenderable->GetModel ();
+				auto pRenderable = this->m_ModelToRenderableMap[pModel->GetIdentifier ()];
+				auto pInstance    = pRenderable->GetInstance (pCRenderable->m_Identifier);
+				if (pInstance)
+				{
+					auto transform = pInstance->GetTransform ();
+					CreateMatFromTransform (pTransform, *transform);
+					pInstance->RecomputeTransform ();
 				}
 			}
 		}
