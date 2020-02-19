@@ -1,5 +1,15 @@
 #include "DirectX11RenderableInstance.h"
 
+void
+DirectX11RenderableInstance::ToInstanceData (RenderableInstanceData &data)
+{
+	auto transform = (this->m_CachedTransform);
+	data.m_rowX = transform.r[0];
+	data.m_rowY = transform.r[1];
+	data.m_rowZ = transform.r[2];
+	data.m_rowW = transform.r[3];
+}
+
 DirectX11RenderableInstance::DirectX11RenderableInstance(DirectX11Renderable * pRenderable, CORE_ID id, DirectX11RenderableInstance * pParent, vector<DirectX11RenderableInstance *> * pChildren)
 {
 	this->m_ID = id;

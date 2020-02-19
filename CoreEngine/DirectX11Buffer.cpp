@@ -109,8 +109,8 @@ DirectX11Buffer::CreateInstanceBuffer(ID3D11Device * pDevice, size_t instanceWid
 
 	//already initted data.
 	HRESULT result = pDevice->CreateBuffer(&pRetVal->m_Descriptor, pInitialData, &pRetVal->m_pBuffer);
-	assert(result);
-	if (!result)
+	assert(result == S_OK);
+	if (result != S_OK)
 	{
 		delete pRetVal;
 		pRetVal = NULL;

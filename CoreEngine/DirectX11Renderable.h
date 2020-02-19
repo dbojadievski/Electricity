@@ -25,10 +25,10 @@ private:
 	DirectX11Texture2D *	m_pTexture;
 	
 
-	DirectX11Buffer * m_pVertexBuffer;
-	DirectX11Buffer * m_pInstanceBuffer;
-	DirectX11Buffer * m_pIndexBuffer;
-	D3D11_SUBRESOURCE_DATA m_InstanceData;
+	DirectX11Buffer *		m_pVertexBuffer;
+	DirectX11Buffer *		m_pInstanceBuffer;
+	DirectX11Buffer *		m_pIndexBuffer;
+	CORE_BYTE *				m_pInstanceBuff;
 	D3D_PRIMITIVE_TOPOLOGY m_Topology;
 	vector<DirectX11RenderableInstance *> m_pInstances;
 

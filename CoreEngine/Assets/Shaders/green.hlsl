@@ -12,7 +12,7 @@ struct VOut
 	float3 normal: NORMAL;
 };
 
-VOut VShader(float4 position : POSITION, float2 texCoord : TEXCOORD, float3 normal : NORMAL)
+VOut VShader(float4 position : POSITION, float2 texCoord : TEXCOORD, float3 normal : NORMAL, vec3: IPOS, vec3: IROT, vec3: ISCALE)
 {
 	VOut output;
 

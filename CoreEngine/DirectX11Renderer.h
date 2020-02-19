@@ -66,11 +66,15 @@ private:
 	IDXGISwapChain * m_pSwapChain;
 	ID3D11Device * m_pDevice;
 	ID3D11DeviceContext * m_pDeviceContext;
-	ID3D11RenderTargetView * m_pRenderTargetView;
-	
+	ID3D11RenderTargetView * m_pRenderTargetViewBackBuffer;
+	ID3D11RenderTargetView * m_pRenderTargetViewTex;
+	DirectX11Texture2D * m_RenderTarget; // Used to render to texture.
+	ID3D11ShaderResourceView* m_pShaderResourceView;
+
 	ID3D11InputLayout * m_pInputLayout;
 	ID3D11Texture2D* m_pDepthStencilBuffer;
-	ID3D11DepthStencilView* m_pDepthStencilView;
+	ID3D11DepthStencilView* m_pDepthStencilViewBackBuffer;
+	ID3D11DepthStencilView* m_pDepthStencilViewTex;
 	ID3D11RasterizerState * m_pRasterizerStateWireframe;
 
 	ID3D11BlendState* m_pBlendStateTransparency;
@@ -123,6 +127,8 @@ private:
 	struct FrameUniformDescriptor
 	{
 		DirectionalLight light;
+		FASTMAT4 Camera;
+		FASTMAT4 ViewProjectionMatrix;
 	};
 
 
@@ -146,6 +152,7 @@ private:
 	void InitLights();
     void InitFrameUniformBuffer ();
 	void ReloadLightBuffer();
+	CORE_BOOLEAN InitRenderTarget ();
 	CORE_BOOLEAN InitCamera();
 	CORE_BOOLEAN InitDepthBuffer();
 
@@ -164,6 +171,9 @@ private:
 	void DeRegisterTexture(CORE_ID textureId);
 
 	void CloseDirectX11Device();
+
+	void ClearRenderTargetTex ();
+	void ClearRenderTargetBackBuffer ();
 
 	void RenderAll(CORE_DOUBLE dT);
 	void RenderAllSimple(CORE_DOUBLE dT);

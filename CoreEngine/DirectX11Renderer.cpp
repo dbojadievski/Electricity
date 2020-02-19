@@ -31,7 +31,6 @@ XMVECTOR CameraForward      = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 XMVECTOR CameraRight        = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
 XMVECTOR CameraUp           = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
-
 void
 CreateMatFromTransform (TransformComponent * pComponent, XMMATRIX &mat);
 
@@ -89,6 +88,43 @@ DirectX11Renderer::InitEventHandlers()
 	this->m_pEventManager->VAddListener (entityComponentChangedDelegate, EventType::EVENT_TYPE_ENTITY_COMPONENT_CHANGED);
 }
 
+CORE_BOOLEAN
+DirectX11Renderer::InitRenderTarget ()
+{
+	CORE_BOOLEAN isSuccess			= FALSE;
+	HRESULT result;
+
+	this->m_RenderTarget = DirectX11Texture2D::AsRenderTarget (this->m_pDevice, 2560, 1440, 1, 4);
+	assert (m_RenderTarget);
+	if (m_RenderTarget)
+	{
+		D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
+		renderTargetViewDesc.Format				= DXGI_FORMAT_R32G32B32A32_FLOAT; //TODO(Dino): Configurable.
+		renderTargetViewDesc.ViewDimension		= D3D11_RTV_DIMENSION_TEXTURE2DMS;
+		renderTargetViewDesc.Texture2D.MipSlice = 0;
+		
+		auto pTex								= this->m_RenderTarget->GetRawPointer ();
+		result									= this->m_pDevice->CreateRenderTargetView (pTex, &renderTargetViewDesc, &m_pRenderTargetViewTex);
+		assert (result == S_OK);
+		if (result == S_OK)
+		{
+			D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
+			ZeroMemory (&shaderResourceViewDesc, sizeof (shaderResourceViewDesc));
+			shaderResourceViewDesc.Format			= DXGI_FORMAT_R32G32B32A32_FLOAT;
+			shaderResourceViewDesc.ViewDimension	= D3D11_SRV_DIMENSION_TEXTURE2DMS;
+			shaderResourceViewDesc.Texture2D.MipLevels			= 1;
+			shaderResourceViewDesc.Texture2D.MostDetailedMip	= 0;
+
+			result = this->m_pDevice->CreateShaderResourceView (pTex, &shaderResourceViewDesc, &this->m_pShaderResourceView);
+			assert (result == S_OK);
+			isSuccess = (result == S_OK);
+		}
+	}
+
+end:
+	return isSuccess;
+}
+
 void 
 DirectX11Renderer::InitDirect3D()
 {
@@ -101,6 +137,7 @@ DirectX11Renderer::InitDirect3D()
 	swapChainDescriptor.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDescriptor.OutputWindow = g_Window;
 	swapChainDescriptor.SampleDesc.Count = 4; //TODO(Dino): Make configurable.
+	//swapChainDescriptor.Quality = 16;
 	swapChainDescriptor.Windowed = true;
 
 
@@ -129,21 +166,23 @@ DirectX11Renderer::InitDirect3D()
 		&this->m_pDeviceContext);
 #pragma endregion
 #pragma region Initialize back-buffer and render target.
-	/*Sets the backbuffer to be the current render target. */
+	///*Sets the backbuffer to be the current render target. */
 	ID3D11Texture2D *pBackBuffer;
 	this->m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *) &pBackBuffer);
-	this->m_pDevice->CreateRenderTargetView(pBackBuffer, NULL, &this->m_pRenderTargetView);
+	this->m_pDevice->CreateRenderTargetView(pBackBuffer, NULL, &this->m_pRenderTargetViewBackBuffer);
 	pBackBuffer->Release();
+	this->m_pDeviceContext->OMSetRenderTargets(1, &this->m_pRenderTargetViewBackBuffer, NULL);
+	
+	// Instead of setting the back-buffer, we now render to texture.
 
-	this->m_pDeviceContext->OMSetRenderTargets(1, &this->m_pRenderTargetView, NULL);
 #pragma endregion
 #pragma region Initialize viewport.
 	D3D11_VIEWPORT viewport;
 	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
 	viewport.TopLeftX   = 0;
 	viewport.TopLeftY   = 0;
-	viewport.Width      = 1920,
-	viewport.Height     = 1080,
+	viewport.Width      = 2560,
+	viewport.Height     = 1440,
 	viewport.MinDepth   = VIEWPORT_DEPTH_MIN;
 	viewport.MaxDepth   = VIEWPORT_DEPTH_MAX;
 	this->m_pDeviceContext->RSSetViewports(1, &viewport);
@@ -153,6 +192,8 @@ DirectX11Renderer::InitDirect3D()
 	ZeroMemory(&wfdesc, sizeof(D3D11_RASTERIZER_DESC));
 	wfdesc.FillMode = D3D11_FILL_WIREFRAME;
 	wfdesc.CullMode = D3D11_CULL_NONE;
+	wfdesc.MultisampleEnable = 1;
+	wfdesc.DepthClipEnable = 0;
 	this->m_pDevice->CreateRasterizerState(&wfdesc, &this->m_pRasterizerStateWireframe);
 	this->m_pDeviceContext->RSSetState(NULL);
 #pragma endregion
@@ -160,12 +201,29 @@ DirectX11Renderer::InitDirect3D()
 	this->m_ClearColour = { 0.1f, 0.1f, 0.1f, 1.0f };
 
 	InitDepthBuffer();
+	this->InitRenderTarget ();
 	InitShaders();
 	InitTextures();
 	InitCamera();
 	InitBlendStates();
 	InitTextRenderer();
     InitFrameUniformBuffer ();
+}
+
+void
+DirectX11Renderer::ClearRenderTargetTex ()
+{
+	float backgroundColor[4] = { this->m_ClearColour.x, this->m_ClearColour.y, this->m_ClearColour.z, this->m_ClearColour.w };
+	this->m_pDeviceContext->ClearRenderTargetView (this->m_pRenderTargetViewTex, backgroundColor);
+	this->m_pDeviceContext->ClearDepthStencilView (this->m_pDepthStencilViewTex, D3D11_CLEAR_DEPTH, 1.0f, 0);
+}
+
+void
+DirectX11Renderer::ClearRenderTargetBackBuffer ()
+{
+	float backgroundColor[4] = { this->m_ClearColour.x, this->m_ClearColour.y, this->m_ClearColour.z, this->m_ClearColour.w };
+	this->m_pDeviceContext->ClearRenderTargetView (this->m_pRenderTargetViewBackBuffer, backgroundColor);
+	this->m_pDeviceContext->ClearDepthStencilView (this->m_pDepthStencilViewBackBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
 void 
@@ -260,7 +318,7 @@ DirectX11Renderer::InitDepthBuffer()
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.ArraySize = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	depthStencilDesc.SampleDesc.Count = 1;
+	depthStencilDesc.SampleDesc.Count = 4;
 	depthStencilDesc.SampleDesc.Quality = 0;
 	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
 	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
@@ -274,14 +332,14 @@ DirectX11Renderer::InitDepthBuffer()
 		goto end;
 	}
 
-	result = this->m_pDevice->CreateDepthStencilView(this->m_pDepthStencilBuffer, NULL, &this->m_pDepthStencilView);
+	result = this->m_pDevice->CreateDepthStencilView(this->m_pDepthStencilBuffer, NULL, &this->m_pDepthStencilViewBackBuffer);
 	if (result != S_OK)
 	{
 		wasInitted = false;
 		goto end;
 	}
 
-	this->m_pDeviceContext->OMSetRenderTargets(1, &this->m_pRenderTargetView, this->m_pDepthStencilView);
+	this->m_pDeviceContext->OMSetRenderTargets(1, &this->m_pRenderTargetViewBackBuffer, this->m_pDepthStencilViewBackBuffer);
 
 
 end:
@@ -297,19 +355,24 @@ DirectX11Renderer::InitShaders()
 	
 	ID3D11VertexShader ** pVertexShader = pShader->GetVertexShader();
 	DirectXShaderBufferDescriptor vertexShaderDescriptor = pShader->GetVertexShaderBufferPointer();
-	this->m_pDevice->CreateVertexShader(vertexShaderDescriptor.m_pBuffer, vertexShaderDescriptor.m_size, NULL, pVertexShader);
+	HRESULT errVsh	= this->m_pDevice->CreateVertexShader(vertexShaderDescriptor.m_pBuffer, vertexShaderDescriptor.m_size, NULL, pVertexShader);
 	this->m_pDeviceContext->VSSetShader(*pVertexShader, 0, 0);
 
 	ID3D11PixelShader ** pPixelShader = pShader->GetPixelShader();
 	DirectXShaderBufferDescriptor pixelShaderDescriptor = pShader->GetPixelShaderBufferPointer();
-	this->m_pDevice->CreatePixelShader(pixelShaderDescriptor.m_pBuffer, pixelShaderDescriptor.m_size, NULL, pPixelShader);
+	HRESULT errPsh	= this->m_pDevice->CreatePixelShader(pixelShaderDescriptor.m_pBuffer, pixelShaderDescriptor.m_size, NULL, pPixelShader);
 	this->m_pDeviceContext->PSSetShader(*pPixelShader, 0, 0);
 
 	D3D11_INPUT_ELEMENT_DESC inputElementDescriptor[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{ "RowX",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA,	 1},
+		{ "RowY",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{ "RowZ",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "RowW",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1}
 	};
 
 	DirectXShaderBufferDescriptor descriptor = pShader->GetVertexShaderBufferPointer();
@@ -345,16 +408,20 @@ DirectX11Renderer::CreateShader(ShaderDescriptor * pDescriptor)
 
 	D3D11_INPUT_ELEMENT_DESC inputElementDescriptor[] =
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 3, DXGI_FORMAT_R32G32_FLOAT, 0, 36, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 4, DXGI_FORMAT_R32G32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 5, DXGI_FORMAT_R32G32_FLOAT, 0, 52, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 6, DXGI_FORMAT_R32G32_FLOAT, 0, 60, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 7, DXGI_FORMAT_R32G32_FLOAT, 0, 68, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 76, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA,		0 },
+		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA,		 0 },
+        { "TEXCOORD",	1, DXGI_FORMAT_R32G32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA,		 0 },
+       /* { "TEXCOORD",	2, DXGI_FORMAT_R32G32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA,		 0 },
+        { "TEXCOORD",	3, DXGI_FORMAT_R32G32_FLOAT, 0, 36, D3D11_INPUT_PER_VERTEX_DATA,		 0 },
+        { "TEXCOORD",	4, DXGI_FORMAT_R32G32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA,		 0 },
+        { "TEXCOORD",	5, DXGI_FORMAT_R32G32_FLOAT, 0, 52, D3D11_INPUT_PER_VERTEX_DATA,		 0 },
+        { "TEXCOORD",	6, DXGI_FORMAT_R32G32_FLOAT, 0, 60, D3D11_INPUT_PER_VERTEX_DATA,		 0 },
+        { "TEXCOORD",	7, DXGI_FORMAT_R32G32_FLOAT, 0, 68, D3D11_INPUT_PER_VERTEX_DATA,		 0 },*/
+		{ "NORMAL",		0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 76, D3D11_INPUT_PER_VERTEX_DATA,		 0 },
+		{ "RowX",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA,	 1},
+		{ "RowY",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{ "RowZ",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "RowW",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1}
 	};
         
 	DirectXShaderBufferDescriptor descriptor = pRetVal->GetVertexShaderBufferPointer();
@@ -588,14 +655,14 @@ DirectX11Renderer::ShutDown()
 void 
 DirectX11Renderer::CloseDirectX11Device()
 {
-	this->m_pDepthStencilView->Release();
+	this->m_pDepthStencilViewTex->Release();
 	this->m_pDepthStencilBuffer->Release();
 	delete this->m_pUniformBuffer;
 	delete this->m_pFrameUniformBuffer;
 	this->m_pRasterizerStateWireframe->Release();
-
+	delete this->m_RenderTarget;
 	this->m_pSwapChain->Release();
-
+	this->m_pShaderResourceView->Release ();
 	this->m_pBlendStateTransparency->Release();
 	this->m_pCounterClockWisecullMode->Release();
 	this->m_pClockWiseCullMode->Release();
@@ -618,11 +685,8 @@ DirectX11Renderer::Update(CORE_DOUBLE dT)
 void
 DirectX11Renderer::RenderAllSimple(CORE_DOUBLE dT)
 {
-	float backgroundColor[4] = { this->m_ClearColour.x, this->m_ClearColour.y, this->m_ClearColour.z, this->m_ClearColour.w };
-	this->m_pDeviceContext->ClearRenderTargetView(this->m_pRenderTargetView, backgroundColor);
-
-	this->m_pDeviceContext->ClearDepthStencilView(this->m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
+	//this->ClearRenderTargetTex (); //Enable when rendering to texture.
+	this->ClearRenderTargetBackBuffer ();
 	FASTMAT4 cameraViewProjectionMatrix = this->m_CameraView * this->m_CameraProjection;
 
 	/*NOTE(Dino): Update per-frame uniform buffer. */
@@ -656,11 +720,8 @@ DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 	size_t numRenderables = 0;
 	size_t numRenderableInstances = 0;
 
-	float backgroundColor[4] = { this->m_ClearColour.x, this->m_ClearColour.y, this->m_ClearColour.z, this->m_ClearColour.w };
-	this->m_pDeviceContext->ClearRenderTargetView(this->m_pRenderTargetView, backgroundColor);
-
-	this->m_pDeviceContext->ClearDepthStencilView(this->m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
+	//ClearRenderTargetTex() before rendering to texture.
+	this->ClearRenderTargetBackBuffer ();
 	FASTMAT4 cameraViewProjectionMatrix = this->m_CameraView * this->m_CameraProjection;
 
 	/*NOTE(Dino): Update per-frame uniform buffer. */
@@ -745,24 +806,51 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 					if (pRenderable->GetInstanceCount() == 0)
 						continue;
 					pRenderable->ActivateBuffers(this->m_pDeviceContext);
-
-					DirectX11RenderableInstanceIterator instanceIterator = pRenderable->GetInstances();
-					while (instanceIterator != pRenderable->GetInstancesEnd())
+#pragma region Segment 1: Instanced rendering.
+					DirectX11RenderableInstanceIterator instanceIterator = pRenderable->GetInstances ();
+					while (instanceIterator != pRenderable->GetInstancesEnd ())
 					{
-						++numRenderableInstances;
-						DirectX11RenderableInstance * pRenderableInstance = *instanceIterator;
-						const FASTMAT4 * const  pInstanceTransform = pRenderableInstance->GetCachedTransform();
-						FASTMAT4 modelViewProjectionMatrix = *pInstanceTransform * this->m_CameraView * cameraViewProjectionMatrix;
-						this->m_PerObjectBuffer.WorldViewProjection = FASTMAT_TRANSPOSE(modelViewProjectionMatrix);
-						this->m_PerObjectBuffer.World =  FASTMAT_TRANSPOSE(*pInstanceTransform);
-						ID3D11Buffer * pUniformBufferPointer = this->m_pUniformBuffer->GetRawPointer();
-						this->m_pDeviceContext->UpdateSubresource(pUniformBufferPointer, 0, NULL, &this->m_PerObjectBuffer, 0, 0);
-						this->m_pDeviceContext->VSSetConstantBuffers(0, 1, &pUniformBufferPointer);
+						// Fill up the instance buffer.
 
-						assert(pRenderableInstance);
+						auto pRenderableInstance		= *instanceIterator;
+						auto  pInstanceTransform		= pRenderableInstance->GetCachedTransform ();
+						auto modelViewProjectionMatrix	= *pInstanceTransform * this->m_CameraView * cameraViewProjectionMatrix;
+						
+						this->m_PerObjectBuffer.WorldViewProjection = FASTMAT_TRANSPOSE (modelViewProjectionMatrix);
+						this->m_PerObjectBuffer.World				= FASTMAT_TRANSPOSE (*pInstanceTransform);
+						
+
 						instanceIterator++;
-						pRenderable->Render(this->m_pDeviceContext);
 					}
+					this->m_PerObjectBuffer.World				= FASTMAT_IDENTITY ();
+					this->m_PerObjectBuffer.WorldViewProjection = FASTMAT_IDENTITY ();
+					this->m_FrameUniforms.Camera				= this->m_CameraView;
+					this->m_FrameUniforms.ViewProjectionMatrix	= (this->m_CameraView * cameraViewProjectionMatrix);
+					auto pUniformBufferPointer						= this->m_pUniformBuffer->GetRawPointer ();
+					this->m_pDeviceContext->UpdateSubresource (pUniformBufferPointer, 0, NULL, &this->m_PerObjectBuffer, 0, 0);
+					this->m_pDeviceContext->VSSetConstantBuffers (0, 1, &pUniformBufferPointer);
+					pRenderable->Render (this->m_pDeviceContext);
+#pragma endregion
+#pragma region Segment 2: Basic direct rendering.
+					//DirectX11RenderableInstanceIterator instanceIterator = pRenderable->GetInstances();
+					//while (instanceIterator != pRenderable->GetInstancesEnd())
+					//{
+					//	++numRenderableInstances;
+					//	auto pRenderableInstance		= *instanceIterator;
+					//	auto  pInstanceTransform		= pRenderableInstance->GetCachedTransform();
+					//	auto modelViewProjectionMatrix	= *pInstanceTransform * this->m_CameraView * cameraViewProjectionMatrix;
+					//	this->m_PerObjectBuffer.WorldViewProjection = FASTMAT_TRANSPOSE(modelViewProjectionMatrix);
+					//	this->m_PerObjectBuffer.World	=  FASTMAT_TRANSPOSE(*pInstanceTransform);
+					//	this->m_PerObjectBuffer.Camera	= this->m_CameraView;
+					//	auto pUniformBufferPointer		= this->m_pUniformBuffer->GetRawPointer();
+					//	this->m_pDeviceContext->UpdateSubresource(pUniformBufferPointer, 0, NULL, &this->m_PerObjectBuffer, 0, 0);
+					//	this->m_pDeviceContext->VSSetConstantBuffers(0, 1, &pUniformBufferPointer);
+
+					//	assert(pRenderableInstance);
+					//	instanceIterator++;
+					//	pRenderable->Render(this->m_pDeviceContext);
+					//}
+#pragma endregion
 				}
 				pPerTexSetIter++;
 			}
@@ -861,6 +949,8 @@ DirectX11Renderer::DirectX11Renderer(IEventManager * pManager) : IRenderer()
 	assert(pManager);
 	this->m_pEventManager = pManager;
 	this->m_pFrameUniformStructuredBuffer = NULL;
+
+	this->m_RenderTarget = NULL;
 }
 
 
@@ -1046,9 +1136,11 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 						auto * pComponent			= (TransformComponent *) pEntity->GetComponentByType (COMPONENT_TYPE_TRANSFORM);
 						FASTMAT4 transform	= FASTMAT_IDENTITY ();
 						CreateMatFromTransform (pComponent, transform);
+						// We rebuffer on every instance count change, to make sure the instance data is reloaded.
 						auto pRenderableInstance	= pRenderable->Instantiate(pComponent->m_Identifier, transform);
-						if (pRenderable->GetInstanceCount() == 1) // Just created. Let's buffer it up.
-							pRenderable->Buffer(this->m_pDevice, this->m_pDeviceContext);
+						if (pRenderable->GetInstanceCount () != 1)
+							pRenderable->DeactivateBuffers ();
+						pRenderable->Buffer(this->m_pDevice, this->m_pDeviceContext);
 					}
 				}
 			}
@@ -1113,12 +1205,6 @@ DirectX11Renderer::OnEntityComponentDeRegistered (IEventData * pEvent)
 void
 DirectX11Renderer::OnEntityComponentChanged (IEventData * pEvent)
 {
-	/*
-	 * TODO(Dino):
-	 * 1. Find the entity that owns this component.
-	 * 2. Find the renderable instances for this entity.
-	 * 3. Apply this transform to each of them.
-	 */
 	assert (pEvent);
 	if (pEvent)
 	{

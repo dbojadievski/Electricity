@@ -10,8 +10,14 @@ DirectX11Renderable::Render(ID3D11DeviceContext * pDeviceContext)
 	pDeviceContext->IASetPrimitiveTopology(this->m_Topology);
 	size_t indiceCount = this->m_pMesh->GetIndiceCount();
 	size_t vertexCount = this->m_pMesh->GetVertexCount();
+	size_t instanceCount = this->m_pInstances.size ();
 
-	pDeviceContext->DrawIndexed((UINT) indiceCount, 0, 0);
+
+#ifdef RENDER_SEQUENTIALLY
+	//pDeviceContext->DrawIndexed((UINT) indiceCount, 0, 0);
+#endif
+
+	pDeviceContext->DrawIndexedInstanced ((UINT)indiceCount, instanceCount, 0, 0, 0);
 }
 
 void
@@ -39,9 +45,30 @@ DirectX11Renderable::Buffer(ID3D11Device * pDevice, ID3D11DeviceContext * pDevic
 
 		size_t numIndices = this->m_pMesh->GetIndiceCount();
 		unsigned long int * pIndices = this->m_pMesh->GetIndicesRaw();
-		D3D11_SUBRESOURCE_DATA instanceData;
-		instanceData.pSysMem = pIndices;
-		this->m_pIndexBuffer = DirectX11Buffer::CreateIndexBuffer(pDevice, (UINT)(sizeof(unsigned long int) * numIndices), false, &instanceData);
+		D3D11_SUBRESOURCE_DATA buffData;
+		buffData.pSysMem = pIndices;
+		this->m_pIndexBuffer = DirectX11Buffer::CreateIndexBuffer(pDevice, (UINT)(sizeof(unsigned long int) * numIndices), false, &buffData);
+	}
+
+	{
+		if (this->m_pInstanceBuffer)
+			delete this->m_pInstanceBuffer;
+
+		size_t numInstances		= this->m_pInstances.size ();
+		
+		if (this->m_pInstanceBuff)
+			delete [] this->m_pInstanceBuff;
+		this->m_pInstanceBuff	= (CORE_BYTE *)malloc (sizeof (RenderableInstanceData) * numInstances);
+		for (size_t idx			= 0; idx < numInstances; idx++)
+		{
+			auto pInstance		= this->m_pInstances[idx];
+			RenderableInstanceData data;
+			pInstance->ToInstanceData(data);
+			memcpy (&this->m_pInstanceBuff[idx], (const void *) &data, sizeof(data));
+		}
+		D3D11_SUBRESOURCE_DATA _instanceData;
+		_instanceData.pSysMem	= m_pInstanceBuff;
+		this->m_pInstanceBuffer = DirectX11Buffer::CreateInstanceBuffer (pDevice, (UINT) sizeof (RenderableInstanceData), numInstances, false, &_instanceData); // We only keep the transform for an instance for now.
 	}
 }
 
@@ -50,13 +77,28 @@ DirectX11Renderable::ActivateBuffers(ID3D11DeviceContext * pDeviceContext)
 {
 	assert(pDeviceContext);
 
+	UINT offsets[2] = { 0 };
+	UINT strides[2] = 
+	{ 
+		this->m_pMesh->GetVertexSize(), 
+		DirectX11RenderableInstance::GetInstanceDataSize()
+	};
+	
 	UINT offset = 0;
 	UINT stride = (UINT) this->m_pMesh->GetVertexSize();
 
-	ID3D11Buffer * pVertexBuffer = this->m_pVertexBuffer->GetRawPointer();
-	ID3D11Buffer * pIndexBuffer = this->m_pIndexBuffer->GetRawPointer();
+	ID3D11Buffer* buffs[2] =
+	{
+		this->m_pVertexBuffer->GetRawPointer(),
+		this->m_pInstanceBuffer->GetRawPointer()
+	};
+
+	ID3D11Buffer * pVertexBuffer	= this->m_pVertexBuffer->GetRawPointer();
+	ID3D11Buffer * pIndexBuffer		= this->m_pIndexBuffer->GetRawPointer();
+	ID3D11Buffer * pInstanceBuffer = this->m_pInstanceBuffer->GetRawPointer ();
 
 	pDeviceContext->IASetVertexBuffers(0, 1, &	pVertexBuffer, &stride, &offset);
+	pDeviceContext->IASetVertexBuffers (0, 2, buffs, strides, offsets);
 	pDeviceContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 }
 
@@ -64,6 +106,16 @@ void
 DirectX11Renderable::DeactivateBuffers ()
 {
 	this->m_pIndexBuffer->Release();
+	this->m_pIndexBuffer	= NULL;
+
+	this->m_pInstanceBuffer->Release ();
+	this->m_pInstanceBuffer = NULL;
+	
+	delete[] this->m_pInstanceBuff;
+	this->m_pInstanceBuff	= NULL;
+
+	this->m_pVertexBuffer->Release ();
+	this->m_pVertexBuffer	= NULL;
 }
 
 DirectX11Renderable::DirectX11Renderable(Mesh * pMesh, DirectX11Texture2D * pTexture, DirectX11Shader * pShader, CORE_BOOLEAN isTransparent, D3D11_PRIMITIVE_TOPOLOGY topology) : Renderable(pMesh->GetIdentifier(), pTexture->m_Identifier, pShader->GetIdentifier(), isTransparent)
@@ -73,13 +125,17 @@ DirectX11Renderable::DirectX11Renderable(Mesh * pMesh, DirectX11Texture2D * pTex
 	assert(pTexture);
 	assert(topology);
 
-	this->m_pShader = pShader;
-	this->m_pTexture = pTexture;
+	this->m_pShader				= pShader;
+	this->m_pTexture			= pTexture;
 
-	this->m_pVertexBuffer = NULL;
-	this->m_pIndexBuffer = NULL;
-	this->m_Topology = topology;
-	this->m_pMesh = pMesh;
+	this->m_pVertexBuffer		= NULL;
+	this->m_pIndexBuffer		= NULL;
+	
+	this->m_pInstanceBuffer		= NULL;
+	this->m_pInstanceBuff		= NULL;
+	
+	this->m_Topology			= topology;
+	this->m_pMesh				= pMesh;
 }
 
 DirectX11Renderable::~DirectX11Renderable()
@@ -90,8 +146,14 @@ DirectX11Renderable::~DirectX11Renderable()
 	if (this->m_pIndexBuffer)
 		delete this->m_pIndexBuffer;
 
+	if (this->m_pInstanceBuffer)
+		delete this->m_pInstanceBuffer;
+
 	if (this->m_pTexture)
 		delete this->m_pTexture;
+
+	if (this->m_pInstanceBuff)
+		delete[] this->m_pInstanceBuff;
 
 	size_t numInstances = this->m_pInstances.size();
 	for (size_t i = 0; i < numInstances; i++)

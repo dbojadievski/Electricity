@@ -5,6 +5,15 @@
 #include "Math.h"
 
 
+struct RenderableInstanceData
+// This really has no business being inside D3D code.
+{
+	FASTVEC m_rowX;
+	FASTVEC m_rowY;
+	FASTVEC m_rowZ;
+	FASTVEC m_rowW;
+};
+
 class DirectX11Renderable;
 class DirectX11RenderableInstance
 {
@@ -32,5 +41,13 @@ public:
 	const FASTMAT4 * const GetCachedTransform();
 	FASTMAT4 * GetTransform();
 	void RecomputeTransform();
+	static size_t GetInstanceDataSize ()
+	{
+		size_t size = 0;
+		size		+= sizeof (m_CachedTransform);
+		return size;
+	}
+
+	void ToInstanceData (RenderableInstanceData &data);
 };
 

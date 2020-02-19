@@ -12,6 +12,16 @@
           <renderableComponent model="crate" />
         </components>
       </entity>
+      <entity name="crate1">
+        <components>
+          <transformComponent>
+            <translation x="25" y="0" z="2" />
+            <rotation x="7" y="49" z="31" />
+            <scale x="100" y="100" z="100"/>
+          </transformComponent>
+          <renderableComponent model="crate" />
+        </components>
+      </entity>
     </entities>
   </scene>
 </scenes>
