@@ -102,7 +102,7 @@ DirectX11Texture2D::~DirectX11Texture2D ()
 	this->m_pShaderResourceView->Release ();
 	this->m_pShaderResourceView = NULL;
 	
-	this->m_pTex->Release ();
-	this->m_pTex = NULL;
+	//this->m_pTex->Release ();
+	//this->m_pTex = NULL;
 
 }

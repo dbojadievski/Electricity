@@ -100,16 +100,16 @@ private:
 	vector<DirectionalLight> m_Lights;
 	LightManager m_LightManager;
 
-	FASTMAT4 m_WorldViewProjection;
+	MAT4 m_WorldViewProjection;
 	
-	FASTMAT4 m_CameraView;
-	FASTMAT4 m_CameraProjection;
-	FASTVEC m_CameraPosition;
-	FASTMAT4 m_CameraRotation;
-	FASTVEC m_CameraTarget;
-	FASTVEC m_CameraUp;
-	FASTVEC m_CameraRight;
-	FASTVEC m_CameraForward;
+	MAT4 m_CameraView;
+	MAT4 m_CameraProjection;
+	VEC4 m_CameraPosition;
+	MAT4 m_CameraRotation;
+	VEC4 m_CameraTarget;
+	VEC4 m_CameraUp;
+	VEC4 m_CameraRight;
+	VEC4 m_CameraForward;
 	CORE_REAL m_CameraPitch;
 	CORE_REAL m_CameraYaw;
 	CORE_REAL m_MoveLeftRight;
@@ -118,17 +118,31 @@ private:
 	CORE_DWORD m_Width;
 	CORE_DWORD m_Height;
 
+	D3D11_INPUT_ELEMENT_DESC m_inputElementDescriptor[8]
+		=
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{ "RowX",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA,	 1},
+		{ "RowY",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{ "RowZ",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "RowW",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1}
+	};
+
+
 	struct InstanceUniformDescriptor
 	{
-		FASTMAT4 WorldViewProjection;
-		FASTMAT4 World;
+		MAT4 WorldViewProjection;
+		MAT4 World;
 	};
 
 	struct FrameUniformDescriptor
 	{
 		DirectionalLight light;
-		FASTMAT4 Camera;
-		FASTMAT4 ViewProjectionMatrix;
+		MAT4 Camera;
+		MAT4 ViewProjectionMatrix;
 	};
 
 
@@ -177,7 +191,7 @@ private:
 
 	void RenderAll(CORE_DOUBLE dT);
 	void RenderAllSimple(CORE_DOUBLE dT);
-	void RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShaderSwitches, size_t &numTextureSwitches, size_t &numRenderableInstances, const FASTMAT4 &cameraViewProjectionMatrix);
+	void RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShaderSwitches, size_t &numTextureSwitches, size_t &numRenderableInstances, const MAT4 &cameraViewProjectionMatrix);
 	
 	/*Simple fetch functions.*/
 	virtual void GetRenderablesByMesh(MeshAssetDescriptor * pMeshDesc, vector<Renderable *> * pRenderables);

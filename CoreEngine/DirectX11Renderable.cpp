@@ -81,11 +81,8 @@ DirectX11Renderable::ActivateBuffers(ID3D11DeviceContext * pDeviceContext)
 	UINT strides[2] = 
 	{ 
 		this->m_pMesh->GetVertexSize(), 
-		DirectX11RenderableInstance::GetInstanceDataSize()
+		RenderableInstanceData::GetInstanceSize()
 	};
-	
-	UINT offset = 0;
-	UINT stride = (UINT) this->m_pMesh->GetVertexSize();
 
 	ID3D11Buffer* buffs[2] =
 	{
@@ -97,7 +94,6 @@ DirectX11Renderable::ActivateBuffers(ID3D11DeviceContext * pDeviceContext)
 	ID3D11Buffer * pIndexBuffer		= this->m_pIndexBuffer->GetRawPointer();
 	ID3D11Buffer * pInstanceBuffer = this->m_pInstanceBuffer->GetRawPointer ();
 
-	pDeviceContext->IASetVertexBuffers(0, 1, &	pVertexBuffer, &stride, &offset);
 	pDeviceContext->IASetVertexBuffers (0, 2, buffs, strides, offsets);
 	pDeviceContext->IASetIndexBuffer(pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 }
@@ -177,7 +173,7 @@ DirectX11Renderable::Instantiate(CORE_ID id, FASTMAT4 transform, DirectX11Render
 		pInstance->m_pParent = pParent;
 		pParent->AddChild(pInstance);
 	}
-	pInstance->m_Transform = transform;
+	XMStoreFloat4x4(&pInstance->m_Transform, transform);
 	pInstance->RecomputeTransform();
 	this->m_pInstances.push_back(pInstance);
 

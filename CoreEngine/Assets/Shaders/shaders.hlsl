@@ -33,10 +33,10 @@ struct VS_INPUT
 	float2 texCoord1: TEXCOORD1;
 	float3 normal: NORMAL;
 	
-	float4 rowX: RowX;
-	float4 rowY: RowY;
-	float4 rowZ: RowZ;
-	float4 rowW: RowW;
+	float4 rowX: ROWX;
+	float4 rowY: ROWY;
+	float4 rowZ: ROWZ;
+	float4 rowW: ROWW;
 };
 
 
@@ -52,10 +52,13 @@ VOut VShader (VS_INPUT input)
 {
 	VOut output;
 
-	matrix tempMat = CameraMatrix * ViewProjectionMatrix;
+	float4x4 world		= float4x4(input.rowX, input.rowY, input.rowZ, input.rowW);
+	float4x4 MVP		= transpose(ViewProjectionMatrix * World);
+
+	output.position		= input.position + input.rowX;
 	output.position		= mul (input.position, WVP);
 	output.texCoord		= input.texCoord0;
-	output.normal		= mul (input.normal, World);
+	output.normal		= mul (input.normal, world);
 
 	return output;
 

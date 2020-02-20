@@ -20,19 +20,22 @@
 
 #define VIEW_NEAR 1.0f
 #define VIEW_FAR 1000.0f
+
+#define RES_WIDTH 1920.0f
+#define RES_HEIGHT 1080.0f
 extern HWND g_Window;
 
 using namespace fastdelegate;
 
 
-XMVECTOR DefaultForward     = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-XMVECTOR DefaultRight       = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
-XMVECTOR CameraForward      = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-XMVECTOR CameraRight        = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
-XMVECTOR CameraUp           = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+VEC4 DefaultForward     = VEC4(0.0f, 0.0f, 1.0f, 0.0f);
+VEC4 DefaultRight       = VEC4(1.0f, 0.0f, 0.0f, 0.0f);
+VEC4 CameraForward      = VEC4(0.0f, 0.0f, 1.0f, 0.0f);
+VEC4 CameraRight        = VEC4(1.0f, 0.0f, 0.0f, 0.0f);
+VEC4 CameraUp           = VEC4(0.0f, 1.0f, 0.0f, 0.0f);
 
 void
-CreateMatFromTransform (TransformComponent * pComponent, XMMATRIX &mat);
+CreateMatFromTransform (TransformComponent * pComponent, MAT4 &mat);
 
 void
 DirectX11Renderer::Init()
@@ -94,7 +97,7 @@ DirectX11Renderer::InitRenderTarget ()
 	CORE_BOOLEAN isSuccess			= FALSE;
 	HRESULT result;
 
-	this->m_RenderTarget = DirectX11Texture2D::AsRenderTarget (this->m_pDevice, 2560, 1440, 1, 4);
+	this->m_RenderTarget = DirectX11Texture2D::AsRenderTarget (this->m_pDevice, RES_WIDTH, RES_HEIGHT, 1, 4);
 	assert (m_RenderTarget);
 	if (m_RenderTarget)
 	{
@@ -181,8 +184,8 @@ DirectX11Renderer::InitDirect3D()
 	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
 	viewport.TopLeftX   = 0;
 	viewport.TopLeftY   = 0;
-	viewport.Width      = 2560,
-	viewport.Height     = 1440,
+	viewport.Width      = RES_WIDTH,
+	viewport.Height     = RES_HEIGHT,
 	viewport.MinDepth   = VIEWPORT_DEPTH_MIN;
 	viewport.MaxDepth   = VIEWPORT_DEPTH_MAX;
 	this->m_pDeviceContext->RSSetViewports(1, &viewport);
@@ -313,8 +316,8 @@ DirectX11Renderer::InitDepthBuffer()
 	HRESULT result = S_OK;
 
 	D3D11_TEXTURE2D_DESC depthStencilDesc;
-	depthStencilDesc.Width = 2560;
-	depthStencilDesc.Height = 1440;
+	depthStencilDesc.Width = RES_WIDTH;
+	depthStencilDesc.Height = RES_HEIGHT;
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.ArraySize = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -363,21 +366,10 @@ DirectX11Renderer::InitShaders()
 	HRESULT errPsh	= this->m_pDevice->CreatePixelShader(pixelShaderDescriptor.m_pBuffer, pixelShaderDescriptor.m_size, NULL, pPixelShader);
 	this->m_pDeviceContext->PSSetShader(*pPixelShader, 0, 0);
 
-	D3D11_INPUT_ELEMENT_DESC inputElementDescriptor[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-		{ "RowX",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA,	 1},
-		{ "RowY",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-		{ "RowZ",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-		{ "RowW",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1}
-	};
 
 	DirectXShaderBufferDescriptor descriptor = pShader->GetVertexShaderBufferPointer();
 	ID3D11InputLayout * pLayout = NULL;
-	HRESULT res = this->m_pDevice->CreateInputLayout(inputElementDescriptor, ARRAYSIZE(inputElementDescriptor), descriptor.m_pBuffer, descriptor.m_size, &pLayout);
+	HRESULT res = this->m_pDevice->CreateInputLayout(this->m_inputElementDescriptor, ARRAYSIZE(m_inputElementDescriptor), descriptor.m_pBuffer, descriptor.m_size, &pLayout);
 	pShader->SetInputLayout(pLayout);
 	this->m_pDeviceContext->IASetInputLayout(pLayout);
 
@@ -406,27 +398,9 @@ DirectX11Renderer::CreateShader(ShaderDescriptor * pDescriptor)
 	ID3D11PixelShader ** pPixelShader = pRetVal->GetPixelShader();
 	this->m_pDevice->CreatePixelShader(pixelShaderDescriptor.m_pBuffer, pixelShaderDescriptor.m_size, NULL, pPixelShader);
 
-	D3D11_INPUT_ELEMENT_DESC inputElementDescriptor[] =
-	{
-		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA,		0 },
-		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA,		 0 },
-        { "TEXCOORD",	1, DXGI_FORMAT_R32G32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA,		 0 },
-       /* { "TEXCOORD",	2, DXGI_FORMAT_R32G32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA,		 0 },
-        { "TEXCOORD",	3, DXGI_FORMAT_R32G32_FLOAT, 0, 36, D3D11_INPUT_PER_VERTEX_DATA,		 0 },
-        { "TEXCOORD",	4, DXGI_FORMAT_R32G32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA,		 0 },
-        { "TEXCOORD",	5, DXGI_FORMAT_R32G32_FLOAT, 0, 52, D3D11_INPUT_PER_VERTEX_DATA,		 0 },
-        { "TEXCOORD",	6, DXGI_FORMAT_R32G32_FLOAT, 0, 60, D3D11_INPUT_PER_VERTEX_DATA,		 0 },
-        { "TEXCOORD",	7, DXGI_FORMAT_R32G32_FLOAT, 0, 68, D3D11_INPUT_PER_VERTEX_DATA,		 0 },*/
-		{ "NORMAL",		0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 76, D3D11_INPUT_PER_VERTEX_DATA,		 0 },
-		{ "RowX",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA,	 1},
-		{ "RowY",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-		{ "RowZ",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-		{ "RowW",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1}
-	};
-        
 	DirectXShaderBufferDescriptor descriptor = pRetVal->GetVertexShaderBufferPointer();
 	ID3D11InputLayout * pLayout = NULL;
-	HRESULT res = this->m_pDevice->CreateInputLayout(inputElementDescriptor, ARRAYSIZE(inputElementDescriptor), descriptor.m_pBuffer, descriptor.m_size, &pLayout);
+	HRESULT res = this->m_pDevice->CreateInputLayout(this->m_inputElementDescriptor, ARRAYSIZE(m_inputElementDescriptor), descriptor.m_pBuffer, descriptor.m_size, &pLayout);
 	pRetVal->SetInputLayout(pLayout);
 
 	this->RegisterShader(pRetVal);
@@ -578,18 +552,26 @@ DirectX11Renderer::InitCamera()
 	this->m_pUniformBuffer = DirectX11Buffer::CreateConstantBuffer(this->m_pDevice, sizeof(InstanceUniformDescriptor), true, false, NULL);
 	assert(this->m_pUniformBuffer);
 
-	this->m_CameraYaw = 0;
-	this->m_CameraPitch = 0;
-	this->m_MoveLeftRight = 0.0f;
+	this->m_CameraYaw		= 0;
+	this->m_CameraPitch		= 0;
+	this->m_MoveLeftRight	= 0.0f;
 	this->m_MoveBackForward = 0.0f;
 
-	this->m_CameraPosition = FASTVEC_SET(0.0f, 3.0f, -8.0f, 0.0f);
-	this->m_CameraTarget = FASTVEC_SET(0.0f, -1.0f, 0.0f, 0.0f);
-	this->m_CameraUp = FASTVEC_SET(0.0f, 1.0f, 0.0, 0.0f);
-	this->m_CameraForward = CameraForward;
-	this->m_CameraRight = CameraRight;
-	this->m_CameraView = XMMatrixLookAtLH(this->m_CameraPosition, this->m_CameraTarget, this->m_CameraUp);
-	this->m_CameraProjection = XMMatrixPerspectiveFovLH(0.4f*3.14f, (float)2560 / 1440, VIEW_NEAR, VIEW_FAR);
+	this->m_CameraPosition	=  VEC4(0.0f, 3.0f, -8.0f, 0.0f);
+	this->m_CameraTarget	= VEC4(0.0f, -1.0f, 0.0f, 0.0f);
+	this->m_CameraUp		= VEC4(0.0f, 1.0f, 0.0, 0.0f);
+	this->m_CameraForward	= VEC4(CameraForward);
+	this->m_CameraRight		= CameraRight;
+
+	auto cameraPosition		= XMLoadFloat4(&this->m_CameraPosition);
+	auto cameraTarget		= XMLoadFloat4(&this->m_CameraTarget);
+	auto cameraUp			= XMLoadFloat4(&this->m_CameraUp);
+	
+	auto cameraView			= XMMatrixLookAtLH(cameraPosition, cameraTarget, cameraUp);
+	XMStoreFloat4x4(&this->m_CameraView, cameraView);
+	
+	auto cameraProjection	= XMMatrixPerspectiveFovLH(0.4f*3.14f, (float)RES_WIDTH / RES_HEIGHT, VIEW_NEAR, VIEW_FAR);
+	XMStoreFloat4x4(&this->m_CameraProjection, cameraProjection);
 
 	return wasInitted;
 }
@@ -597,30 +579,45 @@ DirectX11Renderer::InitCamera()
 void
 DirectX11Renderer::UpdateCamera()
 {
-	this->m_CameraRotation  = XMMatrixRotationRollPitchYaw(this->m_CameraPitch, this->m_CameraYaw, 0);
-	this->m_CameraTarget    = XMVector3TransformCoord(DefaultForward, this->m_CameraRotation);
-	this->m_CameraTarget    = XMVector3Normalize(this->m_CameraTarget);
+	auto cameraRotation		= XMMatrixRotationRollPitchYaw(this->m_CameraPitch, this->m_CameraYaw, 0);;
+	XMStoreFloat4x4(&this->m_CameraRotation, cameraRotation);
 
+	auto defaultForward		= XMLoadFloat4(&DefaultForward);
+	auto defaultRight		= XMLoadFloat4(&DefaultRight);
+	auto cameraUp			= XMLoadFloat4(&CameraUp);
+	
+	auto cameraTarget		= XMVector3TransformCoord(defaultForward, cameraRotation);
+	cameraTarget			= XMVector3Normalize(cameraTarget);
+	XMStoreFloat4(&this->m_CameraTarget, cameraTarget);
 
 	XMMATRIX RotateYTempMatrix;
 	RotateYTempMatrix       = XMMatrixRotationY(this->m_CameraYaw);
 
-	this->m_CameraRight     = XMVector3TransformCoord(DefaultRight, RotateYTempMatrix);
-	this->m_CameraUp        = XMVector3TransformCoord(CameraUp, RotateYTempMatrix);
-	this->m_CameraForward   = XMVector3TransformCoord(DefaultForward, RotateYTempMatrix);
+	auto cameraRight		= XMVector3TransformCoord(defaultRight, RotateYTempMatrix);
+	XMStoreFloat4(&this->m_CameraRight, cameraRight);
+	
+	cameraUp			= XMVector3TransformCoord(cameraUp, RotateYTempMatrix);
+	XMStoreFloat4(&this->m_CameraUp, cameraUp);
 
-	this->m_CameraPosition  += this->m_MoveLeftRight * this->m_CameraRight;
-	this->m_CameraPosition  += this->m_MoveBackForward * this->m_CameraForward;
+	auto cameraForward		= XMVector3TransformCoord(defaultForward, RotateYTempMatrix);
+	XMStoreFloat4(&this->m_CameraForward, cameraForward);
+
+	auto cameraPosition		= XMLoadFloat4(&this->m_CameraPosition);
+	cameraPosition			+= this->m_MoveLeftRight * cameraRight;
+	cameraPosition			+= this->m_MoveBackForward * cameraForward;
+	XMStoreFloat4(&this->m_CameraPosition, cameraPosition);
+
 
 	this->m_MoveLeftRight   = 0;
 	this->m_MoveBackForward = 0;
 
-	this->m_CameraTarget    = this->m_CameraPosition + this->m_CameraTarget;
+	cameraTarget = cameraPosition + cameraTarget;
+	XMStoreFloat4(&this->m_CameraTarget, cameraTarget);
 
 	FASTVEC DOWN            = FASTVEC_SET(0.0f, -1.0f, 0.0f, 0.0f);
 	/*DEBUG(Dino): The next line is code to debug terrain. Remove afterwards. */
 	//this->m_CameraTarget = DOWN;
-	this->m_CameraView      = XMMatrixLookAtLH(this->m_CameraPosition, this->m_CameraTarget, this->m_CameraUp);
+	//this->m_CameraView      = XMMatrixLookAtLH(this->m_CameraPosition, this->m_CameraTarget, this->m_CameraUp);
 }
 
 void 
@@ -687,7 +684,12 @@ DirectX11Renderer::RenderAllSimple(CORE_DOUBLE dT)
 {
 	//this->ClearRenderTargetTex (); //Enable when rendering to texture.
 	this->ClearRenderTargetBackBuffer ();
-	FASTMAT4 cameraViewProjectionMatrix = this->m_CameraView * this->m_CameraProjection;
+
+	FASTMAT4 cameraView = XMLoadFloat4x4(&this->m_CameraView);
+	FASTMAT4 cameraProjection = XMLoadFloat4x4(&this->m_CameraProjection);
+	FASTMAT4 wp = cameraView * cameraProjection;
+	MAT4 cameraViewProjectionMatrix;
+	XMStoreFloat4x4(&cameraViewProjectionMatrix, wp);
 
 	/*NOTE(Dino): Update per-frame uniform buffer. */
 	this->m_FrameUniforms.light = this->m_Light;
@@ -722,14 +724,19 @@ DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 
 	//ClearRenderTargetTex() before rendering to texture.
 	this->ClearRenderTargetBackBuffer ();
-	FASTMAT4 cameraViewProjectionMatrix = this->m_CameraView * this->m_CameraProjection;
+	auto cameraView						= XMLoadFloat4x4(&this->m_CameraView);
+	auto cameraProjection				= XMLoadFloat4x4(&this->m_CameraProjection);
+
+	FASTMAT4 cameraViewProjectionMatrix = cameraView * cameraProjection;
+	MAT4 viewProjectionMatrix;
+	XMStoreFloat4x4(&viewProjectionMatrix, cameraViewProjectionMatrix);
 
 	/*NOTE(Dino): Update per-frame uniform buffer. */
 	this->m_FrameUniforms.light = this->m_Light;
 	this->UpdateFrameUniforms();
 
 	this->ResetBlendState();
-	RenderAllInSet(&this->m_RenderSet.m_OpaqueRenderables, numTextureSwitches, numRenderableInstances, numRenderableInstances, cameraViewProjectionMatrix);
+	RenderAllInSet(&this->m_RenderSet.m_OpaqueRenderables, numTextureSwitches, numRenderableInstances, numRenderableInstances, viewProjectionMatrix);
 	this->SetBlendStateTransparent();
 
 
@@ -739,9 +746,9 @@ DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 	 * First, we render the back-size, and then the front-facing side.
 	 */
 	this->m_pDeviceContext->RSSetState(this->m_pCounterClockWisecullMode);
-	RenderAllInSet(&this->m_RenderSet.m_TransparentRenderables, numShaderSwitches, numTextureSwitches, numRenderableInstances, cameraViewProjectionMatrix);
+	RenderAllInSet(&this->m_RenderSet.m_TransparentRenderables, numShaderSwitches, numTextureSwitches, numRenderableInstances, viewProjectionMatrix);
 	this->m_pDeviceContext->RSSetState(this->m_pClockWiseCullMode);
-	RenderAllInSet(&this->m_RenderSet.m_TransparentRenderables, numShaderSwitches, numTextureSwitches, numRenderableInstances, cameraViewProjectionMatrix);
+	RenderAllInSet(&this->m_RenderSet.m_TransparentRenderables, numShaderSwitches, numTextureSwitches, numRenderableInstances, viewProjectionMatrix);
 	this->ResetBlendState();
 	
 	wstringstream wss;
@@ -754,7 +761,7 @@ DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 }
 
 void 
-DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShaderSwitches, size_t &numTextureSwitches, size_t &numRenderableInstances, const FASTMAT4 &cameraViewProjectionMatrix)
+DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShaderSwitches, size_t &numTextureSwitches, size_t &numRenderableInstances, const MAT4 &cameraViewProjectionMatrix)
 {
 	auto perShaderIterator = pMap->begin();
 	while (perShaderIterator != pMap->end())
@@ -814,18 +821,29 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 
 						auto pRenderableInstance		= *instanceIterator;
 						auto  pInstanceTransform		= pRenderableInstance->GetCachedTransform ();
-						auto modelViewProjectionMatrix	= *pInstanceTransform * this->m_CameraView * cameraViewProjectionMatrix;
+
+						auto instanceTransform			= XMLoadFloat4x4(pInstanceTransform);
+						auto cameraTransform			= XMLoadFloat4x4(&this->m_CameraView);
+						auto cwp						= XMLoadFloat4x4(&cameraViewProjectionMatrix);
+
+
+						auto modelViewProjectionMatrix	= instanceTransform * cameraTransform * cwp;
 						
-						this->m_PerObjectBuffer.WorldViewProjection = FASTMAT_TRANSPOSE (modelViewProjectionMatrix);
-						this->m_PerObjectBuffer.World				= FASTMAT_TRANSPOSE (*pInstanceTransform);
-						
+						auto wvp						= FASTMAT_TRANSPOSE(modelViewProjectionMatrix);
+						auto itt						= FASTMAT_TRANSPOSE(instanceTransform);
+						XMStoreFloat4x4(&this->m_PerObjectBuffer.WorldViewProjection, wvp);
+						XMStoreFloat4x4(&this->m_PerObjectBuffer.World, itt);
 
 						instanceIterator++;
 					}
-					this->m_PerObjectBuffer.World				= FASTMAT_IDENTITY ();
-					this->m_PerObjectBuffer.WorldViewProjection = FASTMAT_IDENTITY ();
+					//this->m_PerObjectBuffer.World				= FASTMAT_IDENTITY ();
+					//this->m_PerObjectBuffer.WorldViewProjection = FASTMAT_IDENTITY ();
+
+					auto cameraTransform						= XMLoadFloat4x4(&this->m_CameraView);
+					auto cwp									= XMLoadFloat4x4(&cameraViewProjectionMatrix);
+					auto vpm = (cameraTransform * cwp);
+					XMStoreFloat4x4(&this->m_FrameUniforms.ViewProjectionMatrix, vpm);
 					this->m_FrameUniforms.Camera				= this->m_CameraView;
-					this->m_FrameUniforms.ViewProjectionMatrix	= (this->m_CameraView * cameraViewProjectionMatrix);
 					auto pUniformBufferPointer						= this->m_pUniformBuffer->GetRawPointer ();
 					this->m_pDeviceContext->UpdateSubresource (pUniformBufferPointer, 0, NULL, &this->m_PerObjectBuffer, 0, 0);
 					this->m_pDeviceContext->VSSetConstantBuffers (0, 1, &pUniformBufferPointer);
@@ -1134,10 +1152,12 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 						this->m_RenderSet.Insert(pRenderable);
 						
 						auto * pComponent			= (TransformComponent *) pEntity->GetComponentByType (COMPONENT_TYPE_TRANSFORM);
-						FASTMAT4 transform	= FASTMAT_IDENTITY ();
+						FASTMAT4 transformA	= FASTMAT_IDENTITY ();
+						MAT4 transform;
+						XMStoreFloat4x4(&transform, transformA);
 						CreateMatFromTransform (pComponent, transform);
 						// We rebuffer on every instance count change, to make sure the instance data is reloaded.
-						auto pRenderableInstance	= pRenderable->Instantiate(pComponent->m_Identifier, transform);
+						auto pRenderableInstance	= pRenderable->Instantiate(pComponent->m_Identifier, transformA);
 						if (pRenderable->GetInstanceCount () != 1)
 							pRenderable->DeactivateBuffers ();
 						pRenderable->Buffer(this->m_pDevice, this->m_pDeviceContext);
@@ -1149,8 +1169,9 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 }
 
 void
-CreateMatFromTransform (TransformComponent * pComponent, XMMATRIX &mat)
+CreateMatFromTransform (TransformComponent * pComponent, MAT4 &matP)
 {
+	FASTMAT4 mat = XMLoadFloat4x4(&matP);
 	FASTMAT4 transform	= FASTMAT_IDENTITY ();
 	auto rX				= XMMatrixRotationX (pComponent->m_Rotation.x);
 	auto rY				= XMMatrixRotationY (pComponent->m_Rotation.y);
@@ -1159,6 +1180,7 @@ CreateMatFromTransform (TransformComponent * pComponent, XMMATRIX &mat)
 	auto translation	= XMMatrixTranslation (pComponent->m_Translation.x, pComponent->m_Translation.y, pComponent->m_Translation.z);
 	auto scale			= XMMatrixScaling (pComponent->m_Scale.x, pComponent->m_Scale.y, pComponent->m_Scale.z);
 	mat					= XMMatrixMultiply (scale, XMMatrixMultiply (translation, rotation));
+	XMStoreFloat4x4(&matP, mat);
 }
 void
 DirectX11Renderer::OnEntityComponentDeRegistered (IEventData * pEvent)
@@ -1227,6 +1249,8 @@ DirectX11Renderer::OnEntityComponentChanged (IEventData * pEvent)
 					auto transform = pInstance->GetTransform ();
 					CreateMatFromTransform (pTransform, *transform);
 					pInstance->RecomputeTransform ();
+					/*NOTE(Dino): We have to rebuffer to update the instance data. */
+					pRenderable->Buffer(this->m_pDevice, this->m_pDeviceContext);
 				}
 			}
 		}

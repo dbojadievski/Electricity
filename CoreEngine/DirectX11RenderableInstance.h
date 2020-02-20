@@ -8,10 +8,22 @@
 struct RenderableInstanceData
 // This really has no business being inside D3D code.
 {
-	FASTVEC m_rowX;
-	FASTVEC m_rowY;
-	FASTVEC m_rowZ;
-	FASTVEC m_rowW;
+	FLOAT4 rowX;
+	FLOAT4 rowY;
+	FLOAT4 rowZ;
+	FLOAT4 rowW;
+
+	static size_t GetInstanceSize()
+	{
+		size_t size = 0;
+
+		size += sizeof(rowX);
+		size += sizeof(rowY);
+		size += sizeof(rowZ);
+		size += sizeof(rowW);
+		
+		return size;
+	}
 };
 
 class DirectX11Renderable;
@@ -21,8 +33,8 @@ private:
 	friend DirectX11Renderable;
 	CORE_ID m_ID;
 
-	FASTMAT4 m_Transform; // NOTE(Dino): This is the object's transform relative to the parent.
-	FASTMAT4 m_CachedTransform; // NOTE(Dino): This is the object's absolute transform, independent of the parent.
+	MAT4 m_Transform; // NOTE(Dino): This is the object's transform relative to the parent.
+	MAT4 m_CachedTransform; // NOTE(Dino): This is the object's absolute transform, independent of the parent.
 	DirectX11Renderable * m_pRenderable;
 
 	DirectX11RenderableInstance * m_pParent;
@@ -38,16 +50,9 @@ public:
 	DirectX11RenderableInstance(DirectX11Renderable * pRenderable, CORE_ID id, DirectX11RenderableInstance * pParent = NULL, vector<DirectX11RenderableInstance *> * pChildren = NULL);
 	~DirectX11RenderableInstance();
 
-	const FASTMAT4 * const GetCachedTransform();
-	FASTMAT4 * GetTransform();
+	const MAT4 * const GetCachedTransform();
+	MAT4 * GetTransform();
 	void RecomputeTransform();
-	static size_t GetInstanceDataSize ()
-	{
-		size_t size = 0;
-		size		+= sizeof (m_CachedTransform);
-		return size;
-	}
-
 	void ToInstanceData (RenderableInstanceData &data);
 };
 
