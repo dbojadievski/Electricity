@@ -58,7 +58,8 @@ DirectX11Renderable::Buffer(ID3D11Device * pDevice, ID3D11DeviceContext * pDevic
 		
 		if (this->m_pInstanceBuff)
 			delete [] this->m_pInstanceBuff;
-		this->m_pInstanceBuff	= (CORE_BYTE *)malloc (RenderableInstanceData::GetInstanceSize() * numInstances);
+		this->m_pInstanceBuff	= (RenderableInstanceData *)malloc (RenderableInstanceData::GetInstanceSize() * numInstances);
+		ZeroMemory (m_pInstanceBuff, RenderableInstanceData::GetInstanceSize () * numInstances);
 		for (size_t idx			= 0; idx < numInstances; idx++)
 		{
 			auto pInstance		= this->m_pInstances[idx];

@@ -95,4 +95,3 @@ DirectX11RenderableInstance::RecomputeTransform()
 		}
 	}
 }
-

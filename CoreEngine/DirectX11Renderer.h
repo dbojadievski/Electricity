@@ -126,14 +126,14 @@ private:
 	D3D11_INPUT_ELEMENT_DESC m_inputElementDescriptor[8]
 		=
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-		{ "RowX",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA,	 1},
-		{ "RowY",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-		{ "RowZ",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-		{ "RowW",		0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1}
+		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL",		0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD",	1, DXGI_FORMAT_R32G32B32_FLOAT,		1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{ "RowX",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	1, 0, D3D11_INPUT_PER_INSTANCE_DATA,	 1},
+		{ "RowY",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{ "RowZ",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "RowW",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1}
 	};
 
 
@@ -145,20 +145,24 @@ private:
 
 	struct FrameUniformDescriptor
 	{
-		DirectionalLight light;
 		MAT4 Camera;
 		MAT4 Projection;
 		MAT4 ViewProjectionMatrix;
 	};
 
-
+	struct DirectionalLightUniformDescriptor
+	{
+		DirectionalLight light;
+	};
 	DirectionalLight m_Light;
 	FrameUniformDescriptor m_FrameUniforms;
 	InstanceUniformDescriptor m_ObjectUniforms;
+	DirectionalLightUniformDescriptor m_LightUniformDescriptor;
 
 	DirectX11Buffer * m_pFrameUniformBuffer;
 	DirectX11Buffer * m_pFrameUniformStructuredBuffer;
 	DirectX11Buffer * m_pObjectUniformBuffer;
+	DirectX11Buffer * m_pLightUniformBuffer;
 	DirectX11Buffer * m_pRgbBuffer;
 
 	void InitEventHandlers();

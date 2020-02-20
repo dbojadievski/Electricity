@@ -12,6 +12,7 @@
 
 #include "Renderable.h"
 #include "DirectX11RenderableInstance.h"
+#include "RenderableInstanceData.h"
 class DirectX11RenderableInstance;
 
 typedef std::_Vector_iterator<std::_Vector_val<std::_Simple_types<DirectX11RenderableInstance *>>> DirectX11RenderableInstanceIterator;
@@ -25,11 +26,11 @@ private:
 	DirectX11Texture2D *	m_pTexture;
 	
 
-	DirectX11Buffer *		m_pVertexBuffer;
-	DirectX11Buffer *		m_pInstanceBuffer;
-	DirectX11Buffer *		m_pIndexBuffer;
-	CORE_BYTE *				m_pInstanceBuff;
-	D3D_PRIMITIVE_TOPOLOGY m_Topology;
+	DirectX11Buffer *			m_pVertexBuffer;
+	DirectX11Buffer *			m_pInstanceBuffer;
+	DirectX11Buffer *			m_pIndexBuffer;
+	RenderableInstanceData *	m_pInstanceBuff;
+	D3D_PRIMITIVE_TOPOLOGY		m_Topology;
 	vector<DirectX11RenderableInstance *> m_pInstances;
 
 public:

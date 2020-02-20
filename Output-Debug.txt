@@ -1,0 +1,125 @@
+﻿'Electricity.exe' (Win32): Loaded 'C:\Users\dboja\source\Electricity\x64\Debug\Electricity.exe'. Symbols loaded.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\ntdll.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\kernel32.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\KernelBase.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\apphelp.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\user32.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\win32u.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\gdi32.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\gdi32full.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\msvcp_win.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\ucrtbase.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Users\dboja\source\Electricity\x64\Debug\Assimp64.dll'. Module was built without symbols.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\msvcp140d.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\dinput8.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\msvcrt.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\advapi32.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\sechost.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\rpcrt4.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\d2d1.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\DWrite.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\d3d11.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\kernel.appcore.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\vcruntime140d.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\WinSxS\amd64_microsoft.vc90.crt_1fc8b3b9a1e18e3b_9.0.30729.9619_none_08e065a3a84109b0\msvcp90.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\WinSxS\amd64_microsoft.vc90.crt_1fc8b3b9a1e18e3b_9.0.30729.9619_none_08e065a3a84109b0\msvcr90.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\ucrtbased.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\dxgi.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\DXCore.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\cfgmgr32.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\combase.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\bcryptprimitives.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\ucrtbased.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Unloaded 'C:\Windows\System32\ucrtbased.dll'
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\D3DCompiler_47.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\cryptsp.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\imm32.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\PROGRA~2\SearchProtect\SearchProtect\bin\VC64Loader.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\version.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Unloaded 'C:\Windows\System32\version.dll'
+'Electricity.exe' (Win32): Unloaded 'C:\PROGRA~2\SearchProtect\SearchProtect\bin\VC64Loader.dll'
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\InputHost.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\SHCore.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\propsys.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\CoreMessaging.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\WinTypes.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\oleaut32.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\CoreUIComponents.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\ntmarta.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\uxtheme.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\msctf.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\TextInputFramework.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\iertutil.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\hid.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\setupapi.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\bcrypt.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\winmm.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\winmmbase.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\winmmbase.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\winmmbase.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Unloaded 'C:\Windows\System32\winmmbase.dll'
+'Electricity.exe' (Win32): Unloaded 'C:\Windows\System32\winmmbase.dll'
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\devobj.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\wintrust.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\msasn1.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\crypt32.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\DXGIDebug.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\ResourcePolicyClient.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Unloaded 'C:\Windows\System32\ResourcePolicyClient.dll'
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_9e532b5f619dc909\nvldumdx.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\version.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\cryptnet.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\cryptbase.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\imagehlp.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\rsaenh.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_9e532b5f619dc909\nvwgf2umx.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Program Files\NVIDIA Corporation\Ansel\NvCameraWhitelisting64.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\shell32.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\windows.storage.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\profapi.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\powrprof.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\umpdc.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\shlwapi.dll'. Cannot find or open the PDB file.
+The thread 0xec6c has exited with code 0 (0x0).
+'Electricity.exe' (Win32): Unloaded 'C:\Windows\System32\profapi.dll'
+'Electricity.exe' (Win32): Unloaded 'C:\Windows\System32\umpdc.dll'
+'Electricity.exe' (Win32): Unloaded 'C:\Windows\System32\powrprof.dll'
+'Electricity.exe' (Win32): Unloaded 'C:\Windows\System32\windows.storage.dll'
+'Electricity.exe' (Win32): Unloaded 'C:\Windows\System32\shlwapi.dll'
+'Electricity.exe' (Win32): Unloaded 'C:\Windows\System32\shell32.dll'
+'Electricity.exe' (Win32): Unloaded 'C:\Program Files\NVIDIA Corporation\Ansel\NvCameraWhitelisting64.dll'
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\shell32.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\windows.storage.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\profapi.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\powrprof.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\umpdc.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\shlwapi.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\nvspcap64.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\ole32.dll'. Cannot find or open the PDB file.
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\d3d11_3SDKLayers.dll'. Cannot find or open the PDB file.
+DXGI WARNING: IDXGIFactory::CreateSwapChain: Blt-model swap effects (DXGI_SWAP_EFFECT_DISCARD and DXGI_SWAP_EFFECT_SEQUENTIAL) are legacy swap effects that are predominantly superceded by their flip-model counterparts (DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL and DXGI_SWAP_EFFECT_FLIP_DISCARD). Please consider updating your application to leverage flip-model swap effects to benefit from modern presentation enhancements. More information is available at http://aka.ms/dxgiflipmodel. [ MISCELLANEOUS WARNING #294: ]
+'Electricity.exe' (Win32): Loaded 'C:\Windows\System32\dwmapi.dll'. Cannot find or open the PDB file.
+The thread 0xee60 has exited with code 0 (0x0).
+The thread 0xe72c has exited with code 0 (0x0).
+The thread 0xeca8 has exited with code 0 (0x0).
+The thread 0xef70 has exited with code 0 (0x0).
+The thread 0xd980 has exited with code 0 (0x0).
+The thread 0xeb30 has exited with code 0 (0x0).
+The thread 0xeb9c has exited with code 0 (0x0).
+The thread 0xe87c has exited with code 0 (0x0).
+The thread 0xe25c has exited with code 0 (0x0).
+The thread 0xedf8 has exited with code 0 (0x0).
+The thread 0xe1fc has exited with code 0 (0x0).
+The thread 0xef50 has exited with code 0 (0x0).
+The thread 0xef3c has exited with code 0 (0x0).
+The thread 0xeda0 has exited with code 0 (0x0).
+The thread 0xedcc has exited with code 0 (0x0).
+The thread 0xed58 has exited with code 0 (0x0).
+The thread 0xee10 has exited with code 0 (0x0).
+The thread 0xed2c has exited with code 0 (0x0).
+The thread 0xee30 has exited with code 0 (0x0).
+The thread 0xec48 has exited with code 0 (0x0).
+The thread 0xec90 has exited with code 0 (0x0).
+The thread 0xed70 has exited with code 0 (0x0).
+The thread 0xed84 has exited with code 0 (0x0).
+The program '[60256] Electricity.exe' has exited with code 0 (0x0).

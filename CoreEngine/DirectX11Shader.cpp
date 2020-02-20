@@ -26,7 +26,8 @@ DirectX11Shader::Compile(LPWSTR pStrVertexShaderPath, LPCSTR pStrVertexShaderFun
 	
 	ID3DBlob * pErrMsg;
 
-	errCode = D3DCompileFromFile(pStrVertexShaderPath, NULL, NULL, pStrVertexShaderFunc, "vs_5_0", 0, 0, &this->m_pVertexShaderBlob, &pErrMsg);
+	errCode = D3DCompileFromFile(pStrVertexShaderPath, NULL, NULL, 
+		pStrVertexShaderFunc, "vs_5_0", D3DCOMPILE_DEBUG, 0, &this->m_pVertexShaderBlob, &pErrMsg);
 	if (errCode)
 	{
 		OutputDebugStringA((char*)pErrMsg->GetBufferPointer());

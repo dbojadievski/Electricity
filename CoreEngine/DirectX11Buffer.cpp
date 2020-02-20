@@ -37,7 +37,7 @@ DirectX11Buffer::CreateVertexBuffer(ID3D11Device * pDevice, UINT size, CORE_BOOL
 	if (isDynamic)
 	{
 		pRetVal->m_Descriptor.Usage = D3D11_USAGE_DYNAMIC;
-		pRetVal->m_Descriptor.CPUAccessFlags = D3D10_CPU_ACCESS_WRITE;
+		pRetVal->m_Descriptor.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	}
 	else
 	{
@@ -102,7 +102,7 @@ DirectX11Buffer::CreateInstanceBuffer(ID3D11Device * pDevice, size_t instanceWid
 
 	pRetVal->m_Descriptor.Usage = D3D11_USAGE_DEFAULT;
 	pRetVal->m_Descriptor.ByteWidth = (UINT)(instanceWidth * instanceCount);
-	pRetVal->m_Descriptor.BindFlags = D3D10_BIND_VERTEX_BUFFER;
+	pRetVal->m_Descriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	pRetVal->m_Descriptor.CPUAccessFlags = willCpuUpdate;
 	pRetVal->m_Descriptor.MiscFlags = 0;
 	pRetVal->m_Descriptor.StructureByteStride = 0;

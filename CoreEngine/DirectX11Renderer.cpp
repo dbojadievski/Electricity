@@ -21,8 +21,8 @@
 #define VIEW_NEAR 1.0f
 #define VIEW_FAR 1000.0f
 
-#define RES_WIDTH 1920.0f
-#define RES_HEIGHT 1080.0f
+#define RES_WIDTH 2550.0f
+#define RES_HEIGHT 1440.0f
 extern HWND g_Window;
 
 using namespace fastdelegate;
@@ -51,13 +51,14 @@ void
 DirectX11Renderer::InitLights()
 {
 	this->m_Light.m_Direction           = FLOAT3(0.25f, 0.5f, -1.0f);
-	this->m_Light.m_ColourAmbient       = FLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	this->m_Light.m_ColourDiffuse       = FLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	this->m_Light.m_ColourAmbient       = FLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+	this->m_Light.m_ColourDiffuse       = FLOAT4(0.0f, 255.0f, 0.0f, 1.0f);
+	this->m_Light.m_Pad					= 0;
 
 	this->m_Lights.push_back(this->m_Light);
 	this->m_LightManager.AddDirectionalLight(&this->m_Light);
 
-	this->ReloadLightBuffer();
+	//this->ReloadLightBuffer();
 }
 
 void DirectX11Renderer::InitUniformBuffers ()
@@ -67,6 +68,9 @@ void DirectX11Renderer::InitUniformBuffers ()
 
 	this->m_pObjectUniformBuffer = DirectX11Buffer::CreateConstantBuffer(this->m_pDevice, sizeof(InstanceUniformDescriptor), true, false, NULL);
 	assert(this->m_pObjectUniformBuffer);
+
+	this->m_pLightUniformBuffer = DirectX11Buffer::CreateConstantBuffer (this->m_pDevice, sizeof (m_LightUniformDescriptor), true, false, NULL);
+	assert (this->m_pLightUniformBuffer);
 }
 
 void 
@@ -139,13 +143,12 @@ DirectX11Renderer::InitDirect3D()
 	DXGI_SWAP_CHAIN_DESC swapChainDescriptor;
 	ZeroMemory(&swapChainDescriptor, sizeof(DXGI_SWAP_CHAIN_DESC));
 
-	swapChainDescriptor.BufferCount = 1;
-	swapChainDescriptor.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // We're using standard 32-bit colours for now. Would need to be increased for HDR support.
-	swapChainDescriptor.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDescriptor.OutputWindow = g_Window;
-	swapChainDescriptor.SampleDesc.Count = 4; //TODO(Dino): Make configurable.
-	//swapChainDescriptor.Quality = 16;
-	swapChainDescriptor.Windowed = true;
+	swapChainDescriptor.Windowed			= 1;
+	swapChainDescriptor.BufferCount			= 1;
+	swapChainDescriptor.BufferDesc.Format	= DXGI_FORMAT_R8G8B8A8_UNORM; // We're using standard 32-bit colours for now. Would need to be increased for HDR support.
+	swapChainDescriptor.BufferUsage			= DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapChainDescriptor.SampleDesc.Count	= 1; //TODO(Dino): Make configurable.
+	swapChainDescriptor.OutputWindow		= g_Window;
 
 
 	D3D_FEATURE_LEVEL featureLevels[] =
@@ -175,12 +178,11 @@ DirectX11Renderer::InitDirect3D()
 #pragma region Initialize back-buffer and render target.
 	///*Sets the backbuffer to be the current render target. */
 	ID3D11Texture2D *pBackBuffer;
+
 	this->m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *) &pBackBuffer);
 	this->m_pDevice->CreateRenderTargetView(pBackBuffer, NULL, &this->m_pRenderTargetViewBackBuffer);
 	pBackBuffer->Release();
 	this->m_pDeviceContext->OMSetRenderTargets(1, &this->m_pRenderTargetViewBackBuffer, NULL);
-	
-	// Instead of setting the back-buffer, we now render to texture.
 
 #pragma endregion
 #pragma region Initialize viewport.
@@ -205,7 +207,7 @@ DirectX11Renderer::InitDirect3D()
 	this->m_pDeviceContext->RSSetState(NULL);
 #pragma endregion
 
-	this->m_ClearColour = { 0.1f, 0.1f, 0.1f, 1.0f };
+	this->m_ClearColour = { 0.2f, 0.2f, 0.2f, 1.0f };
 
 	InitDepthBuffer();
 	this->InitRenderTarget ();
@@ -338,7 +340,7 @@ DirectX11Renderer::InitDepthBuffer()
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.ArraySize = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	depthStencilDesc.SampleDesc.Count = 4;
+	depthStencilDesc.SampleDesc.Count = 1;
 	depthStencilDesc.SampleDesc.Quality = 0;
 	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
 	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
@@ -359,7 +361,7 @@ DirectX11Renderer::InitDepthBuffer()
 		goto end;
 	}
 
-	this->m_pDeviceContext->OMSetRenderTargets(1, &this->m_pRenderTargetViewBackBuffer, this->m_pDepthStencilViewBackBuffer);
+	this->m_pDeviceContext->OMSetRenderTargets(1, &this->m_pRenderTargetViewBackBuffer, NULL);
 
 
 end:
@@ -676,10 +678,18 @@ DirectX11Renderer::UpdateCamera()
 void 
 DirectX11Renderer::UpdateFrameUniforms()
 {
-	auto pUniformBuffer     = this->m_pFrameUniformBuffer->GetRawPointer();
-	this->m_pDeviceContext->UpdateSubresource(pUniformBuffer, 0, NULL, &this->m_FrameUniforms, 0, 0);
-	this->m_pDeviceContext->PSSetConstantBuffers(1, 1, &pUniformBuffer);
-	this->m_pDeviceContext->VSSetConstantBuffers(1, 1, &pUniformBuffer);
+	{
+		auto pUniformBuffer     = this->m_pFrameUniformBuffer->GetRawPointer();
+		this->m_pDeviceContext->UpdateSubresource(pUniformBuffer, 0, NULL, &this->m_FrameUniforms, 0, 0);
+		this->m_pDeviceContext->VSSetConstantBuffers(1, 1, &pUniformBuffer);
+	}
+
+	{
+		auto pUniformBuffer = this->m_pLightUniformBuffer->GetRawPointer ();
+		m_pDeviceContext->UpdateSubresource (pUniformBuffer, 0, NULL, &this->m_LightUniformDescriptor, 0, 0);
+		m_pDeviceContext->PSSetConstantBuffers (3, 1, &pUniformBuffer);
+	}
+
 }
 
 void
@@ -726,6 +736,7 @@ DirectX11Renderer::CloseDirectX11Device()
 	this->m_pDepthStencilBuffer->Release();
 	delete this->m_pObjectUniformBuffer;
 	delete this->m_pFrameUniformBuffer;
+	delete this->m_pLightUniformBuffer;
 	this->m_pRasterizerStateWireframe->Release();
 	delete this->m_RenderTarget;
 	this->m_pSwapChain->Release();
@@ -762,7 +773,7 @@ DirectX11Renderer::RenderAllSimple(CORE_DOUBLE dT)
 	XMStoreFloat4x4(&cameraViewProjectionMatrix, wp);
 
 	/*NOTE(Dino): Update per-frame uniform buffer. */
-	this->m_FrameUniforms.light = this->m_Light;
+	this->m_LightUniformDescriptor.light = this->m_Light;
 	this->UpdateUniforms();
 
 	this->ResetBlendState();
@@ -805,7 +816,8 @@ DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 	XMStoreFloat4x4(&viewProjectionMatrix, cameraViewProjectionMatrix);
 
 	/*NOTE(Dino): Update per-frame uniform buffer. */
-	this->m_FrameUniforms.light = this->m_Light;
+	this->m_LightUniformDescriptor.light = this->m_Light;
+	this->UpdateFrameUniforms ();
 
 	this->ResetBlendState();
 	RenderAllInSet(&this->m_RenderSet.m_OpaqueRenderables, numTextureSwitches, numRenderableInstances, numRenderableInstances, viewProjectionMatrix);
@@ -908,6 +920,7 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 						XMStoreFloat4x4(&this->m_ObjectUniforms.WorldViewProjection, wvp);
 						XMStoreFloat4x4(&this->m_ObjectUniforms.World, itt);
 
+						this->UpdateInstanceUniforms ();
 						instanceIterator++;
 					}
 					//this->m_PerObjectBuffer.World				= FASTMAT_IDENTITY ();
@@ -919,7 +932,6 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 					XMStoreFloat4x4(&this->m_FrameUniforms.ViewProjectionMatrix, vpm);
 					this->m_FrameUniforms.Projection			= this->m_CameraProjection;
 					this->m_FrameUniforms.Camera				= this->m_CameraView;
-					this->UpdateUniforms();
 					pRenderable->Render (this->m_pDeviceContext);
 #pragma endregion
 #pragma region Segment 2: Basic direct rendering.
@@ -994,24 +1006,23 @@ DirectX11Renderer::DeRegisterTexture(CORE_ID textureId)
 void
 DirectX11Renderer::ReloadLightBuffer()
 {
-	return;
 	DirectionalLight * pAsArray = this->m_Lights.data();
 	size_t numLights = this->m_Lights.size();
 
 	D3D11_SUBRESOURCE_DATA resourceData;
-	resourceData.SysMemPitch = (UINT) (numLights * sizeof(DirectionalLight));
-	resourceData.SysMemSlicePitch = sizeof(DirectionalLight);
+	resourceData.SysMemPitch = (UINT) (numLights * DirectionalLight::GetSize());
+	resourceData.SysMemSlicePitch = DirectionalLight::GetSize();
 	resourceData.pSysMem = &this->m_Light;
 
 	if (this->m_pFrameUniformStructuredBuffer)
 		delete this->m_pFrameUniformStructuredBuffer;
-	this->m_pFrameUniformStructuredBuffer = DirectX11Buffer::CreateStructuredBuffer(this->m_pDevice, numLights, sizeof(DirectionalLight), true, false, &resourceData);
+	this->m_pFrameUniformStructuredBuffer = DirectX11Buffer::CreateStructuredBuffer(this->m_pDevice, numLights, DirectionalLight::GetSize(), true, false, &resourceData);
 
 	ID3D11Buffer *pBuffers[] = { this->m_pObjectUniformBuffer->GetRawPointer(), this->m_pFrameUniformStructuredBuffer->GetRawPointer() };
 
 	auto ptr = this->m_pFrameUniformStructuredBuffer->GetRawPointer();
 	this->m_pDeviceContext->UpdateSubresource(ptr, 0, 0, pAsArray, 0, 0);
-	this->m_pDeviceContext->PSSetConstantBuffers(0, ARRAYSIZE(pBuffers), pBuffers);
+	this->m_pDeviceContext->PSSetConstantBuffers (2, 1, &ptr);
 
 	this->UpdateFrameUniforms();
 }
@@ -1225,10 +1236,11 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 						this->m_RenderSet.Insert(pRenderable);
 						
 						auto * pComponent			= (TransformComponent *) pEntity->GetComponentByType (COMPONENT_TYPE_TRANSFORM);
-						FASTMAT4 transformA	= FASTMAT_IDENTITY ();
+						FASTMAT4 transformA			= FASTMAT_IDENTITY ();
 						MAT4 transform;
 						XMStoreFloat4x4(&transform, transformA);
 						CreateMatFromTransform (pComponent, transform);
+						transformA					= XMLoadFloat4x4 (&transform);
 						// We rebuffer on every instance count change, to make sure the instance data is reloaded.
 						auto pRenderableInstance	= pRenderable->Instantiate(pComponent->m_Identifier, transformA);
 						if (pRenderable->GetInstanceCount () != 1)

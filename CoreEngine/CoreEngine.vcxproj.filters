@@ -357,6 +357,9 @@
     <ClInclude Include="SceneEvents.h">
       <Filter>Header Files\Infrastructure\Event\EventTypes</Filter>
     </ClInclude>
+    <ClInclude Include="RenderableInstanceData.h">
+      <Filter>Header Files\Rendering\DirectX11</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TimeUtils.cpp">

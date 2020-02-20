@@ -1,4 +1,4 @@
-cbuffer cbPerObject // At slot 0.
+cbuffer cbPerObject // At slot 0. Used in the vertex shader.
 {
 	float4x4 WVP;
 	float4x4 World;
@@ -12,15 +12,19 @@ struct DirectionalLight
 	float3 direction;
 };
 
-cbuffer cbPerFrame // At slot 1.
+cbuffer cbPerFrame // At slot 1. used in the vertex shader.
 {
-	DirectionalLight light;
 	float4x4 CameraMatrix;
 	float4x4 ProjectionMatrix;
 	float4x4 ViewProjectionMatrix;
 };
 
-StructuredBuffer<DirectionalLight> lightBuffer;
+cbuffer DirectionalLightBuffer // at slot 3. Used in the pixel shader.
+{
+	DirectionalLight light;
+};
+
+StructuredBuffer<DirectionalLight> lightBuffer; // At slot 2.
 Texture2D ObjTexture;
 SamplerState ObjSamplerState;
 
@@ -51,7 +55,6 @@ VOut VShader (VS_INPUT input)
 
 	float4x4 world		= float4x4(input.rowX, input.rowY, input.rowZ, input.rowW);
 	float4x4 MVP		= (transpose(ProjectionMatrix) * transpose(CameraMatrix) * transpose(world));
-
 	output.position		= mul (input.position, MVP);
 	output.texCoord		= input.texCoord0;
 	output.normal		= mul (input.normal, world);
@@ -65,13 +68,19 @@ float4 PShader (VOut input) : SV_TARGET
 	input.normal		= normalize (input.normal);
 	float4 diffuse		= ObjTexture.Sample (ObjSamplerState, input.texCoord);
 	float3 finalColour	= diffuse;
-	float3 ambient		= diffuse;
 
 	uint numLights;
 	uint stride;
+	finalColour			= (diffuse * light.colourAmbient);
+	finalColour			+= saturate (dot (light.direction, input.normal) * light.colourDiffuse * diffuse);
 	lightBuffer.GetDimensions (numLights, stride);
-	finalColour = (diffuse * light.colourAmbient);
-	finalColour += saturate (dot (light.direction, input.normal) * light.colourDiffuse * diffuse);
+	//for (int i = 0; i < numLights; i++)
+	//{
+	//	DirectionalLight dl = lightBuffer[i];
+	//	finalColour			*= dl.colourAmbient;
+	//	finalColour			+= saturate (dot (dl.direction, input.normal) * light.colourDiffuse * diffuse);
+	//}
+
 
 	return float4(finalColour.r, finalColour.g, finalColour.b, diffuse.a);
 
