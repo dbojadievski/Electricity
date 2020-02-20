@@ -89,12 +89,17 @@ private:
 	DirectX11Shader * m_pRedShader;
 	DirectX11Shader * m_pGreenShader;
     DirectX11Shader * m_pBasicShader;
+	DirectX11Shader * m_pSquareShader;
 
 	DirectX11Texture2D * m_pActiveTexture;
 	DirectX11Texture2DMap m_TextureMap;
 	vector<DirectX11Renderable *> m_Renderables;
 	map<CORE_ID, DirectX11Renderable *> m_ModelToRenderableMap;
 	DirectX11RenderSet m_RenderSet;
+
+	//These two are used to render to texture.
+	DirectX11Renderable * m_pSquare;
+	DirectX11RenderableInstance * m_pSquareInstance;
 
 	VEC4 m_ClearColour;
 	vector<DirectionalLight> m_Lights;
@@ -142,16 +147,18 @@ private:
 	{
 		DirectionalLight light;
 		MAT4 Camera;
+		MAT4 Projection;
 		MAT4 ViewProjectionMatrix;
 	};
 
 
 	DirectionalLight m_Light;
 	FrameUniformDescriptor m_FrameUniforms;
-	InstanceUniformDescriptor m_PerObjectBuffer;
-	DirectX11Buffer * m_pUniformBuffer;
+	InstanceUniformDescriptor m_ObjectUniforms;
+
 	DirectX11Buffer * m_pFrameUniformBuffer;
 	DirectX11Buffer * m_pFrameUniformStructuredBuffer;
+	DirectX11Buffer * m_pObjectUniformBuffer;
 	DirectX11Buffer * m_pRgbBuffer;
 
 	void InitEventHandlers();
@@ -161,17 +168,23 @@ private:
 	void SetRasterizerToWireFrame();
 	void InitShaders();
 	DirectX11Shader * CreateShader(ShaderDescriptor * pDescriptor);
+	void InitSquare();
 	void InitTerrain();
 	void InitTextures();
 	void InitLights();
-    void InitFrameUniformBuffer ();
+    void InitUniformBuffers ();
 	void ReloadLightBuffer();
 	CORE_BOOLEAN InitRenderTarget ();
 	CORE_BOOLEAN InitCamera();
 	CORE_BOOLEAN InitDepthBuffer();
 
+	void SetRenderTargetBackBuffer();
+	void SetRenderTargetTexture();
+
 	void UpdateCamera();
+	void UpdateUniforms();
 	void UpdateFrameUniforms();
+	void UpdateInstanceUniforms();
 
 	void SetTexture(DirectX11Texture2D * pTex);
 	void SetShader(DirectX11Shader * pShader);

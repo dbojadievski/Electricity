@@ -58,7 +58,7 @@ DirectX11Renderable::Buffer(ID3D11Device * pDevice, ID3D11DeviceContext * pDevic
 		
 		if (this->m_pInstanceBuff)
 			delete [] this->m_pInstanceBuff;
-		this->m_pInstanceBuff	= (CORE_BYTE *)malloc (sizeof (RenderableInstanceData) * numInstances);
+		this->m_pInstanceBuff	= (CORE_BYTE *)malloc (RenderableInstanceData::GetInstanceSize() * numInstances);
 		for (size_t idx			= 0; idx < numInstances; idx++)
 		{
 			auto pInstance		= this->m_pInstances[idx];
@@ -68,7 +68,7 @@ DirectX11Renderable::Buffer(ID3D11Device * pDevice, ID3D11DeviceContext * pDevic
 		}
 		D3D11_SUBRESOURCE_DATA _instanceData;
 		_instanceData.pSysMem	= m_pInstanceBuff;
-		this->m_pInstanceBuffer = DirectX11Buffer::CreateInstanceBuffer (pDevice, (UINT) sizeof (RenderableInstanceData), numInstances, false, &_instanceData); // We only keep the transform for an instance for now.
+		this->m_pInstanceBuffer = DirectX11Buffer::CreateInstanceBuffer (pDevice, RenderableInstanceData::GetInstanceSize(), numInstances, false, &_instanceData);
 	}
 }
 

@@ -43,6 +43,7 @@ DirectX11Renderer::Init()
 	InitEventHandlers();
 	InitDirect3D();
 	InitTerrain();
+	InitSquare();
     InitLights ();
 }
 
@@ -59,10 +60,13 @@ DirectX11Renderer::InitLights()
 	this->ReloadLightBuffer();
 }
 
-void DirectX11Renderer::InitFrameUniformBuffer ()
+void DirectX11Renderer::InitUniformBuffers ()
 {
     this->m_pFrameUniformBuffer = DirectX11Buffer::CreateConstantBuffer (this->m_pDevice, sizeof (FrameUniformDescriptor), true, false, NULL);
     assert (this->m_pFrameUniformBuffer);
+
+	this->m_pObjectUniformBuffer = DirectX11Buffer::CreateConstantBuffer(this->m_pDevice, sizeof(InstanceUniformDescriptor), true, false, NULL);
+	assert(this->m_pObjectUniformBuffer);
 }
 
 void 
@@ -196,7 +200,7 @@ DirectX11Renderer::InitDirect3D()
 	wfdesc.FillMode = D3D11_FILL_WIREFRAME;
 	wfdesc.CullMode = D3D11_CULL_NONE;
 	wfdesc.MultisampleEnable = 1;
-	wfdesc.DepthClipEnable = 0;
+	wfdesc.DepthClipEnable = 1;
 	this->m_pDevice->CreateRasterizerState(&wfdesc, &this->m_pRasterizerStateWireframe);
 	this->m_pDeviceContext->RSSetState(NULL);
 #pragma endregion
@@ -210,7 +214,20 @@ DirectX11Renderer::InitDirect3D()
 	InitCamera();
 	InitBlendStates();
 	InitTextRenderer();
-    InitFrameUniformBuffer ();
+    InitUniformBuffers ();
+}
+
+void
+DirectX11Renderer::SetRenderTargetBackBuffer()
+{
+	this->m_pDeviceContext->OMSetRenderTargets(1, &this->m_pRenderTargetViewBackBuffer, NULL);
+
+}
+
+void
+DirectX11Renderer::SetRenderTargetTexture()
+{
+	this->m_pDeviceContext->OMSetRenderTargets(1, &this->m_pRenderTargetViewTex, NULL);
 }
 
 void
@@ -218,7 +235,7 @@ DirectX11Renderer::ClearRenderTargetTex ()
 {
 	float backgroundColor[4] = { this->m_ClearColour.x, this->m_ClearColour.y, this->m_ClearColour.z, this->m_ClearColour.w };
 	this->m_pDeviceContext->ClearRenderTargetView (this->m_pRenderTargetViewTex, backgroundColor);
-	this->m_pDeviceContext->ClearDepthStencilView (this->m_pDepthStencilViewTex, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	//this->m_pDeviceContext->ClearDepthStencilView (this->m_pDepthStencilViewTex, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
 void
@@ -352,34 +369,48 @@ end:
 void 
 DirectX11Renderer::InitShaders()
 {
-	this->m_pActiveShader = NULL;
+#pragma region Init red shader
+	{
+		this->m_pActiveShader = NULL;
 
-	DirectX11Shader * pShader = new DirectX11Shader(L"Assets\\Shaders\\red.hlsl", "VShader", L"Assets\\Shaders\\red.hlsl", "PShader", 1);
+		DirectX11Shader * pShader = new DirectX11Shader(L"Assets\\Shaders\\red.hlsl", "VShader", L"Assets\\Shaders\\red.hlsl", "PShader", 1);
+
+		ID3D11VertexShader ** pVertexShader = pShader->GetVertexShader();
+		DirectXShaderBufferDescriptor vertexShaderDescriptor = pShader->GetVertexShaderBufferPointer();
+		HRESULT errVsh = this->m_pDevice->CreateVertexShader(vertexShaderDescriptor.m_pBuffer, vertexShaderDescriptor.m_size, NULL, pVertexShader);
+		this->m_pDeviceContext->VSSetShader(*pVertexShader, 0, 0);
+
+		ID3D11PixelShader ** pPixelShader = pShader->GetPixelShader();
+		DirectXShaderBufferDescriptor pixelShaderDescriptor = pShader->GetPixelShaderBufferPointer();
+		HRESULT errPsh = this->m_pDevice->CreatePixelShader(pixelShaderDescriptor.m_pBuffer, pixelShaderDescriptor.m_size, NULL, pPixelShader);
+		this->m_pDeviceContext->PSSetShader(*pPixelShader, 0, 0);
+
+
+		DirectXShaderBufferDescriptor descriptor = pShader->GetVertexShaderBufferPointer();
+		ID3D11InputLayout * pLayout = NULL;
+		HRESULT res = this->m_pDevice->CreateInputLayout(this->m_inputElementDescriptor, ARRAYSIZE(m_inputElementDescriptor), descriptor.m_pBuffer, descriptor.m_size, &pLayout);
+		pShader->SetInputLayout(pLayout);
+		this->m_pDeviceContext->IASetInputLayout(pLayout);
+
+		this->RegisterShader(pShader);
+		this->m_pActiveShader = pShader;
+
+		ShaderDescriptor * pTexturingShader = new ShaderDescriptor(13, "VShader", L"Assets\\Shaders\\shaders.hlsl", "PShader", L"Assets\\Shaders\\shaders.hlsl");
+		DirectX11Shader * pTexShader = this->CreateShader(pTexturingShader);
+		this->m_pBasicShader = pTexShader;
+		this->RegisterShader(pTexShader);
+	}
+#pragma endregion
+
+#pragma region init square shader
+{
+		ShaderDescriptor * pTexturingShader = new ShaderDescriptor(14, "VShader", L"Assets\\Shaders\\square.hlsl", "PShader", L"Assets\\Shaders\\square.hlsl");
+		DirectX11Shader * pTexShader = this->CreateShader(pTexturingShader);
+		this->RegisterShader(pTexShader);
+		this->m_pSquareShader = pTexShader;
+}
+#pragma endregion
 	
-	ID3D11VertexShader ** pVertexShader = pShader->GetVertexShader();
-	DirectXShaderBufferDescriptor vertexShaderDescriptor = pShader->GetVertexShaderBufferPointer();
-	HRESULT errVsh	= this->m_pDevice->CreateVertexShader(vertexShaderDescriptor.m_pBuffer, vertexShaderDescriptor.m_size, NULL, pVertexShader);
-	this->m_pDeviceContext->VSSetShader(*pVertexShader, 0, 0);
-
-	ID3D11PixelShader ** pPixelShader = pShader->GetPixelShader();
-	DirectXShaderBufferDescriptor pixelShaderDescriptor = pShader->GetPixelShaderBufferPointer();
-	HRESULT errPsh	= this->m_pDevice->CreatePixelShader(pixelShaderDescriptor.m_pBuffer, pixelShaderDescriptor.m_size, NULL, pPixelShader);
-	this->m_pDeviceContext->PSSetShader(*pPixelShader, 0, 0);
-
-
-	DirectXShaderBufferDescriptor descriptor = pShader->GetVertexShaderBufferPointer();
-	ID3D11InputLayout * pLayout = NULL;
-	HRESULT res = this->m_pDevice->CreateInputLayout(this->m_inputElementDescriptor, ARRAYSIZE(m_inputElementDescriptor), descriptor.m_pBuffer, descriptor.m_size, &pLayout);
-	pShader->SetInputLayout(pLayout);
-	this->m_pDeviceContext->IASetInputLayout(pLayout);
-
-	this->RegisterShader(pShader);
-	this->m_pActiveShader = pShader;
-
-    ShaderDescriptor * pTexturingShader = new ShaderDescriptor (13, "VShader", L"Assets\\Shaders\\shaders.hlsl", "PShader", L"Assets\\Shaders\\shaders.hlsl");
-    DirectX11Shader * pTexShader        = this->CreateShader (pTexturingShader);
-    this->m_pBasicShader                = pTexShader;
-    this->RegisterShader (pTexShader);
 }
 
 DirectX11Shader * 
@@ -405,6 +436,29 @@ DirectX11Renderer::CreateShader(ShaderDescriptor * pDescriptor)
 
 	this->RegisterShader(pRetVal);
 	return pRetVal;
+}
+
+void
+DirectX11Renderer::InitSquare()
+{
+	Mesh * pSquareMesh		= new Mesh(6);
+	pSquareMesh->AddVertex(new Vertex(-1.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, -1.0f, -1.0f));
+	pSquareMesh->AddVertex(new Vertex(-1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, -1.0f));
+	pSquareMesh->AddVertex(new Vertex(1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f));
+	pSquareMesh->AddVertex(new Vertex(1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f));
+
+	pSquareMesh->AddIndice(0, 1, 2);
+	pSquareMesh->AddIndice(0, 2, 3);
+
+	auto pTexture = this->m_RenderTarget;
+	auto pShader = this->m_pSquareShader;
+
+	this->m_RenderTarget;
+	auto pRenderable = new DirectX11Renderable(pSquareMesh, pTexture, pShader, FALSE);
+	auto transform = XMMatrixScaling(1.f, 1.f, 0.0f) * XMMatrixTranslation(0.5f, -0.5f, 0.0f);
+	auto pInstance = pRenderable->Instantiate(1, transform);
+	//this->m_Renderables.push_back(pRenderable);
+	pRenderable->Buffer(this->m_pDevice, this->m_pDeviceContext);
 }
 
 void 
@@ -549,8 +603,7 @@ DirectX11Renderer::InitCamera()
 {
 	CORE_BOOLEAN wasInitted = true;
 	
-	this->m_pUniformBuffer = DirectX11Buffer::CreateConstantBuffer(this->m_pDevice, sizeof(InstanceUniformDescriptor), true, false, NULL);
-	assert(this->m_pUniformBuffer);
+
 
 	this->m_CameraYaw		= 0;
 	this->m_CameraPitch		= 0;
@@ -625,7 +678,24 @@ DirectX11Renderer::UpdateFrameUniforms()
 {
 	auto pUniformBuffer     = this->m_pFrameUniformBuffer->GetRawPointer();
 	this->m_pDeviceContext->UpdateSubresource(pUniformBuffer, 0, NULL, &this->m_FrameUniforms, 0, 0);
+	this->m_pDeviceContext->PSSetConstantBuffers(1, 1, &pUniformBuffer);
+	this->m_pDeviceContext->VSSetConstantBuffers(1, 1, &pUniformBuffer);
+}
+
+void
+DirectX11Renderer::UpdateInstanceUniforms()
+{
+	auto pUniformBuffer = this->m_pObjectUniformBuffer->GetRawPointer();
+	this->m_pDeviceContext->UpdateSubresource(pUniformBuffer, 0, NULL, &this->m_ObjectUniforms, 0, 0);
 	this->m_pDeviceContext->PSSetConstantBuffers(0, 1, &pUniformBuffer);
+	this->m_pDeviceContext->VSSetConstantBuffers(0, 1, &pUniformBuffer);
+}
+
+void
+DirectX11Renderer::UpdateUniforms()
+{
+	this->UpdateFrameUniforms();
+	this->UpdateInstanceUniforms();
 }
 
 
@@ -654,7 +724,7 @@ DirectX11Renderer::CloseDirectX11Device()
 {
 	this->m_pDepthStencilViewTex->Release();
 	this->m_pDepthStencilBuffer->Release();
-	delete this->m_pUniformBuffer;
+	delete this->m_pObjectUniformBuffer;
 	delete this->m_pFrameUniformBuffer;
 	this->m_pRasterizerStateWireframe->Release();
 	delete this->m_RenderTarget;
@@ -682,7 +752,7 @@ DirectX11Renderer::Update(CORE_DOUBLE dT)
 void
 DirectX11Renderer::RenderAllSimple(CORE_DOUBLE dT)
 {
-	//this->ClearRenderTargetTex (); //Enable when rendering to texture.
+	this->ClearRenderTargetTex (); //Enable when rendering to texture.
 	this->ClearRenderTargetBackBuffer ();
 
 	FASTMAT4 cameraView = XMLoadFloat4x4(&this->m_CameraView);
@@ -693,7 +763,7 @@ DirectX11Renderer::RenderAllSimple(CORE_DOUBLE dT)
 
 	/*NOTE(Dino): Update per-frame uniform buffer. */
 	this->m_FrameUniforms.light = this->m_Light;
-	this->UpdateFrameUniforms();
+	this->UpdateUniforms();
 
 	this->ResetBlendState();
 
@@ -722,8 +792,11 @@ DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 	size_t numRenderables = 0;
 	size_t numRenderableInstances = 0;
 
-	//ClearRenderTargetTex() before rendering to texture.
-	this->ClearRenderTargetBackBuffer ();
+	ClearRenderTargetTex();
+	this->ClearRenderTargetBackBuffer();
+
+	//this->SetRenderTargetTexture();
+	this->SetRenderTargetBackBuffer();
 	auto cameraView						= XMLoadFloat4x4(&this->m_CameraView);
 	auto cameraProjection				= XMLoadFloat4x4(&this->m_CameraProjection);
 
@@ -733,7 +806,6 @@ DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 
 	/*NOTE(Dino): Update per-frame uniform buffer. */
 	this->m_FrameUniforms.light = this->m_Light;
-	this->UpdateFrameUniforms();
 
 	this->ResetBlendState();
 	RenderAllInSet(&this->m_RenderSet.m_OpaqueRenderables, numTextureSwitches, numRenderableInstances, numRenderableInstances, viewProjectionMatrix);
@@ -757,6 +829,8 @@ DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 	const wstring ws(wss.str());
 	this->m_pTextRenderer->SetText(ws.c_str());
 	this->m_pTextRenderer->Render();
+
+//	this->m_pSquare->Render(this->m_pDeviceContext);
 	this->m_pSwapChain->Present(0, 0);
 }
 
@@ -787,7 +861,7 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 			this->m_pActiveShader = pShader;
 		}
 
-		DirectX11RenderablesPerTextureSet * pPerTexSet = &(*perShaderIterator->second);
+		auto pPerTexSet = &(*perShaderIterator->second);
 		auto pPerTexSetIter = pPerTexSet->begin();
 		if (pPerTexSetIter != pPerTexSet->end ())
 		{
@@ -795,7 +869,7 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 			assert(textureId);
 			auto textureIter = this->m_TextureMap.find(textureId);
 			assert(textureIter != this->m_TextureMap.end());
-			const DirectX11Texture2D * pTexture = textureIter->second;
+			const auto pTexture = textureIter->second;
 			assert(pTexture);
 			if (this->m_pActiveTexture != pTexture)
 			{
@@ -805,16 +879,16 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 
 			while (pPerTexSetIter != pPerTexSet->end())
 			{
-				DirectX11RenderableList * pRenderables = pPerTexSetIter->second;
+				auto pRenderables = pPerTexSetIter->second;
 				for (size_t i = 0; i < pRenderables->size(); i++)
 				{
-					DirectX11Renderable * pRenderable = pRenderables->at(i);
+					auto pRenderable = pRenderables->at(i);
 					assert(pRenderable);
 					if (pRenderable->GetInstanceCount() == 0)
 						continue;
 					pRenderable->ActivateBuffers(this->m_pDeviceContext);
 #pragma region Segment 1: Instanced rendering.
-					DirectX11RenderableInstanceIterator instanceIterator = pRenderable->GetInstances ();
+					auto instanceIterator = pRenderable->GetInstances ();
 					while (instanceIterator != pRenderable->GetInstancesEnd ())
 					{
 						// Fill up the instance buffer.
@@ -831,8 +905,8 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 						
 						auto wvp						= FASTMAT_TRANSPOSE(modelViewProjectionMatrix);
 						auto itt						= FASTMAT_TRANSPOSE(instanceTransform);
-						XMStoreFloat4x4(&this->m_PerObjectBuffer.WorldViewProjection, wvp);
-						XMStoreFloat4x4(&this->m_PerObjectBuffer.World, itt);
+						XMStoreFloat4x4(&this->m_ObjectUniforms.WorldViewProjection, wvp);
+						XMStoreFloat4x4(&this->m_ObjectUniforms.World, itt);
 
 						instanceIterator++;
 					}
@@ -843,10 +917,9 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 					auto cwp									= XMLoadFloat4x4(&cameraViewProjectionMatrix);
 					auto vpm = (cameraTransform * cwp);
 					XMStoreFloat4x4(&this->m_FrameUniforms.ViewProjectionMatrix, vpm);
+					this->m_FrameUniforms.Projection			= this->m_CameraProjection;
 					this->m_FrameUniforms.Camera				= this->m_CameraView;
-					auto pUniformBufferPointer						= this->m_pUniformBuffer->GetRawPointer ();
-					this->m_pDeviceContext->UpdateSubresource (pUniformBufferPointer, 0, NULL, &this->m_PerObjectBuffer, 0, 0);
-					this->m_pDeviceContext->VSSetConstantBuffers (0, 1, &pUniformBufferPointer);
+					this->UpdateUniforms();
 					pRenderable->Render (this->m_pDeviceContext);
 #pragma endregion
 #pragma region Segment 2: Basic direct rendering.
@@ -934,7 +1007,7 @@ DirectX11Renderer::ReloadLightBuffer()
 		delete this->m_pFrameUniformStructuredBuffer;
 	this->m_pFrameUniformStructuredBuffer = DirectX11Buffer::CreateStructuredBuffer(this->m_pDevice, numLights, sizeof(DirectionalLight), true, false, &resourceData);
 
-	ID3D11Buffer *pBuffers[] = { this->m_pUniformBuffer->GetRawPointer(), this->m_pFrameUniformStructuredBuffer->GetRawPointer() };
+	ID3D11Buffer *pBuffers[] = { this->m_pObjectUniformBuffer->GetRawPointer(), this->m_pFrameUniformStructuredBuffer->GetRawPointer() };
 
 	auto ptr = this->m_pFrameUniformStructuredBuffer->GetRawPointer();
 	this->m_pDeviceContext->UpdateSubresource(ptr, 0, 0, pAsArray, 0, 0);
@@ -1179,7 +1252,7 @@ CreateMatFromTransform (TransformComponent * pComponent, MAT4 &matP)
 	auto rotation		= XMMatrixMultiply ((rX, rY), rZ);
 	auto translation	= XMMatrixTranslation (pComponent->m_Translation.x, pComponent->m_Translation.y, pComponent->m_Translation.z);
 	auto scale			= XMMatrixScaling (pComponent->m_Scale.x, pComponent->m_Scale.y, pComponent->m_Scale.z);
-	mat					= XMMatrixMultiply (scale, XMMatrixMultiply (translation, rotation));
+	mat					= XMMatrixMultiply (XMMatrixMultiply(scale, rotation), translation );
 	XMStoreFloat4x4(&matP, mat);
 }
 void
@@ -1201,7 +1274,7 @@ DirectX11Renderer::OnEntityComponentDeRegistered (IEventData * pEvent)
 				auto pRenderable	= (*result).second;
 				auto pInstances		= pRenderable->GetInstances ();
 				pRenderable->DeInstantiate (pComponent->m_Identifier);
-
+				pRenderable->Buffer(this->m_pDevice, this->m_pDeviceContext); // Rebuffer to reload instance data.
 				if (!pRenderable->GetInstanceCount ())
 				{
 					this->m_ModelToRenderableMap.erase (modelID);
