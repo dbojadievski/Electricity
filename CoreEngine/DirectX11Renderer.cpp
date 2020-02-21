@@ -50,9 +50,9 @@ DirectX11Renderer::Init()
 void 
 DirectX11Renderer::InitLights()
 {
-	this->m_Light.m_Direction           = FLOAT3(0.25f, 0.5f, -1.0f);
-	this->m_Light.m_ColourAmbient       = FLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-	this->m_Light.m_ColourDiffuse       = FLOAT4(0.0f, 255.0f, 0.0f, 1.0f);
+	this->m_Light.m_ColourAmbient       = FLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	this->m_Light.m_ColourDiffuse       = FLOAT4(0.0f, 0.0f, 0.1f, 1.0f);
+	this->m_Light.m_Direction           = FLOAT3(1.0f, 1.0, 1.0f);
 	this->m_Light.m_Pad					= 0;
 
 	this->m_Lights.push_back(this->m_Light);
@@ -687,7 +687,7 @@ DirectX11Renderer::UpdateFrameUniforms()
 	{
 		auto pUniformBuffer = this->m_pLightUniformBuffer->GetRawPointer ();
 		m_pDeviceContext->UpdateSubresource (pUniformBuffer, 0, NULL, &this->m_LightUniformDescriptor, 0, 0);
-		m_pDeviceContext->PSSetConstantBuffers (3, 1, &pUniformBuffer);
+		m_pDeviceContext->PSSetConstantBuffers (0, 1, &pUniformBuffer);
 	}
 
 }
@@ -697,7 +697,6 @@ DirectX11Renderer::UpdateInstanceUniforms()
 {
 	auto pUniformBuffer = this->m_pObjectUniformBuffer->GetRawPointer();
 	this->m_pDeviceContext->UpdateSubresource(pUniformBuffer, 0, NULL, &this->m_ObjectUniforms, 0, 0);
-	this->m_pDeviceContext->PSSetConstantBuffers(0, 1, &pUniformBuffer);
 	this->m_pDeviceContext->VSSetConstantBuffers(0, 1, &pUniformBuffer);
 }
 
@@ -811,7 +810,7 @@ DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 	auto cameraView						= XMLoadFloat4x4(&this->m_CameraView);
 	auto cameraProjection				= XMLoadFloat4x4(&this->m_CameraProjection);
 
-	FASTMAT4 cameraViewProjectionMatrix = cameraView * cameraProjection;
+	FASTMAT4 cameraViewProjectionMatrix = XMMatrixTranspose(cameraView * cameraProjection);
 	MAT4 viewProjectionMatrix;
 	XMStoreFloat4x4(&viewProjectionMatrix, cameraViewProjectionMatrix);
 
@@ -928,8 +927,9 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 
 					auto cameraTransform						= XMLoadFloat4x4(&this->m_CameraView);
 					auto cwp									= XMLoadFloat4x4(&cameraViewProjectionMatrix);
-					auto vpm = (cameraTransform * cwp);
+					auto vpm									= XMMatrixTranspose(cameraTransform * cwp);
 					XMStoreFloat4x4(&this->m_FrameUniforms.ViewProjectionMatrix, vpm);
+					
 					this->m_FrameUniforms.Projection			= this->m_CameraProjection;
 					this->m_FrameUniforms.Camera				= this->m_CameraView;
 					pRenderable->Render (this->m_pDeviceContext);
