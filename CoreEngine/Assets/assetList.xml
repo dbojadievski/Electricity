@@ -5,6 +5,8 @@
         <shader name="basicPShader" path="Assets\\Shaders\\shaders.hlsl" entryPoint="PShader" type="pixel" input="vertex" />
         <shader name="redVShader" path="Assets\\Shaders\\red.hlsl" entryPoint="VShader" type="vertex" input="vertex" />
         <shader name="redPShader" path="Assets\\Shaders\\red.hlsl" entryPoint="PShader" type="pixel" input="vertex" />
+        <shader name="squareVShader" path="Assets\\Shaders\\square.hlsl" entryPoint="VShader" type="vertex" input="vertex" />
+        <shader name="squarePShader" path="Assets\\Shaders\\square.hlsl" entryPoint="PShader" type="pixel" input="vertex" />
     </shaders>
     <shaderPasses>
       <shaderPass name="basicPass" vertexShader="basicVShader" pixelShader="basicPShader" />

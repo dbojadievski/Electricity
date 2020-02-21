@@ -50,10 +50,9 @@ DirectX11Renderer::Init()
 void 
 DirectX11Renderer::InitLights()
 {
-	this->m_Light.m_ColourAmbient       = FLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	this->m_Light.m_ColourDiffuse       = FLOAT4(0.0f, 0.0f, 0.1f, 1.0f);
+	this->m_Light.m_Colour				= FLOAT3(0.0f, 0.0f, 0.1f);
 	this->m_Light.m_Direction           = FLOAT3(1.0f, 1.0, 1.0f);
-	this->m_Light.m_Pad					= 0;
+	this->m_Light.m_Pad					= FLOAT2(0, 0);
 
 	this->m_Lights.push_back(this->m_Light);
 	this->m_LightManager.AddDirectionalLight(&this->m_Light);

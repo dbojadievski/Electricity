@@ -549,9 +549,4 @@
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
-  <ItemGroup>
-    <Xsd Include="Assets\Scenes\TestScene.xml">
-      <Filter>Header Files</Filter>
-    </Xsd>
-  </ItemGroup>
 </Project>
