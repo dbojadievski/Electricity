@@ -71,6 +71,12 @@ AssetManager::Init()
     else
         this->VRegisterMeshes (pXmlMeshList);
 
+	XMLElement * pXmlMaterialList = pXmlAssetList->FirstChildElement ("materials");
+	if (!pXmlMaterialList || pXmlMaterialList->NoChildren ())
+		assert (false);
+	else
+		this->RegisterMaterials (pXmlMaterialList);
+
     XMLElement * pXmlModelList = pXmlAssetList->FirstChildElement ("models");
     if (!pXmlModelList || pXmlModelList->NoChildren ())
         assert (false);
@@ -113,6 +119,12 @@ AssetManager::ShutDown()
         delete it->second;
     }
     this->m_ModelMap.clear ();
+
+	for (auto it : this->m_MaterialMap)
+	{
+		delete it.second;
+	}
+	this->m_MaterialMap.clear ();
 
 	this->m_CurrentIdentifiers.clear();
 }
@@ -166,7 +178,7 @@ AssetManager::VRegisterPasses(XMLNode * pXmlPassList)
 			this->RegisterPass(pDesc);
 		}
 
-		pPassNode = pPassNode->NextSibling();
+		pPassNode			= pPassNode->NextSibling();
 	}
 	return retVal;
 }
@@ -230,6 +242,16 @@ AssetManager::VRegisterShaders (XMLNode * pXmlShaderList)
     }
 
     return retVal;
+}
+
+void
+AssetManager::RegisterMaterial (MaterialAssetDescriptor * pDesc)
+{
+	assert (pDesc);
+	CORE_ID id = pDesc->GetIdentifier ();
+	auto pair = make_pair (id, pDesc);
+	this->m_MaterialMap.insert (pair);
+	this->m_CurrentIdentifiers.insert_or_assign (ASSET_TYPE_MATERIAL, id);
 }
 
 void
@@ -375,6 +397,80 @@ AssetManager::VRegisterMeshes (XMLNode * pXmlMeshesList)
 }
 
 CORE_ERROR
+AssetManager::RegisterMaterials (XMLNode * pXmlMaterialsList)
+{
+	CORE_ERROR retVal = ERR_OK;
+	assert (pXmlMaterialsList);
+
+	if (pXmlMaterialsList && !pXmlMaterialsList->NoChildren ())
+	{
+		CORE_ID id = GetNextIdentifier (ASSET_TYPE_MATERIAL);
+		XMLNode * pMaterialNode = pXmlMaterialsList->FirstChild ();
+		while (pMaterialNode)
+		{
+			string name;
+			XMLElement *pElem = pMaterialNode->ToElement ();
+
+			const char * pStrName = pElem->Attribute ("name");
+			if (!pStrName)
+			{
+				assert (false);
+				retVal = ERR_FAILED;
+			}
+			else
+			{
+				name = pStrName;
+				if (pElem->Attribute ("type", "blinn-phong"))
+				{
+					auto *pMat			= new MaterialAssetDescriptor (name, id);
+					
+					FLOAT4 vec (0, 0, 0, 0);
+					auto pElemAmbient	= pElem->FirstChildElement ("ambient");
+					ExtractVectorByName ("ambient", pElemAmbient, &vec);
+					pMat->SetAmbient (vec.x, vec.y, vec.z, vec.w);
+
+					vec.x = vec.y = vec.z = vec.w = 0;
+					auto pElemDiffuse	= pElem->FirstChildElement ("diffuse");
+					ExtractVectorByName ("diffuse", pElemDiffuse, &vec);
+					pMat->SetDiffuse (vec.x, vec.y, vec.z, vec.w);
+					
+					vec.x = vec.y = vec.z = vec.w = 0;
+					auto pElemSpecular	= pElem->FirstChildElement ("specular");
+					ExtractVectorByName ("specular", pElemSpecular, &vec);
+					pMat->SetSpecular (vec.x, vec.y, vec.z, vec.w);
+
+					auto pElemPow		= pElem->FirstChildElement ("specularPower");
+					if (pElemPow)
+					{
+						CORE_REAL pow = ::atof(pElemPow->Attribute ("val", "0"));
+						pMat->SetSpecularPower (pow);
+					}
+										
+					//this->RegisterMaterial (pMat);
+					//AssetLoadedEventData * pEvent = new AssetLoadedEventData (pMat);
+					//this->m_pEventManager->VTriggerEvent (pEvent);
+				}
+			}
+
+			pMaterialNode = pMaterialNode->NextSibling ();
+		}
+	}
+
+	return retVal;
+}
+
+void AssetManager::ExtractVectorByName (const string& name, tinyxml2::XMLElement * pElem, FLOAT4 * pRetVal)
+{
+	if (pElem)
+	{
+		pRetVal->x = ::atof (pElem->Attribute ("r"));
+		pRetVal->y = ::atof (pElem->Attribute ("g"));
+		pRetVal->z = ::atof (pElem->Attribute ("b"));
+		pRetVal->w = ::atof (pElem->Attribute ("a"));
+	}
+}
+
+CORE_ERROR
 AssetManager::VRegisterModels (XMLNode * pXmlModelsList)
 {
     CORE_ERROR retVal = ERR_OK;
@@ -382,7 +478,7 @@ AssetManager::VRegisterModels (XMLNode * pXmlModelsList)
     assert (pXmlModelsList);
     if (pXmlModelsList && !pXmlModelsList->NoChildren ())
     {
-		CORE_ID id = 1;
+		CORE_ID id = GetNextIdentifier(ASSET_TYPE_MODEL);
         XMLNode * pModelNode = pXmlModelsList->FirstChild ();
         while (pModelNode)
         {
@@ -450,8 +546,7 @@ AssetManager::VRegisterModels (XMLNode * pXmlModelsList)
 					pChild = pChild->NextSibling ();
 				}
 
-				auto pair   = make_pair (id, pModelDesc);
-				this->m_ModelMap.insert (pair);
+				this->RegisterModel (pModelDesc);
 				pModelNode  = pModelNode->NextSibling ();
 			}
 		}
@@ -1043,6 +1138,23 @@ AssetManager::GetTextureDescriptor (const string & name)
         }
     }
     return retVal;
+}
+
+MaterialAssetDescriptor *
+AssetManager::GetMaterialDescriptor (const string & name)
+{
+	MaterialAssetDescriptor * retVal = NULL;
+
+	for (auto it : this->m_MaterialMap)
+	{
+		if (it.second->GetName () == name) 
+		{
+			retVal = it.second;
+			break;
+		}
+	}
+
+	return retVal;
 }
 
 ShaderAssetDescriptor *

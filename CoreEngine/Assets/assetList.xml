@@ -18,9 +18,18 @@
         <texture name="crate1" path="Assets\\textures\\crate.dds" type="2D" />
     </textures>
     <meshes>
-        <mesh name="cubeMesh" path="Assets\\Models\\Cube\\cube.obj" />
-        <mesh name="crate1" path="Assets\\Models\\Crate\\Crate1.3ds" />
+       <mesh name="cubeMesh" path="Assets\\Models\\Cube\\cube.obj" />
+       <mesh name="crate1" path="Assets\\Models\\Crate\\Crate1.3ds" />
+      <mesh name="dwarf" path="Assets\\Models\\Dwarf\\dwarf.3ds" /> 
     </meshes>
+    <materials>
+      <material name="default" type="blinn-phong">
+        <ambient r="0" g="0" b="0" a="1" />
+        <diffuse r="0" g="0" b="0" a="1" />
+        <specular r="0" g="0" b="0" a="1" />
+        <specularPower val="0" />
+      </material>
+    </materials>
     <models>
         <model name="crate">
           <mesh name="crate1" />
@@ -33,5 +42,16 @@
             <shaderPass name="basicPass" />
           </shaderPasses>
         </model>
+      <model name="dwarf">
+        <mesh name="dwarf" />
+        <texture name="crate1" />
+        <shaders>
+          <shader name="redVShader" type="vertex" />
+          <shader name="redPShader" type="pixel" />
+        </shaders>
+        <shaderPasses>
+          <shaderPass name="basicPass" />
+        </shaderPasses>
+      </model>
     </models>
 </assets>

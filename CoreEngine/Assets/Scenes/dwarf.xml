@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<scenes>
+  <scene name="dwarf">
+    <entities>
+      <entity name="dwarf">
+        <components>
+          <component type="transform">
+            <translation x="0" y="0" z="0" />
+            <rotation x="0" y="0" z="0" />
+            <scale x="1" y="1" z="1"/>
+          </component>
+          <component type="renderable">
+            <model name="dwarf" />
+          </component>
+        </components>
+      </entity>
+    </entities>
+  </scene>
+</scenes>

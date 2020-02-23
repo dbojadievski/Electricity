@@ -6,6 +6,7 @@
 #include "ShaderDescriptor.h"
 #include "TextureAssetDescriptor.h"
 #include "MeshAssetDescriptor.h"
+#include "MaterialDescriptor.h"
 #include "Mesh.h"
 #include <map>
 #include "CoreHeaders.h"
@@ -18,6 +19,7 @@ typedef map<CORE_ID, AssetDescriptor *>          AssetMap;
 typedef map<CORE_ID, ShaderAssetDescriptor *>    ShaderMap;
 typedef map<CORE_ID, TextureAssetDescriptor *>   TextureMap;
 typedef map<CORE_ID, MeshAssetDescriptor *>      MeshMap;
+typedef map<CORE_ID, MaterialAssetDescriptor *>  MaterialMap;
 typedef map<CORE_ID, ModelAssetDescriptor *>     ModelMap;
 typedef map<CORE_ID, ShaderPassDescriptor *>	 ShaderPassMap;
 
@@ -26,6 +28,8 @@ typedef map<CORE_ID, ShaderAssetDescriptorExtended *>       LoadedShaderMap;
 typedef map<CORE_ID, TextureAssetDescriptorExtended *>		LoadedTextureMap;
 typedef map<CORE_ID, ModelAssetDescriptorExtended *>		LoadedModelMap;
 typedef map<CORE_ID, ShaderPassDescriptor *>				LoadedPassMap;
+typedef vector<CORE_ID>										LoadedMaterials;
+
 class AssetManager : public IAssetManager
 {
 	IEventManager *     m_pEventManager;
@@ -33,6 +37,7 @@ class AssetManager : public IAssetManager
 	ShaderMap           m_ShaderMap;
     TextureMap          m_TextureMap;
     MeshMap             m_MeshMap;
+	MaterialMap			m_MaterialMap;
     ModelMap            m_ModelMap;
 	ShaderPassMap		m_ShaderPassMap;
 
@@ -43,6 +48,7 @@ class AssetManager : public IAssetManager
     LoadedTextureMap    m_LoadedTextureMap;
 	LoadedModelMap		m_LoadedModelMap;
 	LoadedPassMap		m_LoadedPassMap;
+	LoadedMaterials		m_LoadedMaterials;
 	
     CORE_ID GetNextIdentifier(const CORE_ASSET_TYPE assetType);
 	CORE_ERROR LoadShader(ShaderAssetDescriptor * pShaderAsssetDescriptor);
@@ -64,18 +70,23 @@ public:
 	void RegisterShader (ShaderAssetDescriptor * pTex);
 	void RegisterPass(ShaderPassDescriptor * pPass);
 	void RegisterModel (ModelAssetDescriptor * pTex);
+	void RegisterMaterial (MaterialAssetDescriptor * pTex);
 
 	virtual CORE_ERROR AssetManager::VRegisterTextures (XMLNode * pXmlTextureList);
     virtual CORE_ERROR AssetManager::VRegisterShaders (XMLNode * pXmlShaders);
 	virtual CORE_ERROR AssetManager::VRegisterPasses(XMLNode * pXmlPassList);
     virtual CORE_ERROR AssetManager::VRegisterMeshes (XMLNode * pXmlMeshList);
     virtual CORE_ERROR AssetManager::VRegisterModels (XMLNode * pXmlModelList);
+	virtual CORE_ERROR AssetManager::RegisterMaterials (XMLNode * pXmlMaterialList);
+
+	void ExtractVectorByName (const string& name, tinyxml2::XMLElement * pElem, FLOAT4 * pRetVal);
 
     virtual CoreMesh * AssetManager::GetMesh (AssetDescriptor * pDescriptor);
 
 	virtual MeshAssetDescriptor * GetMeshDescriptor(const string & name);
     virtual TextureAssetDescriptor * GetTextureDescriptor (const string & name);
     virtual ShaderAssetDescriptor * GetShaderDescriptor (const string & name);
+	virtual MaterialAssetDescriptor * GetMaterialDescriptor (const string & name);
 	virtual ModelAssetDescriptor * GetModelDescriptor(const string & name);
 	virtual ModelAssetDescriptorExtended * GetModelData(const string & name);
 	virtual ShaderPassDescriptor * GetShaderPassDescriptor(const string & name);

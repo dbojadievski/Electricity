@@ -146,6 +146,7 @@
     <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="DirectX11Buffer.h" />
+    <ClInclude Include="DirectX11BufferSlots.h" />
     <ClInclude Include="DirectX11Renderable.h" />
     <ClInclude Include="DirectX11Renderer.h" />
     <ClInclude Include="DirectX11RenderSet.h" />
@@ -173,6 +174,8 @@
     <ClInclude Include="IRenderer.h" />
     <ClInclude Include="KeyEvents.h" />
     <ClInclude Include="LightManager.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="MaterialDescriptor.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshAssetDescriptor.h" />
@@ -230,6 +233,8 @@
     <ClCompile Include="IRenderer.cpp" />
     <ClCompile Include="KeyEvents.cpp" />
     <ClCompile Include="LightManager.cpp" />
+    <ClCompile Include="Material.cpp" />
+    <ClCompile Include="MaterialDescriptor.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshAssetDescriptor.cpp" />
     <ClCompile Include="Model.cpp" />
@@ -272,6 +277,7 @@
   <ItemGroup>
     <Xml Include="Assets\assetList.xml">
       <DeploymentContent>true</DeploymentContent>
+      <SubType>Designer</SubType>
     </Xml>
   </ItemGroup>
   <ItemGroup>
@@ -282,6 +288,14 @@
     <Image Include="Assets\Textures\grass.dds" />
     <Image Include="Assets\Textures\texture.dds" />
     <Image Include="Assets\Textures\wood.dds" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xsd Include="Assets\Scenes\dwarf.xml">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </Xsd>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

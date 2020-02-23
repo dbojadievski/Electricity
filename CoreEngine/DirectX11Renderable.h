@@ -13,6 +13,8 @@
 #include "Renderable.h"
 #include "DirectX11RenderableInstance.h"
 #include "RenderableInstanceData.h"
+
+#include "Material.h"
 class DirectX11RenderableInstance;
 
 typedef std::_Vector_iterator<std::_Vector_val<std::_Simple_types<DirectX11RenderableInstance *>>> DirectX11RenderableInstanceIterator;
@@ -24,7 +26,7 @@ private:
 	Mesh *					m_pMesh;
 	DirectX11Shader *		m_pShader;
 	DirectX11Texture2D *	m_pTexture;
-	
+	Material *				m_pMaterial;
 
 	DirectX11Buffer *			m_pVertexBuffer;
 	DirectX11Buffer *			m_pInstanceBuffer;
@@ -42,7 +44,7 @@ public:
 	void ActivateBuffers(ID3D11DeviceContext * pDeviceContext);
 	void DeactivateBuffers ();
 
-	void Render(ID3D11DeviceContext * pDeviceContext);
+	void Render(ID3D11DeviceContext * pDeviceContext, CORE_BOOLEAN isInstanced = TRUE);
 
 	DirectX11RenderableInstance * Instantiate(CORE_ID id, FASTMAT4 transform, DirectX11RenderableInstance * pParent = NULL);
 	CORE_BOOLEAN DeInstantiate (CORE_ID id);

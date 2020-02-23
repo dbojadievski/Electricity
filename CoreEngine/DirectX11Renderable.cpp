@@ -2,22 +2,20 @@
 #include "Math.h"
 
 void
-DirectX11Renderable::Render(ID3D11DeviceContext * pDeviceContext)
+DirectX11Renderable::Render(ID3D11DeviceContext * pDeviceContext, CORE_BOOLEAN isInstanced)
 {
 	assert(pDeviceContext);
 
 	this->ActivateBuffers(pDeviceContext);
 	pDeviceContext->IASetPrimitiveTopology(this->m_Topology);
-	size_t indiceCount = this->m_pMesh->GetIndiceCount();
-	size_t vertexCount = this->m_pMesh->GetVertexCount();
-	size_t instanceCount = this->m_pInstances.size ();
+	size_t indiceCount		= this->m_pMesh->GetIndiceCount();
+	size_t vertexCount		= this->m_pMesh->GetVertexCount();
+	size_t instanceCount	= this->m_pInstances.size ();
 
-
-#ifdef RENDER_SEQUENTIALLY
-	//pDeviceContext->DrawIndexed((UINT) indiceCount, 0, 0);
-#endif
-
-	pDeviceContext->DrawIndexedInstanced ((UINT)indiceCount, instanceCount, 0, 0, 0);
+	if (isInstanced)
+		pDeviceContext->DrawIndexedInstanced ((UINT)indiceCount, instanceCount, 0, 0, 0);
+	else
+		pDeviceContext->DrawIndexed ((UINT)indiceCount, 0, 0);
 }
 
 void

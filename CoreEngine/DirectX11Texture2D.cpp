@@ -14,8 +14,8 @@ DirectX11Texture2D::DirectX11Texture2D()
 DirectX11Texture2D *
 DirectX11Texture2D::AsRenderTarget (ID3D11Device * pDevice, CORE_ULONG width, CORE_ULONG height, CORE_BYTE mipLevels, CORE_BYTE sampleCount)
 {
-	DirectX11Texture2D * pRetVal = new DirectX11Texture2D ();
-
+	DirectX11Texture2D * pRetVal	= new DirectX11Texture2D ();
+	pRetVal->m_Identifier			= 0;
 	assert (pDevice);
 
 	HRESULT result;

@@ -4,6 +4,7 @@
 #include "AssetDescriptor.h"
 #include "MeshAssetDescriptor.h"
 #include "TextureAssetDescriptor.h"
+#include "MaterialDescriptor.h"
 #include "ShaderDescriptor.h"
 #include "Model.h"
 #include "Mesh.h"
@@ -16,6 +17,8 @@ public:
 	virtual MeshAssetDescriptor		*	GetMeshDescriptor(const string & name) = 0;
 	virtual TextureAssetDescriptor	*	GetTextureDescriptor(const string & name) = 0;
 	virtual ShaderAssetDescriptor	*	GetShaderDescriptor(const string & name) = 0;
+	virtual MaterialAssetDescriptor *	GetMaterialDescriptor (const string & name) = 0;
+
 	virtual ModelAssetDescriptor	*	GetModelDescriptor(const string & name) = 0;
 	virtual ShaderPassDescriptor	*	GetShaderPassDescriptor(const string & name) = 0;
 

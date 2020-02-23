@@ -10,7 +10,9 @@
 #include "EntityEvents.h"
 #include "RenderableComponent.h"
 #include "TransformComponent.h"
+#include "DirectX11BufferSlots.h"
 #include "CoreEngine.h"
+#include <dxgi.h>
 
 // include the Direct3D Library file
 #pragma comment (lib, "d3d11.lib")
@@ -21,8 +23,8 @@
 #define VIEW_NEAR 1.0f
 #define VIEW_FAR 1000.0f
 
-#define RES_WIDTH 2550.0f
-#define RES_HEIGHT 1440.0f
+#define RES_WIDTH 2550
+#define RES_HEIGHT 1440
 extern HWND g_Window;
 
 using namespace fastdelegate;
@@ -108,6 +110,8 @@ DirectX11Renderer::InitRenderTarget ()
 	assert (m_RenderTarget);
 	if (m_RenderTarget)
 	{
+		this->m_TextureMap[0] = this->m_RenderTarget;
+
 		D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
 		renderTargetViewDesc.Format				= DXGI_FORMAT_R32G32B32A32_FLOAT; //TODO(Dino): Configurable.
 		renderTargetViewDesc.ViewDimension		= D3D11_RTV_DIMENSION_TEXTURE2DMS;
@@ -130,26 +134,32 @@ DirectX11Renderer::InitRenderTarget ()
 			isSuccess = (result == S_OK);
 		}
 	}
-
-end:
 	return isSuccess;
 }
 
 void 
 DirectX11Renderer::InitDirect3D()
 {
+	m_MsaaX = 4;
+	m_MsaaQ = 0;
 #pragma region Initialize swap chain.
 	DXGI_SWAP_CHAIN_DESC swapChainDescriptor;
-	ZeroMemory(&swapChainDescriptor, sizeof(DXGI_SWAP_CHAIN_DESC));
+	ZeroMemory (&swapChainDescriptor, sizeof (DXGI_SWAP_CHAIN_DESC));
 
 	swapChainDescriptor.Windowed			= 1;
-	swapChainDescriptor.BufferCount			= 1;
-	swapChainDescriptor.BufferDesc.Format	= DXGI_FORMAT_R8G8B8A8_UNORM; // We're using standard 32-bit colours for now. Would need to be increased for HDR support.
+	swapChainDescriptor.BufferCount			= 2;
+	swapChainDescriptor.BufferDesc.Format	= m_DisplayFormat;
 	swapChainDescriptor.BufferUsage			= DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDescriptor.SampleDesc.Count	= 1; //TODO(Dino): Make configurable.
+	swapChainDescriptor.SampleDesc.Count	= m_MsaaX;
+	swapChainDescriptor.SampleDesc.Quality	= m_MsaaQ;
 	swapChainDescriptor.OutputWindow		= g_Window;
+	swapChainDescriptor.BufferDesc.Height	= RES_HEIGHT;
+	swapChainDescriptor.BufferDesc.Width	= RES_WIDTH;
+	swapChainDescriptor.SwapEffect			= DXGI_SWAP_EFFECT_SEQUENTIAL;
+	
+	auto hr = S_OK;
 
-
+	ComPtr<IDXGIFactory1> pFactory = NULL;
 	D3D_FEATURE_LEVEL featureLevels[] =
 	{
 		D3D_FEATURE_LEVEL_11_1,
@@ -161,18 +171,20 @@ DirectX11Renderer::InitDirect3D()
 		D3D_FEATURE_LEVEL_9_1
 	};
 
-	D3D11CreateDeviceAndSwapChain(NULL,
+	 hr = D3D11CreateDeviceAndSwapChain (NULL,
 		D3D_DRIVER_TYPE_HARDWARE,
 		NULL,
 		D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_SINGLETHREADED,
 		featureLevels,
-		ARRAYSIZE(featureLevels),
+		ARRAYSIZE (featureLevels),
 		D3D11_SDK_VERSION,
 		&swapChainDescriptor,
 		&this->m_pSwapChain,
 		&this->m_pDevice,
 		&this->m_featureLevel,
 		&this->m_pDeviceContext);
+	assert (hr == S_OK);
+
 #pragma endregion
 #pragma region Initialize back-buffer and render target.
 	///*Sets the backbuffer to be the current render target. */
@@ -236,7 +248,9 @@ DirectX11Renderer::ClearRenderTargetTex ()
 {
 	float backgroundColor[4] = { this->m_ClearColour.x, this->m_ClearColour.y, this->m_ClearColour.z, this->m_ClearColour.w };
 	this->m_pDeviceContext->ClearRenderTargetView (this->m_pRenderTargetViewTex, backgroundColor);
-	//this->m_pDeviceContext->ClearDepthStencilView (this->m_pDepthStencilViewTex, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	//if (this->m_pDepthStencilViewTex)
+	//	this->m_pDeviceContext->ClearDepthStencilView (this->m_pDepthStencilViewTex, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
 void
@@ -339,8 +353,8 @@ DirectX11Renderer::InitDepthBuffer()
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.ArraySize = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	depthStencilDesc.SampleDesc.Count = 1;
-	depthStencilDesc.SampleDesc.Quality = 0;
+	depthStencilDesc.SampleDesc.Count = m_MsaaX;
+	depthStencilDesc.SampleDesc.Quality = m_MsaaQ;
 	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
 	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	depthStencilDesc.CPUAccessFlags = 0;
@@ -353,7 +367,22 @@ DirectX11Renderer::InitDepthBuffer()
 		goto end;
 	}
 
+	result = this->m_pDevice->CreateTexture2D (&depthStencilDesc, NULL, &this->m_pDepthStencilTex);
+	if (result != S_OK)
+	{
+		wasInitted = false;
+		goto end;
+	}
+
+
 	result = this->m_pDevice->CreateDepthStencilView(this->m_pDepthStencilBuffer, NULL, &this->m_pDepthStencilViewBackBuffer);
+	if (result != S_OK)
+	{
+		wasInitted = false;
+		goto end;
+	}
+
+	result = this->m_pDevice->CreateDepthStencilView (this->m_pDepthStencilTex, NULL, &this->m_pDepthStencilViewBackBuffer);
 	if (result != S_OK)
 	{
 		wasInitted = false;
@@ -362,8 +391,8 @@ DirectX11Renderer::InitDepthBuffer()
 
 	this->m_pDeviceContext->OMSetRenderTargets(1, &this->m_pRenderTargetViewBackBuffer, NULL);
 
-
 end:
+	assert (result == S_OK);
 	return wasInitted;
 }
 
@@ -395,6 +424,7 @@ DirectX11Renderer::InitShaders()
 
 		this->RegisterShader(pShader);
 		this->m_pActiveShader = pShader;
+		this->m_pRedShader = pShader;
 
 		ShaderDescriptor * pTexturingShader = new ShaderDescriptor(13, "VShader", L"Assets\\Shaders\\shaders.hlsl", "PShader", L"Assets\\Shaders\\shaders.hlsl");
 		DirectX11Shader * pTexShader = this->CreateShader(pTexturingShader);
@@ -451,22 +481,24 @@ DirectX11Renderer::InitSquare()
 	pSquareMesh->AddIndice(0, 1, 2);
 	pSquareMesh->AddIndice(0, 2, 3);
 
-	auto pTexture = this->m_RenderTarget;
+	auto pTexture = this->m_pGrassTex;
 	auto pShader = this->m_pSquareShader;
 
 	this->m_RenderTarget;
 	auto pRenderable = new DirectX11Renderable(pSquareMesh, pTexture, pShader, FALSE);
-	auto transform = XMMatrixScaling(1.f, 1.f, 0.0f) * XMMatrixTranslation(0.5f, -0.5f, 0.0f);
+	auto transform = XMMatrixScaling(4.7f, 4.f, 1.0f) * XMMatrixTranslation(0.0f, 0.0f, 0.0f);
 	auto pInstance = pRenderable->Instantiate(1, transform);
-	//this->m_Renderables.push_back(pRenderable);
+	//this->m_RenderSet.Insert (pRenderable);
+
+	this->m_Renderables.push_back(pRenderable);
 	pRenderable->Buffer(this->m_pDevice, this->m_pDeviceContext);
 }
 
 void 
 DirectX11Renderer::InitTerrain()
 {
-	CORE_REAL terrainWidth = 100.0f;
-	CORE_REAL terrainHeight = 100.0f;
+	ULONG terrainWidth = 100;
+	ULONG terrainHeight = 100;
 
 	unsigned long index = 0, i, j;
 	CORE_REAL positionX, positionZ;
@@ -585,9 +617,11 @@ DirectX11Renderer::InitTextures()
 {
 	DirectX11Texture2D * pTex = DirectX11Texture2D::FromDDSFile(this->m_pDevice, L"Assets\\Textures\\wood.dds", 1);
 	this->RegisterTexture(pTex);
+	this->m_pWoodTex = pTex;
 
 	DirectX11Texture2D  * pGrassTex = DirectX11Texture2D::FromDDSFile(this->m_pDevice,  L"Assets\\Textures\\grass.dds", 2);
 	this->RegisterTexture(pGrassTex);
+	this->m_pGrassTex = pGrassTex;
 }
 
 void DirectX11Renderer::SetTexture(DirectX11Texture2D * pTex)
@@ -603,16 +637,14 @@ CORE_BOOLEAN
 DirectX11Renderer::InitCamera()
 {
 	CORE_BOOLEAN wasInitted = true;
-	
-
 
 	this->m_CameraYaw		= 0;
 	this->m_CameraPitch		= 0;
 	this->m_MoveLeftRight	= 0.0f;
 	this->m_MoveBackForward = 0.0f;
 
-	this->m_CameraPosition	=  VEC4(0.0f, 3.0f, -8.0f, 0.0f);
-	this->m_CameraTarget	= VEC4(0.0f, -1.0f, 0.0f, 0.0f);
+	this->m_CameraPosition	=  VEC4(0.0f, 0.0f, -3.0f, 0.0f);
+	this->m_CameraTarget	= VEC4(0.0f, 0.0f, 0.0f, 0.0f);
 	this->m_CameraUp		= VEC4(0.0f, 1.0f, 0.0, 0.0f);
 	this->m_CameraForward	= VEC4(CameraForward);
 	this->m_CameraRight		= CameraRight;
@@ -661,17 +693,11 @@ DirectX11Renderer::UpdateCamera()
 	cameraPosition			+= this->m_MoveBackForward * cameraForward;
 	XMStoreFloat4(&this->m_CameraPosition, cameraPosition);
 
-
 	this->m_MoveLeftRight   = 0;
 	this->m_MoveBackForward = 0;
 
 	cameraTarget = cameraPosition + cameraTarget;
 	XMStoreFloat4(&this->m_CameraTarget, cameraTarget);
-
-	FASTVEC DOWN            = FASTVEC_SET(0.0f, -1.0f, 0.0f, 0.0f);
-	/*DEBUG(Dino): The next line is code to debug terrain. Remove afterwards. */
-	//this->m_CameraTarget = DOWN;
-	//this->m_CameraView      = XMMatrixLookAtLH(this->m_CameraPosition, this->m_CameraTarget, this->m_CameraUp);
 }
 
 void 
@@ -680,13 +706,13 @@ DirectX11Renderer::UpdateFrameUniforms()
 	{
 		auto pUniformBuffer     = this->m_pFrameUniformBuffer->GetRawPointer();
 		this->m_pDeviceContext->UpdateSubresource(pUniformBuffer, 0, NULL, &this->m_FrameUniforms, 0, 0);
-		this->m_pDeviceContext->VSSetConstantBuffers(1, 1, &pUniformBuffer);
+		this->m_pDeviceContext->VSSetConstantBuffers(VERT_SHADER_SLOT_FRAME_MATRICES, 1, &pUniformBuffer);
 	}
 
 	{
 		auto pUniformBuffer = this->m_pLightUniformBuffer->GetRawPointer ();
 		m_pDeviceContext->UpdateSubresource (pUniformBuffer, 0, NULL, &this->m_LightUniformDescriptor, 0, 0);
-		m_pDeviceContext->PSSetConstantBuffers (0, 1, &pUniformBuffer);
+		m_pDeviceContext->PSSetConstantBuffers (PIX_SHADER_SLOT_LIGHT_UNIFORM, 1, &pUniformBuffer);
 	}
 
 }
@@ -696,7 +722,7 @@ DirectX11Renderer::UpdateInstanceUniforms()
 {
 	auto pUniformBuffer = this->m_pObjectUniformBuffer->GetRawPointer();
 	this->m_pDeviceContext->UpdateSubresource(pUniformBuffer, 0, NULL, &this->m_ObjectUniforms, 0, 0);
-	this->m_pDeviceContext->VSSetConstantBuffers(0, 1, &pUniformBuffer);
+	this->m_pDeviceContext->VSSetConstantBuffers(VERT_SHADER_SLOT_INSTANCE_MATRICES, 1, &pUniformBuffer);
 }
 
 void
@@ -730,6 +756,17 @@ DirectX11Renderer::ShutDown()
 void 
 DirectX11Renderer::CloseDirectX11Device()
 {
+	for (auto renderable : this->m_Renderables)
+		delete renderable;
+	this->m_Renderables.clear ();
+
+	for (auto material : this->m_MaterialMap)
+		delete material.second;
+	this->m_MaterialMap.clear ();
+	
+	delete this->m_pGrassTex;
+	delete this->m_pWoodTex;
+
 	this->m_pDepthStencilViewTex->Release();
 	this->m_pDepthStencilBuffer->Release();
 	delete this->m_pObjectUniformBuffer;
@@ -805,7 +842,6 @@ DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 	this->ClearRenderTargetBackBuffer();
 
 	//this->SetRenderTargetTexture();
-	this->SetRenderTargetBackBuffer();
 	auto cameraView						= XMLoadFloat4x4(&this->m_CameraView);
 	auto cameraProjection				= XMLoadFloat4x4(&this->m_CameraProjection);
 
@@ -840,8 +876,9 @@ DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 	this->m_pTextRenderer->SetText(ws.c_str());
 	this->m_pTextRenderer->Render();
 
-//	this->m_pSquare->Render(this->m_pDeviceContext);
+	//SetRenderTargetBackBuffer ();
 	this->m_pSwapChain->Present(0, 0);
+
 }
 
 void 
@@ -898,6 +935,11 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 						continue;
 					pRenderable->ActivateBuffers(this->m_pDeviceContext);
 #pragma region Segment 1: Instanced rendering.
+					if (this->m_pActiveShader == this->m_pRedShader)
+					{
+						int x = 5;
+						x++;
+					}
 					auto instanceIterator = pRenderable->GetInstances ();
 					while (instanceIterator != pRenderable->GetInstancesEnd ())
 					{
@@ -920,10 +962,9 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 
 						this->UpdateInstanceUniforms ();
 						instanceIterator++;
-					}
-					//this->m_PerObjectBuffer.World				= FASTMAT_IDENTITY ();
-					//this->m_PerObjectBuffer.WorldViewProjection = FASTMAT_IDENTITY ();
+						//pRenderable->Render (this->m_pDeviceContext);
 
+					}
 					auto cameraTransform						= XMLoadFloat4x4(&this->m_CameraView);
 					auto cwp									= XMLoadFloat4x4(&cameraViewProjectionMatrix);
 					auto vpm									= XMMatrixTranspose(cameraTransform * cwp);
@@ -931,27 +972,8 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 					
 					this->m_FrameUniforms.Projection			= this->m_CameraProjection;
 					this->m_FrameUniforms.Camera				= this->m_CameraView;
+					UpdateFrameUniforms ();
 					pRenderable->Render (this->m_pDeviceContext);
-#pragma endregion
-#pragma region Segment 2: Basic direct rendering.
-					//DirectX11RenderableInstanceIterator instanceIterator = pRenderable->GetInstances();
-					//while (instanceIterator != pRenderable->GetInstancesEnd())
-					//{
-					//	++numRenderableInstances;
-					//	auto pRenderableInstance		= *instanceIterator;
-					//	auto  pInstanceTransform		= pRenderableInstance->GetCachedTransform();
-					//	auto modelViewProjectionMatrix	= *pInstanceTransform * this->m_CameraView * cameraViewProjectionMatrix;
-					//	this->m_PerObjectBuffer.WorldViewProjection = FASTMAT_TRANSPOSE(modelViewProjectionMatrix);
-					//	this->m_PerObjectBuffer.World	=  FASTMAT_TRANSPOSE(*pInstanceTransform);
-					//	this->m_PerObjectBuffer.Camera	= this->m_CameraView;
-					//	auto pUniformBufferPointer		= this->m_pUniformBuffer->GetRawPointer();
-					//	this->m_pDeviceContext->UpdateSubresource(pUniformBufferPointer, 0, NULL, &this->m_PerObjectBuffer, 0, 0);
-					//	this->m_pDeviceContext->VSSetConstantBuffers(0, 1, &pUniformBufferPointer);
-
-					//	assert(pRenderableInstance);
-					//	instanceIterator++;
-					//	pRenderable->Render(this->m_pDeviceContext);
-					//}
 #pragma endregion
 				}
 				pPerTexSetIter++;
@@ -1010,7 +1032,7 @@ DirectX11Renderer::ReloadLightBuffer()
 
 	D3D11_SUBRESOURCE_DATA resourceData;
 	resourceData.SysMemPitch = (UINT) (numLights * DirectionalLight::GetSize());
-	resourceData.SysMemSlicePitch = DirectionalLight::GetSize();
+	resourceData.SysMemSlicePitch = (UINT) DirectionalLight::GetSize();
 	resourceData.pSysMem = &this->m_Light;
 
 	if (this->m_pFrameUniformStructuredBuffer)
@@ -1063,14 +1085,16 @@ DirectX11Renderer::OnKeyDown(IEventData * pEvent)
 	switch (pEventData->m_KeyCode)
 	{
 	case VK_UP:
-		this->m_MoveBackForward += 1;
+		this->m_MoveBackForward += 10;
 		break;
 	case VK_DOWN:
-		this->m_MoveBackForward -= 1;
+		this->m_MoveBackForward -= 10;
 		break;
 	case VK_LEFT:
+		this->m_MoveLeftRight	-= 10;
 		break;
 	case VK_RIGHT:
+		this->m_MoveLeftRight	+= 10;
 		break;
 	}
 
@@ -1103,6 +1127,9 @@ DirectX11Renderer::OnAssetLoaded (IEventData * pEvent)
 				break;
 			case ASSET_TYPE_PASS:
 				assetLoaded					= this->LoadPass(pDescriptor);
+				break;
+			case ASSET_TYPE_MATERIAL:
+				assetLoaded					= this->LoadMaterial (pDescriptor);
 				break;
             default:
                 assert (false);
@@ -1414,6 +1441,24 @@ DirectX11Renderer::LoadPass(AssetDescriptor * pDescriptor)
 	CORE_ID pixId						= pPassDesc->GetPixelShader ();
 	CORE_ID vertId						= pPassDesc->GetVertexShader ();
 	
+	return retVal;
+}
+
+CORE_BOOLEAN
+DirectX11Renderer::LoadMaterial (AssetDescriptor * pDescriptor)
+{
+	CORE_BOOLEAN retVal					= false;
+	
+	auto pMaterialDesc					= (MaterialAssetDescriptor *)pDescriptor;
+	auto id								= pMaterialDesc->GetIdentifier ();
+	auto name							= pMaterialDesc->GetName ();
+
+	Material * pMaterial				= new Material ();
+	Material::FromDescriptor (pMaterialDesc, pMaterial);
+
+	auto pair							= make_pair (id, pMaterial);
+	this->m_MaterialMap.insert (pair);
+	retVal								= ERR_OK;
 	return retVal;
 }
 

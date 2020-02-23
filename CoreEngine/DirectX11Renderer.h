@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <d3d11.h>
+#include <dxgi.h>
 #include <map>
 
 #include "DirectX11Renderable.h"
@@ -21,12 +22,14 @@
 #include "BasicLight.h"
 #include "DirectionalLight.h"
 #include "LightManager.h"
-
+#include "Material.h"
 #include "AssetDescriptor.h"
 #include "MeshAssetDescriptor.h"
 
 #include "IRenderer.h"
+#include <wrl/client.h>
 
+using Microsoft::WRL::ComPtr;
 struct ShaderDescriptor
 {
 	CORE_ID m_Identifier;
@@ -59,69 +62,82 @@ private:
 
 	IEventManager * m_pEventManager;
 
-	CORE_DOUBLE m_PrevFrameAt = 0;
+	CORE_DOUBLE					m_PrevFrameAt = 0;
 
-	D3D_FEATURE_LEVEL m_featureLevel;
+	D3D_FEATURE_LEVEL			m_featureLevel;
 
-	IDXGISwapChain * m_pSwapChain;
-	ID3D11Device * m_pDevice;
-	ID3D11DeviceContext * m_pDeviceContext;
-	ID3D11RenderTargetView * m_pRenderTargetViewBackBuffer;
-	ID3D11RenderTargetView * m_pRenderTargetViewTex;
-	DirectX11Texture2D * m_RenderTarget; // Used to render to texture.
-	ID3D11ShaderResourceView* m_pShaderResourceView;
+	IDXGISwapChain *			m_pSwapChain;
+	DXGI_FORMAT					m_DisplayFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+	DXGI_MODE_DESC				m_DisplayMode;
+	ID3D11Device *				m_pDevice;
+	ID3D11DeviceContext *		m_pDeviceContext;
+	ID3D11RenderTargetView *	m_pRenderTargetViewBackBuffer;
+	ID3D11RenderTargetView *	m_pRenderTargetViewTex;
+	DirectX11Texture2D *		m_RenderTarget; // Used to render to texture.
+	ID3D11ShaderResourceView*	m_pShaderResourceView;
 
-	ID3D11InputLayout * m_pInputLayout;
-	ID3D11Texture2D* m_pDepthStencilBuffer;
-	ID3D11DepthStencilView* m_pDepthStencilViewBackBuffer;
-	ID3D11DepthStencilView* m_pDepthStencilViewTex;
-	ID3D11RasterizerState * m_pRasterizerStateWireframe;
+	ID3D11InputLayout *			m_pInputLayout;
+	
+	ID3D11Texture2D*			m_pDepthStencilBuffer;
+	ID3D11Texture2D *			m_pDepthStencilTex;
+	ID3D11DepthStencilView*		m_pDepthStencilViewBackBuffer;
+	ID3D11DepthStencilView*		m_pDepthStencilViewTex;
+	ID3D11RasterizerState *		m_pRasterizerStateWireframe;
 
-	ID3D11BlendState* m_pBlendStateTransparency;
-	ID3D11RasterizerState* m_pCounterClockWisecullMode;
-	ID3D11RasterizerState* m_pClockWiseCullMode;
-	ID3D11RasterizerState* m_pDisableCullingMode;
+	ID3D11BlendState*			m_pBlendStateTransparency;
+	ID3D11RasterizerState*		m_pCounterClockWisecullMode;
+	ID3D11RasterizerState*		m_pClockWiseCullMode;
+	ID3D11RasterizerState*		m_pDisableCullingMode;
 
-	DirectX11TextRenderer * m_pTextRenderer;
+	DirectX11TextRenderer *		m_pTextRenderer;
 
-	DirectX11Shader * m_pActiveShader;
+	DirectX11Shader *				m_pActiveShader;
 	map<CORE_ID, DirectX11Shader *> m_ShaderMap;
-	DirectX11Shader * m_pRedShader;
-	DirectX11Shader * m_pGreenShader;
-    DirectX11Shader * m_pBasicShader;
-	DirectX11Shader * m_pSquareShader;
+	DirectX11Shader *				m_pRedShader;
+	DirectX11Shader *				m_pGreenShader;
+    DirectX11Shader *				m_pBasicShader;
+	DirectX11Shader *				m_pSquareShader;
 
-	DirectX11Texture2D * m_pActiveTexture;
-	DirectX11Texture2DMap m_TextureMap;
-	vector<DirectX11Renderable *> m_Renderables;
+	DirectX11Texture2D *				m_pWoodTex;
+	DirectX11Texture2D *				m_pGrassTex;
+	DirectX11Texture2D *				m_pActiveTexture;
+	DirectX11Texture2DMap				m_TextureMap;
+	vector<DirectX11Renderable *>		m_Renderables;
 	map<CORE_ID, DirectX11Renderable *> m_ModelToRenderableMap;
-	DirectX11RenderSet m_RenderSet;
+	DirectX11RenderSet					m_RenderSet;
+
+	map<CORE_ID, Material *>			m_MaterialMap;
 
 	//These two are used to render to texture.
-	DirectX11Renderable * m_pSquare;
-	DirectX11RenderableInstance * m_pSquareInstance;
+	DirectX11Renderable *			m_pSquare;
+	DirectX11RenderableInstance *	m_pSquareInstance;
 
-	VEC4 m_ClearColour;
-	vector<DirectionalLight> m_Lights;
-	LightManager m_LightManager;
+	VEC4						m_ClearColour;
+	vector<DirectionalLight>	m_Lights;
+	LightManager				m_LightManager;
 
-	MAT4 m_WorldViewProjection;
+	MAT4		m_WorldViewProjection;
 	
-	MAT4 m_CameraView;
-	MAT4 m_CameraProjection;
-	VEC4 m_CameraPosition;
-	MAT4 m_CameraRotation;
-	VEC4 m_CameraTarget;
-	VEC4 m_CameraUp;
-	VEC4 m_CameraRight;
-	VEC4 m_CameraForward;
-	CORE_REAL m_CameraPitch;
-	CORE_REAL m_CameraYaw;
-	CORE_REAL m_MoveLeftRight;
-	CORE_REAL m_MoveBackForward;
+	MAT4		m_CameraView;
+	MAT4		m_CameraProjection;
+	VEC4		m_CameraPosition;
+	MAT4		m_CameraRotation;
+	VEC4		m_CameraTarget;
+	VEC4		m_CameraUp;
+	VEC4		m_CameraRight;
+	VEC4		m_CameraForward;
+	CORE_REAL	m_CameraPitch;
+	CORE_REAL	m_CameraYaw;
+	CORE_REAL	m_MoveLeftRight;
+	CORE_REAL	m_MoveBackForward;
 
-	CORE_DWORD m_Width;
-	CORE_DWORD m_Height;
+	CORE_DWORD		m_Width;
+	CORE_DWORD		m_Height;
+	CORE_BOOLEAN	m_IsWindowed;
+
+	CORE_DWORD		m_MsaaX;
+	CORE_DWORD		m_MsaaQ;
+	CORE_BOOLEAN	m_MsaaEnabled;
 
 	D3D11_INPUT_ELEMENT_DESC m_inputElementDescriptor[8]
 		=
@@ -232,7 +248,7 @@ private:
     CORE_BOOLEAN LoadMesh (AssetDescriptor * pDescriptor);
 	CORE_BOOLEAN LoadPass (AssetDescriptor * pDescriptor);
 	CORE_BOOLEAN LoadModel (AssetDescriptor * pDescriptor);
-
+	CORE_BOOLEAN LoadMaterial (AssetDescriptor * pDescriptor);
 public:
 	DirectX11Renderer(IEventManager * pEventManager);
 	virtual void Init();
