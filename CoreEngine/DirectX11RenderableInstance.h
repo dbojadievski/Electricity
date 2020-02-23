@@ -5,6 +5,7 @@
 #include "Math.h"
 
 #include "RenderableInstanceData.h"
+#include "Material.h"
 
 
 class DirectX11Renderable;
@@ -17,6 +18,7 @@ private:
 	MAT4 m_Transform; // NOTE(Dino): This is the object's transform relative to the parent.
 	MAT4 m_CachedTransform; // NOTE(Dino): This is the object's absolute transform, independent of the parent.
 	DirectX11Renderable * m_pRenderable;
+	Material * m_pMaterial;
 
 	DirectX11RenderableInstance * m_pParent;
 	vector<DirectX11RenderableInstance *> m_Children;
@@ -28,12 +30,13 @@ private:
 		this->m_Children.push_back(pChild);
 	}
 public:
-	DirectX11RenderableInstance(DirectX11Renderable * pRenderable, CORE_ID id, DirectX11RenderableInstance * pParent = NULL, vector<DirectX11RenderableInstance *> * pChildren = NULL);
+	DirectX11RenderableInstance(DirectX11Renderable * pRenderable, CORE_ID id, Material * pMaterial, DirectX11RenderableInstance * pParent = NULL, vector<DirectX11RenderableInstance *> * pChildren = NULL);
 	~DirectX11RenderableInstance();
 
 	const MAT4 * const GetCachedTransform();
 	MAT4 * GetTransform();
 	void RecomputeTransform();
 	void ToInstanceData (RenderableInstanceData &data);
+	Material * GetMaterial () const;
 };
 

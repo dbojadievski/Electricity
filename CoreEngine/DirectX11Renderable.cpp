@@ -159,13 +159,13 @@ DirectX11Renderable::~DirectX11Renderable()
 }
 
 DirectX11RenderableInstance *
-DirectX11Renderable::Instantiate(CORE_ID id, FASTMAT4 transform, DirectX11RenderableInstance * pParent)
+DirectX11Renderable::Instantiate(CORE_ID id, FASTMAT4 transform, Material * pMaterial, DirectX11RenderableInstance * pParent)
 {
 	assert(id);
 
 	DirectX11RenderableInstance * pInstance = NULL;
 	
-	pInstance = new DirectX11RenderableInstance(this, id, pParent, NULL);
+	pInstance = new DirectX11RenderableInstance(this, id, pMaterial, pParent, NULL);
 
 	if (pParent)
 	{
@@ -200,7 +200,7 @@ DirectX11Renderable::DeInstantiate (CORE_ID id)
 }
 
 DWORD
-DirectX11Renderable::GetInstanceCount()
+DirectX11Renderable::GetInstanceCount() const
 {
 	return (DWORD) this->m_pInstances.size();
 }
@@ -220,7 +220,7 @@ DirectX11Renderable::GetInstancesEnd()
 }
 
 DirectX11RenderableInstance *
-DirectX11Renderable::GetInstance (CORE_ID renderableComponentId) const
+DirectX11Renderable::GetInstance (CORE_ID renderableComponentId)
 {
 	DirectX11RenderableInstance * pRetVal = NULL;
 	for (auto it = this->m_pInstances.begin (); it != this->m_pInstances.end (); it++)
@@ -238,19 +238,19 @@ DirectX11Renderable::GetInstance (CORE_ID renderableComponentId) const
 }
 
 const DirectX11Shader * 
-DirectX11Renderable::GetShader()
+DirectX11Renderable::GetShader() const
 {
 	return (const DirectX11Shader *) this->m_pShader;
 }
 
 const DirectX11Texture2D *
-DirectX11Renderable::GetTexture()
+DirectX11Renderable::GetTexture() const
 {
 	return (const DirectX11Texture2D *)this->m_pTexture;
 }
 
 const Mesh *
-DirectX11Renderable::GetMesh ()
+DirectX11Renderable::GetMesh () const
 {
 	return (const Mesh * ) this->m_pMesh;
 }

@@ -44,7 +44,8 @@ DirectX11Renderer::Init()
 {
 	InitEventHandlers();
 	InitDirect3D();
-	InitTerrain();
+	InitMaterial ();
+	//InitTerrain();
 	InitSquare();
     InitLights ();
 }
@@ -487,7 +488,7 @@ DirectX11Renderer::InitSquare()
 	this->m_RenderTarget;
 	auto pRenderable = new DirectX11Renderable(pSquareMesh, pTexture, pShader, FALSE);
 	auto transform = XMMatrixScaling(4.7f, 4.f, 1.0f) * XMMatrixTranslation(0.0f, 0.0f, 0.0f);
-	auto pInstance = pRenderable->Instantiate(1, transform);
+	auto pInstance = pRenderable->Instantiate(1, transform, m_pDefaultMaterial);
 	//this->m_RenderSet.Insert (pRenderable);
 
 	this->m_Renderables.push_back(pRenderable);
@@ -605,7 +606,7 @@ DirectX11Renderer::InitTerrain()
 	DirectX11Renderable * pDynamicTerrainRenderable = new DirectX11Renderable(pDynamicTerrainMesh, pTexture, pShader, FALSE, D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	this->m_Renderables.push_back(pDynamicTerrainRenderable);
 
-	DirectX11RenderableInstance * pDynamicTerrainInstance = pDynamicTerrainRenderable->Instantiate(5, XMMatrixScaling(10.0f, 10.0f, 10.0f), NULL);
+	DirectX11RenderableInstance * pDynamicTerrainInstance = pDynamicTerrainRenderable->Instantiate(5, XMMatrixScaling(10.0f, 10.0f, 10.0f), this->m_pDefaultMaterial, NULL);
 	assert(pDynamicTerrainInstance);
  	pDynamicTerrainRenderable->Buffer(this->m_pDevice, this->m_pDeviceContext);
 	this->m_RenderSet.Insert(pDynamicTerrainRenderable);
@@ -622,6 +623,16 @@ DirectX11Renderer::InitTextures()
 	DirectX11Texture2D  * pGrassTex = DirectX11Texture2D::FromDDSFile(this->m_pDevice,  L"Assets\\Textures\\grass.dds", 2);
 	this->RegisterTexture(pGrassTex);
 	this->m_pGrassTex = pGrassTex;
+}
+
+void
+DirectX11Renderer::InitMaterial ()
+{
+	this->m_pDefaultMaterial = new Material ("__DEFAULT__", 0);
+	this->m_pDefaultMaterial->SetAmbient (0, 0, 0, 1);
+	this->m_pDefaultMaterial->SetDiffuse (0, 0, 0, 1);
+	this->m_pDefaultMaterial->SetSpecular (0, 0, 0, 1);
+	this->m_pDefaultMaterial->SetSpecularPower (0);
 }
 
 void DirectX11Renderer::SetTexture(DirectX11Texture2D * pTex)
@@ -1181,6 +1192,25 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 			RenderableComponent * pComponent		= (RenderableComponent *) pEventData->m_pComponent;
 			assert (pComponent);
 
+			auto pMaterialDesc	= pComponent->GetMaterial ();
+			assert (pMaterialDesc);
+
+			auto pAssetManager	= g_Engine.GetAssetManager ();
+			
+			Material * pMaterial = NULL;
+			auto matId = pMaterialDesc->GetIdentifier ();
+			auto pMatIt			= this->m_MaterialMap.find (pMaterialDesc->GetIdentifier ());
+			if (pMatIt == this->m_MaterialMap.end ())
+			{
+				// Material not loaded. Load it. 
+				pMaterial			= new Material ();
+				Material::FromDescriptor (pMaterialDesc, pMaterial);
+				auto pair			= make_pair (matId, pMaterial);
+				this->m_MaterialMap.insert (pair);
+			}
+			else
+				pMaterial = pMatIt->second;
+
 			Entity * pEntity	= NULL;
 			g_Engine.GetEntitySystem()->GetEntityByIdentifier(pEventData->m_EntityIdentifier, &pEntity);
 			assert(pEntity);
@@ -1189,14 +1219,14 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 			for (size_t idx							= 0; idx < pModel->NumMeshes(); idx++)
 			{
 				auto pMesh							= pModel->GetMeshAt(idx);
-				auto pMeshData						= g_Engine.GetAssetManager()->GetMesh(pMesh);
+				auto pMeshData						= pAssetManager->GetMesh(pMesh);
 				vector<Renderable *> renderables;
 				this->GetRenderablesByMesh(pMesh, &renderables);
 				if (!renderables.size())
 				{
 					// Not loaded yet. Load it.
 
-					auto pData			= g_Engine.GetAssetManager()->GetModelData(pModel->GetName());
+					auto pData			= pAssetManager->GetModelData(pModel->GetName());
 					assert(pData);
 								
 					size_t numPasses	= pData->NumPasses();
@@ -1216,6 +1246,14 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 					DirectX11Shader * pVxShader = NULL;
 					for (size_t idx		= 1; idx < pData->NumShaders(); idx++)
 					{
+					/*
+						* NOTE(Dino):
+						* For now, our renderer doesn't understand multipass rendering.
+						* To it, a Shader has a minimum of pixel and vertex shader.
+						* But, out asset system does! And so, our model has TWO shaders instead of one.
+						* This means that, left to its own devices, our renderer will happily create TWO renderables.
+						* We'll skip this for now, until we teach our renderer what a pass is.
+						*/
 						auto pShader	= pData->GetShaderAt(idx);
 						if (pShader)
 						{
@@ -1225,34 +1263,14 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 								pPxShader		= pDxShader;
 							else if (type == CORE_SHADER_TYPE::SHADER_TYPE_VERTEX)
 								pVxShader		= pDxShader;
-
-							auto pRenderable	= new DirectX11Renderable(pMeshData, pDxTex, pDxShader);
+							
+							pComponent->GetMaterial ();
+							auto pRenderable	= new DirectX11Renderable(pMeshData, pDxTex, pDxShader, pMaterial);
 							this->m_Renderables.push_back(pRenderable);
 							auto pair = make_pair(pModel->GetIdentifier(), pRenderable);
 							this->m_ModelToRenderableMap.insert(pair);
 							this->GetRenderablesByMesh(pMesh, &renderables);
 
-							/*
-							 * NOTE(Dino):
-							 * For now, our renderer doesn't understand multipass rendering.
-							 * To it, a Shader has a minimum of pixel and vertex shader.
-							 * But, out asset system does! And so, our model has TWO shaders instead of one.
-							 * This means that, left to its own devices, our renderer will happily create TWO renderables.
-							 * We'll skip this for now, until we teach our renderer what a pass is.
-							 */
-						}
-					}
-
-					for (size_t passIdx = 0; passIdx < numPasses; passIdx++)
-					{
-						DirectX11Renderable * pRenderable = NULL;
-						auto * pPass	= pData->GetPassAt(passIdx);
-						auto pShader	= pPass->GetPixelShader();
-						auto vShader	= pPass->GetVertexShader();
-						
-						for (auto it = this->m_ShaderMap.begin (); it != this->m_ShaderMap.end (); it++)
-						{
-							auto pSh = (*it).second;
 						}
 					}
 				}
@@ -1272,7 +1290,7 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 						CreateMatFromTransform (pComponent, transform);
 						transformA					= XMLoadFloat4x4 (&transform);
 						// We rebuffer on every instance count change, to make sure the instance data is reloaded.
-						auto pRenderableInstance	= pRenderable->Instantiate(pComponent->m_Identifier, transformA);
+						auto pRenderableInstance	= pRenderable->Instantiate(pComponent->m_Identifier, transformA, pMaterial);
 						if (pRenderable->GetInstanceCount () != 1)
 							pRenderable->DeactivateBuffers ();
 						pRenderable->Buffer(this->m_pDevice, this->m_pDeviceContext);
@@ -1393,19 +1411,19 @@ DirectX11Renderer::LoadMesh (AssetDescriptor * pDescriptor)
 }
 
 CORE_BOOLEAN
-DirectX11Renderer::LoadSubMesh(CoreMesh * pMesh, DirectX11Texture2D * pTexture, DirectX11Shader * pShader)
+DirectX11Renderer::LoadSubMesh(CoreMesh * pMesh, DirectX11Texture2D * pTexture, DirectX11Shader * pShader, Material * pMaterial)
 {
 	CORE_BOOLEAN isLoaded	= true;
 	assert(pMesh);
 
 
-	auto * pRenderable	= new DirectX11Renderable(pMesh, pTexture, pShader);
+	auto * pRenderable	= new DirectX11Renderable(pMesh, pTexture, pShader, pMaterial);
 	this->m_Renderables.push_back(pRenderable);
 	auto numSubs		= pMesh->GetSubMeshCount();
 	for (auto idx		= 0; idx < numSubs; idx++)
 	{
 		auto pSubMesh	= pMesh->GetSubMeshAt(idx);
-		isLoaded		&= this->LoadSubMesh(pMesh, pTexture, pShader);
+		isLoaded		&= this->LoadSubMesh(pMesh, pTexture, pShader, pMaterial);
 		assert(isLoaded);
 	}
 

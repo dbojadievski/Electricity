@@ -18,6 +18,7 @@ public:
 	RenderableComponent();
 	RenderableComponent(XMLElement * pRenderableXML, IAssetManager *pAssetManager);
 	ModelDescriptor  * GetModel() const;
+	MaterialDescriptor * GetMaterial () const;
 
 	virtual void Init();
 	virtual void Update(float dT);

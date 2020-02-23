@@ -39,20 +39,20 @@ RenderableComponent::RenderableComponent(XMLElement * pElement, IAssetManager *p
 			}
 		}
 
-		//XMLElement * pMaterial = pElement->FirstChildElement ("material");
-		//assert (pMaterial);
-		//if (pMaterial)
-		//{
-		//	const char * pStrName = pMaterial->Attribute ("material");
-		//	assert (pStrName);
-		//	if (pStrName)
-		//	{
-		//		MaterialDescriptor * pDesc = pAssetManager->GetMaterialDescriptor (pStrName);
-		//		assert (pDesc);
-		//		if (pDesc)
-		//			this->m_pMaterial = pDesc;
-		//	}
-		//}
+		XMLElement * pMaterial = pElement->FirstChildElement ("material");
+		assert (pMaterial);
+		if (pMaterial)
+		{
+			const char * pStrName = pMaterial->Attribute ("name");
+			assert (pStrName);
+			if (pStrName)
+			{
+				MaterialDescriptor * pDesc = pAssetManager->GetMaterialDescriptor (pStrName);
+				assert (pDesc);
+				if (pDesc)
+					this->m_pMaterial = pDesc;
+			}
+		}
 
 		this->m_Type = COMPONENT_TYPE_RENDERABLE;
 	}
@@ -62,6 +62,12 @@ ModelDescriptor *
 RenderableComponent::GetModel() const
 {
 	return this->m_pModel;
+}
+
+MaterialDescriptor *
+RenderableComponent::GetMaterial () const
+{
+	return this->m_pMaterial;
 }
 
 CORE_BOOLEAN

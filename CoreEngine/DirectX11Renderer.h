@@ -139,17 +139,22 @@ private:
 	CORE_DWORD		m_MsaaQ;
 	CORE_BOOLEAN	m_MsaaEnabled;
 
-	D3D11_INPUT_ELEMENT_DESC m_inputElementDescriptor[8]
+	D3D11_INPUT_ELEMENT_DESC m_inputElementDescriptor[13]
 		=
 	{
-		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL",		0, DXGI_FORMAT_R32G32B32_FLOAT,		0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD",	1, DXGI_FORMAT_R32G32B32_FLOAT,		1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-		{ "RowX",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	1, 0, D3D11_INPUT_PER_INSTANCE_DATA,	 1},
-		{ "RowY",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-		{ "RowZ",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-		{ "RowW",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1}
+		{ "POSITION",				0, DXGI_FORMAT_R32G32B32_FLOAT,		0,	0,		D3D11_INPUT_PER_VERTEX_DATA,		0 },
+		{ "TEXCOORD",				0, DXGI_FORMAT_R32G32_FLOAT,		0,	12,		D3D11_INPUT_PER_VERTEX_DATA,		0 },
+		{ "NORMAL",					0, DXGI_FORMAT_R32G32B32_FLOAT,		0,	20,		D3D11_INPUT_PER_VERTEX_DATA,		0 },
+		{ "TEXCOORD",				1, DXGI_FORMAT_R32G32B32_FLOAT,		1,	0,		D3D11_INPUT_PER_INSTANCE_DATA,		1 },
+		{ "RowX",					0, DXGI_FORMAT_R32G32B32A32_FLOAT,	1,	0,		D3D11_INPUT_PER_INSTANCE_DATA,		1 },
+		{ "RowY",					0, DXGI_FORMAT_R32G32B32A32_FLOAT,	1,	16,		D3D11_INPUT_PER_INSTANCE_DATA,		1 },
+		{ "RowZ",					0, DXGI_FORMAT_R32G32B32A32_FLOAT,	1,	32,		D3D11_INPUT_PER_INSTANCE_DATA,		1 },
+		{ "RowW",					0, DXGI_FORMAT_R32G32B32A32_FLOAT,	1,	48,		D3D11_INPUT_PER_INSTANCE_DATA,		1 },
+		{ "MaterialAmbient",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,  1,	64,		D3D11_INPUT_PER_INSTANCE_DATA,		1 },
+		{ "MaterialDiffuse",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,  1,	80,		D3D11_INPUT_PER_INSTANCE_DATA,		1 },
+		{ "MaterialSpecular",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,  1,	96,		D3D11_INPUT_PER_INSTANCE_DATA,		1 },
+		{ "MaterialSpecularPower",	0, DXGI_FORMAT_R32_FLOAT,			1,	112,	D3D11_INPUT_PER_INSTANCE_DATA,		1 },
+		{ "MaterialPadding",		0, DXGI_FORMAT_R32G32B32_FLOAT,		1,	116,	D3D11_INPUT_PER_INSTANCE_DATA,		1 }
 	};
 
 
@@ -186,6 +191,7 @@ private:
 	FrameUniformDescriptor m_FrameUniforms;
 	InstanceUniformDescriptor m_ObjectUniforms;
 	DirectionalLightUniformDescriptor m_LightUniformDescriptor;
+	Material * m_pDefaultMaterial;
 
 	DirectX11Buffer * m_pFrameUniformBuffer;
 	DirectX11Buffer * m_pFrameUniformStructuredBuffer;
@@ -203,6 +209,7 @@ private:
 	void InitSquare();
 	void InitTerrain();
 	void InitTextures();
+	void InitMaterial ();
 	void InitLights();
     void InitUniformBuffers ();
 	void ReloadLightBuffer();
@@ -256,7 +263,7 @@ private:
 
     CORE_BOOLEAN LoadShader (AssetDescriptor * pDescriptor);
     CORE_BOOLEAN LoadTexture (AssetDescriptor * pDescriptor);
-	CORE_BOOLEAN LoadSubMesh(CoreMesh * pMesh, DirectX11Texture2D * pTexture, DirectX11Shader * pShader);
+	CORE_BOOLEAN LoadSubMesh(CoreMesh * pMesh, DirectX11Texture2D * pTexture, DirectX11Shader * pShader, Material * pMaterial);
     CORE_BOOLEAN LoadMesh (AssetDescriptor * pDescriptor);
 	CORE_BOOLEAN LoadPass (AssetDescriptor * pDescriptor);
 	CORE_BOOLEAN LoadModel (AssetDescriptor * pDescriptor);

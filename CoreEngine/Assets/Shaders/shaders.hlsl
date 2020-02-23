@@ -32,6 +32,12 @@ struct VS_INPUT
 	float4 rowY: ROWY;
 	float4 rowZ: ROWZ;
 	float4 rowW: ROWW;
+
+	float4 matAmbient:			MATERIALAMBIENT;
+	float4 matDiffuse:			MATERIALDIFFUSE;
+	float4 matSpecular:			MATERIALSPECULAR;
+	float matSpecularPower:		MATERIALSPECULARPOWER;
+	float3 matPadding:			MATERIALPADDING;
 };
 
 

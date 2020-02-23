@@ -26,14 +26,13 @@ private:
 	Mesh *					m_pMesh;
 	DirectX11Shader *		m_pShader;
 	DirectX11Texture2D *	m_pTexture;
-	Material *				m_pMaterial;
 
 	DirectX11Buffer *			m_pVertexBuffer;
 	DirectX11Buffer *			m_pInstanceBuffer;
 	DirectX11Buffer *			m_pIndexBuffer;
 	RenderableInstanceData *	m_pInstanceBuff;
 	D3D_PRIMITIVE_TOPOLOGY		m_Topology;
-	vector<DirectX11RenderableInstance *> m_pInstances;
+	vector<DirectX11RenderableInstance *>	m_pInstances;
 
 public:
 
@@ -46,15 +45,15 @@ public:
 
 	void Render(ID3D11DeviceContext * pDeviceContext, CORE_BOOLEAN isInstanced = TRUE);
 
-	DirectX11RenderableInstance * Instantiate(CORE_ID id, FASTMAT4 transform, DirectX11RenderableInstance * pParent = NULL);
+	DirectX11RenderableInstance * Instantiate(CORE_ID id, FASTMAT4 transform, Material * pMaterial, DirectX11RenderableInstance * pParent = NULL);
 	CORE_BOOLEAN DeInstantiate (CORE_ID id);
 
-	DWORD								GetInstanceCount();
+	DWORD								GetInstanceCount() const;
 	DirectX11RenderableInstanceIterator GetInstances();
 	DirectX11RenderableInstanceIterator GetInstancesEnd();
-	DirectX11RenderableInstance  * GetInstance (CORE_ID renderableComponentId) const;
+	DirectX11RenderableInstance  * GetInstance (CORE_ID renderableComponentId);
 
-	const DirectX11Shader * GetShader();
-	const DirectX11Texture2D * GetTexture();
-	const Mesh * GetMesh ();
+	const DirectX11Shader * GetShader() const;
+	const DirectX11Texture2D * GetTexture() const;
+	const Mesh * GetMesh () const;
 };

@@ -446,9 +446,7 @@ AssetManager::RegisterMaterials (XMLNode * pXmlMaterialsList)
 						pMat->SetSpecularPower (pow);
 					}
 										
-					//this->RegisterMaterial (pMat);
-					//AssetLoadedEventData * pEvent = new AssetLoadedEventData (pMat);
-					//this->m_pEventManager->VTriggerEvent (pEvent);
+					this->RegisterMaterial (pMat);
 				}
 			}
 
