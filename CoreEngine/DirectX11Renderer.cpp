@@ -1265,7 +1265,7 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 								pVxShader		= pDxShader;
 							
 							pComponent->GetMaterial ();
-							auto pRenderable	= new DirectX11Renderable(pMeshData, pDxTex, pDxShader, pMaterial);
+							auto pRenderable	= new DirectX11Renderable(pMeshData, pDxTex, pDxShader, false);
 							this->m_Renderables.push_back(pRenderable);
 							auto pair = make_pair(pModel->GetIdentifier(), pRenderable);
 							this->m_ModelToRenderableMap.insert(pair);
