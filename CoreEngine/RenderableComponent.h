@@ -5,14 +5,16 @@
 #include "Model.h"
 #include "tinyxml2.h"
 #include "IAssetManager.h"
+#include "MaterialDescriptor.h"
 
 using namespace tinyxml2;
 class RenderableComponent : public IComponent
 {
 protected:
-	ModelDescriptor	*	m_pModel;
+	ModelDescriptor	*		m_pModel;
+	MaterialDescriptor *	m_pMaterial;
 public:
-	RenderableComponent(ModelDescriptor * pModel);
+	RenderableComponent(ModelDescriptor * pModel, MaterialDescriptor * pMaterial);
 	RenderableComponent();
 	RenderableComponent(XMLElement * pRenderableXML, IAssetManager *pAssetManager);
 	ModelDescriptor  * GetModel() const;

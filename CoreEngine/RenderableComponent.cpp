@@ -4,14 +4,17 @@
 
 RenderableComponent::RenderableComponent()
 {
-	this->m_Type = COMPONENT_TYPE_RENDERABLE;
-	this->m_pModel = NULL;
+	this->m_Type		= COMPONENT_TYPE_RENDERABLE;
+	this->m_pModel		= NULL;
+	this->m_pMaterial	= NULL;
 }
 
-RenderableComponent::RenderableComponent(ModelDescriptor * pModel) : RenderableComponent()
+RenderableComponent::RenderableComponent(ModelDescriptor * pModel, MaterialDescriptor * pMaterial) : RenderableComponent()
 {
 	assert(pModel);
+	assert (pMaterial);
 	this->m_pModel		= pModel;
+	this->m_pMaterial	= pMaterial;
 }
 
 RenderableComponent::RenderableComponent(XMLElement * pElement, IAssetManager *pAssetManager) : RenderableComponent()
@@ -35,6 +38,21 @@ RenderableComponent::RenderableComponent(XMLElement * pElement, IAssetManager *p
 					this->m_pModel = pDesc;
 			}
 		}
+
+		//XMLElement * pMaterial = pElement->FirstChildElement ("material");
+		//assert (pMaterial);
+		//if (pMaterial)
+		//{
+		//	const char * pStrName = pMaterial->Attribute ("material");
+		//	assert (pStrName);
+		//	if (pStrName)
+		//	{
+		//		MaterialDescriptor * pDesc = pAssetManager->GetMaterialDescriptor (pStrName);
+		//		assert (pDesc);
+		//		if (pDesc)
+		//			this->m_pMaterial = pDesc;
+		//	}
+		//}
 
 		this->m_Type = COMPONENT_TYPE_RENDERABLE;
 	}

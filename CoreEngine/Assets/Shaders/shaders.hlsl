@@ -46,9 +46,10 @@ VOut VShader (VS_INPUT input)
 {
 	VOut output;
 
-	float4x4 world		= float4x4(input.rowX, input.rowY, input.rowZ, input.rowW);
-	float4x4 MVP		= mul (transpose (ProjectionMatrix), mul (transpose (CameraMatrix), transpose (world)));
-	output.position		= mul (input.position, MVP);
+	float4x4 world		= (float4x4(input.rowX, input.rowY, input.rowZ, input.rowW));
+	float4x4 wvp		= transpose (mul (ProjectionMatrix, mul (CameraMatrix, transpose (world))));	
+	output.position		= mul (input.position, wvp);
+	
 	output.texCoord		= input.texCoord0;
 	output.normal		= mul (input.normal, world);
 

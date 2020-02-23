@@ -64,7 +64,7 @@ DirectX11Renderer::InitLights()
 
 void DirectX11Renderer::InitUniformBuffers ()
 {
-    this->m_pFrameUniformBuffer = DirectX11Buffer::CreateConstantBuffer (this->m_pDevice, sizeof (FrameUniformDescriptor), true, false, NULL);
+    this->m_pFrameUniformBuffer = DirectX11Buffer::CreateConstantBuffer (this->m_pDevice, FrameUniformDescriptor::GetSize(), true, false, NULL);
     assert (this->m_pFrameUniformBuffer);
 
 	this->m_pObjectUniformBuffer = DirectX11Buffer::CreateConstantBuffer(this->m_pDevice, sizeof(InstanceUniformDescriptor), true, false, NULL);
@@ -955,14 +955,14 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 
 						auto modelViewProjectionMatrix	= instanceTransform * cameraTransform * cwp;
 						
-						auto wvp						= FASTMAT_TRANSPOSE(modelViewProjectionMatrix);
-						auto itt						= FASTMAT_TRANSPOSE(instanceTransform);
+						auto wvp						= (modelViewProjectionMatrix);
+						auto itt						= (instanceTransform);
 						XMStoreFloat4x4(&this->m_ObjectUniforms.WorldViewProjection, wvp);
 						XMStoreFloat4x4(&this->m_ObjectUniforms.World, itt);
 
 						this->UpdateInstanceUniforms ();
 						instanceIterator++;
-						//pRenderable->Render (this->m_pDeviceContext);
+						//pRenderable->Render (this->m_pDeviceContext); // Comment out for instanced rendering.
 
 					}
 					auto cameraTransform						= XMLoadFloat4x4(&this->m_CameraView);
@@ -970,10 +970,14 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 					auto vpm									= XMMatrixTranspose(cameraTransform * cwp);
 					XMStoreFloat4x4(&this->m_FrameUniforms.ViewProjectionMatrix, vpm);
 					
+					cwp = XMLoadFloat4x4 (&cameraViewProjectionMatrix);
+					auto mat = cameraTransform * cwp;
+					//XMStoreFloat4x4 (&this->m_FrameUniforms.CameraViewProjectionMatrix, mat);
+
 					this->m_FrameUniforms.Projection			= this->m_CameraProjection;
 					this->m_FrameUniforms.Camera				= this->m_CameraView;
 					UpdateFrameUniforms ();
-					pRenderable->Render (this->m_pDeviceContext);
+					pRenderable->Render (this->m_pDeviceContext); // Uncomment for instanced rendering.
 #pragma endregion
 				}
 				pPerTexSetIter++;

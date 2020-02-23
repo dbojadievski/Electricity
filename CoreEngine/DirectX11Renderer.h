@@ -164,6 +164,18 @@ private:
 		MAT4 Camera;
 		MAT4 Projection;
 		MAT4 ViewProjectionMatrix;
+		//MAT4 CameraViewProjectionMatrix;
+
+		static UINT GetSize ()
+		{
+			UINT size = 0;
+			size += sizeof (Camera);
+			size += sizeof (Projection);
+			size += sizeof (ViewProjectionMatrix);
+			//size += sizeof (CameraViewProjectionMatrix);
+
+			return size;
+		}
 	};
 
 	struct DirectionalLightUniformDescriptor

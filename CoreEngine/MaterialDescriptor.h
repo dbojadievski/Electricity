@@ -29,3 +29,5 @@ public:
 	void SetSpecularPower (CORE_REAL specularPower);
 	CORE_ASSET_TYPE GetAssetType () const;
 };
+
+typedef MaterialAssetDescriptor MaterialDescriptor;
