@@ -369,6 +369,9 @@
     <ClInclude Include="Material.h">
       <Filter>Header Files\Rendering\Cross-Platform\Renderables</Filter>
     </ClInclude>
+    <ClInclude Include="HemisphericLight.h">
+      <Filter>Header Files\Rendering\Cross-Platform\Lights</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TimeUtils.cpp">
@@ -526,6 +529,9 @@
     </ClCompile>
     <ClCompile Include="Material.cpp">
       <Filter>Source Files\Rendering\Cross-Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="HemisphericLight.cpp">
+      <Filter>Source Files\Rendering\Cross-Platform\Lights</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

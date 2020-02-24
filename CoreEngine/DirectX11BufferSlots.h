@@ -15,7 +15,9 @@ typedef enum DirectX11VertexShaderSlots
 
 typedef enum DirectX11PixelShaderSlots
 {
-	PIX_SHADER_SLOT_LIGHT_UNIFORM	= 0
+	PIX_SHADER_SLOT_LIGHT_UNIFORM	= 0,
+	PIX_SHADER_SLOT_LIGHT_STRUCTS	= 1,
+	PIX_SHADER_SLOT_HEMI_UNIFORM	= 2
 };
 
 typedef enum DirectX11TextureSlots

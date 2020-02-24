@@ -162,6 +162,7 @@
     <ClInclude Include="FileReader.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Globals.h" />
+    <ClInclude Include="HemisphericLight.h" />
     <ClInclude Include="IAssetManager.h" />
     <ClInclude Include="IComponent.h" />
     <ClInclude Include="IConsole.h" />
@@ -229,6 +230,7 @@
     <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="FileReader.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="HemisphericLight.cpp" />
     <ClCompile Include="IComponent.cpp" />
     <ClCompile Include="IRenderer.cpp" />
     <ClCompile Include="KeyEvents.cpp" />

@@ -5,6 +5,13 @@ struct DirectionalLight
 	float2 padding;
 };
 
+struct HemisphericLight
+{
+	float3 ambientDown;
+	float3 ambientUp;
+	float2 padding;
+};
+
 cbuffer cbPerFrame :register(b0)// At slot 1. used in the vertex shader.
 {
 	float4x4 CameraMatrix;
@@ -14,10 +21,15 @@ cbuffer cbPerFrame :register(b0)// At slot 1. used in the vertex shader.
 
 cbuffer DirectionalLightBuffer // at slot 3. Used in the pixel shader.
 {
-	DirectionalLight light;
+	DirectionalLight directionalLight;
+}
+
+cbuffer HemisphericLightBuffer
+{
+	HemisphericLight hemisphericLight;
 };
 
-StructuredBuffer<DirectionalLight> lightBuffer; // At slot 2.
+StructuredBuffer<DirectionalLight> lightBuffer;
 Texture2D ObjTexture;
 SamplerState ObjSamplerState;
 
@@ -63,25 +75,26 @@ VOut VShader (VS_INPUT input)
 
 }
 
+float3 CalcAmbient (float3 normal, float3 colour)
+{
+	float3 up			= normal.y * 0.5 + 0.5; // Convert from [-1, 1] to [0, 1],
+	float3 Ambient		= hemisphericLight.ambientDown + up * hemisphericLight.ambientUp;
+
+	float3 result		= Ambient * colour;
+	return result;
+}
+
 float4 PShader (VOut input) : SV_TARGET
 {
 	input.normal		= normalize (input.normal);
 	float4 diffuse		= ObjTexture.Sample (ObjSamplerState, input.texCoord);
-	float3 finalColour	= diffuse;
+	float3 finalColour	= (diffuse.rgb * diffuse.rgb);
 
-	//uint numLights;
-	//uint stride;
-	//finalColour			= (diffuse * light.colourAmbient);
-	//finalColour			+= saturate (dot (light.direction, input.normal) * light.colourDiffuse * diffuse);
-	//lightBuffer.GetDimensions (numLights, stride);
-	//for (int i = 0; i < numLights; i++)
-	//{
-	//	DirectionalLight dl = lightBuffer[i];
-	//	finalColour			*= dl.colourAmbient;
-	//	finalColour			+= saturate (dot (dl.direction, input.normal) * light.colourDiffuse * diffuse);
-	//}
+	uint numLights;
+	uint stride;
+	finalColour			+= saturate (dot (directionalLight.direction, input.normal) * directionalLight.colour * diffuse);
+	lightBuffer.GetDimensions (numLights, stride);
 
 
 	return float4(finalColour.r, finalColour.g, finalColour.b, diffuse.a);
-
 }

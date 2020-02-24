@@ -21,10 +21,12 @@
 
 #include "BasicLight.h"
 #include "DirectionalLight.h"
+#include "HemisphericLight.h"
 #include "LightManager.h"
 #include "Material.h"
 #include "AssetDescriptor.h"
 #include "MeshAssetDescriptor.h"
+#include "ShaderType.h"
 
 #include "IRenderer.h"
 #include <wrl/client.h>
@@ -187,16 +189,29 @@ private:
 	{
 		DirectionalLight light;
 	};
-	DirectionalLight m_Light;
+
+	struct HemisphericLightUniformDescriptor
+	{
+		HemisphericLight light;
+		static UINT GetSize ()
+		{
+			UINT size = 0;
+			size += HemisphericLight::GetSize ();
+			return size;
+		}
+	};
+	DirectionalLight m_DirectionalLight;
 	FrameUniformDescriptor m_FrameUniforms;
 	InstanceUniformDescriptor m_ObjectUniforms;
-	DirectionalLightUniformDescriptor m_LightUniformDescriptor;
+	DirectionalLightUniformDescriptor m_DirectionalLightUniformDescriptor;
+	HemisphericLightUniformDescriptor m_HemisphericLightUniformDescriptor;
 	Material * m_pDefaultMaterial;
 
 	DirectX11Buffer * m_pFrameUniformBuffer;
 	DirectX11Buffer * m_pFrameUniformStructuredBuffer;
 	DirectX11Buffer * m_pObjectUniformBuffer;
 	DirectX11Buffer * m_pLightUniformBuffer;
+	DirectX11Buffer * m_pHemisphericLightUniformBuffer;
 	DirectX11Buffer * m_pRgbBuffer;
 
 	void InitEventHandlers();
@@ -222,6 +237,7 @@ private:
 
 	void UpdateCamera();
 	void UpdateUniforms();
+	CORE_ERROR UpdateUniformBuffer (DirectX11Buffer * pBuffer, void * pData, UINT slot, SHADER_TYPE type);
 	void UpdateFrameUniforms();
 	void UpdateInstanceUniforms();
 

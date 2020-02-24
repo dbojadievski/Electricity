@@ -53,14 +53,25 @@ DirectX11Renderer::Init()
 void 
 DirectX11Renderer::InitLights()
 {
-	this->m_Light.m_Colour				= FLOAT3(0.0f, 0.0f, 0.1f);
-	this->m_Light.m_Direction           = FLOAT3(1.0f, 1.0, 1.0f);
-	this->m_Light.m_Pad					= FLOAT2(0, 0);
+	this->m_DirectionalLight.m_Colour				= FLOAT3(0.0f, 0.0f, 0.1f);
+	this->m_DirectionalLight.m_Direction           = FLOAT3(1.0f, 1.0, 1.0f);
+	this->m_DirectionalLight.m_Pad					= FLOAT2(0, 0);
 
-	this->m_Lights.push_back(this->m_Light);
-	this->m_LightManager.AddDirectionalLight(&this->m_Light);
+	this->m_HemisphericLightUniformDescriptor.light.m_Pad.x = 0;
+	this->m_HemisphericLightUniformDescriptor.light.m_Pad.y = 0;
 
-	//this->ReloadLightBuffer();
+	m_HemisphericLightUniformDescriptor.light.m_AmbientDown.x = 0.2;
+	m_HemisphericLightUniformDescriptor.light.m_AmbientDown.y = 0.2;
+	m_HemisphericLightUniformDescriptor.light.m_AmbientDown.z = 0.2;
+
+	m_HemisphericLightUniformDescriptor.light.m_AmbientUp.x = 0.3;
+	m_HemisphericLightUniformDescriptor.light.m_AmbientUp.y = 0.3;
+	m_HemisphericLightUniformDescriptor.light.m_AmbientUp.z = 0.3;
+
+	this->m_Lights.push_back(this->m_DirectionalLight);
+	this->m_LightManager.AddDirectionalLight(&this->m_DirectionalLight);
+
+	this->ReloadLightBuffer();
 }
 
 void DirectX11Renderer::InitUniformBuffers ()
@@ -71,8 +82,11 @@ void DirectX11Renderer::InitUniformBuffers ()
 	this->m_pObjectUniformBuffer = DirectX11Buffer::CreateConstantBuffer(this->m_pDevice, sizeof(InstanceUniformDescriptor), true, false, NULL);
 	assert(this->m_pObjectUniformBuffer);
 
-	this->m_pLightUniformBuffer = DirectX11Buffer::CreateConstantBuffer (this->m_pDevice, sizeof (m_LightUniformDescriptor), true, false, NULL);
+	this->m_pLightUniformBuffer = DirectX11Buffer::CreateConstantBuffer (this->m_pDevice, sizeof (m_DirectionalLightUniformDescriptor), true, false, NULL);
 	assert (this->m_pLightUniformBuffer);
+
+	this->m_pHemisphericLightUniformBuffer = DirectX11Buffer::CreateConstantBuffer (this->m_pDevice, HemisphericLightUniformDescriptor::GetSize (), true, false, NULL);
+	assert (this->m_pHemisphericLightUniformBuffer);
 }
 
 void 
@@ -714,26 +728,43 @@ DirectX11Renderer::UpdateCamera()
 void 
 DirectX11Renderer::UpdateFrameUniforms()
 {
+	UpdateUniformBuffer (m_pFrameUniformBuffer, &m_FrameUniforms, VERT_SHADER_SLOT_FRAME_MATRICES, SHADER_TYPE_VERTEX);
+	UpdateUniformBuffer (m_pLightUniformBuffer, &m_DirectionalLightUniformDescriptor, PIX_SHADER_SLOT_LIGHT_UNIFORM, SHADER_TYPE_PIXEL);
+	this->UpdateUniformBuffer (this->m_pHemisphericLightUniformBuffer, &this->m_HemisphericLightUniformDescriptor, PIX_SHADER_SLOT_HEMI_UNIFORM, SHADER_TYPE_PIXEL);
+}
+
+CORE_ERROR
+DirectX11Renderer::UpdateUniformBuffer (DirectX11Buffer * pBuffer, void * pData, UINT slot, SHADER_TYPE type)
+{
+	CORE_ERROR err = ERR_OK;
+
+	assert (pBuffer);
+	assert (type != SHADER_TYPE_UNUSED);
+	assert (pData);
+
+	if (!pBuffer || ! pData || type == SHADER_TYPE_UNUSED)
 	{
-		auto pUniformBuffer     = this->m_pFrameUniformBuffer->GetRawPointer();
-		this->m_pDeviceContext->UpdateSubresource(pUniformBuffer, 0, NULL, &this->m_FrameUniforms, 0, 0);
-		this->m_pDeviceContext->VSSetConstantBuffers(VERT_SHADER_SLOT_FRAME_MATRICES, 1, &pUniformBuffer);
+		err = ERR_PARAM_INVALID;
+		goto end;
 	}
 
-	{
-		auto pUniformBuffer = this->m_pLightUniformBuffer->GetRawPointer ();
-		m_pDeviceContext->UpdateSubresource (pUniformBuffer, 0, NULL, &this->m_LightUniformDescriptor, 0, 0);
-		m_pDeviceContext->PSSetConstantBuffers (PIX_SHADER_SLOT_LIGHT_UNIFORM, 1, &pUniformBuffer);
-	}
+	auto pUniformBuffer = pBuffer->GetRawPointer ();
+	this->m_pDeviceContext->UpdateSubresource (pUniformBuffer, 0, NULL, pData, 0, 0);
+	if (type == SHADER_TYPE_VERTEX)
+		this->m_pDeviceContext->VSSetConstantBuffers (slot, 1, &pUniformBuffer);
+	else if (type == SHADER_TYPE_PIXEL)
+		this->m_pDeviceContext->PSSetConstantBuffers (slot, 1, &pUniformBuffer);
+	else
+		assert (false);// Other types not supported yet.
 
+	end:
+	return err;
 }
 
 void
 DirectX11Renderer::UpdateInstanceUniforms()
 {
-	auto pUniformBuffer = this->m_pObjectUniformBuffer->GetRawPointer();
-	this->m_pDeviceContext->UpdateSubresource(pUniformBuffer, 0, NULL, &this->m_ObjectUniforms, 0, 0);
-	this->m_pDeviceContext->VSSetConstantBuffers(VERT_SHADER_SLOT_INSTANCE_MATRICES, 1, &pUniformBuffer);
+	this->UpdateUniformBuffer (m_pObjectUniformBuffer, &m_ObjectUniforms, VERT_SHADER_SLOT_INSTANCE_MATRICES, SHADER_TYPE_VERTEX);
 }
 
 void
@@ -780,14 +811,19 @@ DirectX11Renderer::CloseDirectX11Device()
 
 	this->m_pDepthStencilViewTex->Release();
 	this->m_pDepthStencilBuffer->Release();
+	
 	delete this->m_pObjectUniformBuffer;
 	delete this->m_pFrameUniformBuffer;
 	delete this->m_pLightUniformBuffer;
+	delete this->m_pHemisphericLightUniformBuffer;
+
 	this->m_pRasterizerStateWireframe->Release();
 	delete this->m_RenderTarget;
+	
 	this->m_pSwapChain->Release();
 	this->m_pShaderResourceView->Release ();
 	this->m_pBlendStateTransparency->Release();
+	
 	this->m_pCounterClockWisecullMode->Release();
 	this->m_pClockWiseCullMode->Release();
 	this->m_pDisableCullingMode->Release();
@@ -819,7 +855,7 @@ DirectX11Renderer::RenderAllSimple(CORE_DOUBLE dT)
 	XMStoreFloat4x4(&cameraViewProjectionMatrix, wp);
 
 	/*NOTE(Dino): Update per-frame uniform buffer. */
-	this->m_LightUniformDescriptor.light = this->m_Light;
+	this->m_DirectionalLightUniformDescriptor.light = this->m_DirectionalLight;
 	this->UpdateUniforms();
 
 	this->ResetBlendState();
@@ -861,7 +897,7 @@ DirectX11Renderer::RenderAll(CORE_DOUBLE dT)
 	XMStoreFloat4x4(&viewProjectionMatrix, cameraViewProjectionMatrix);
 
 	/*NOTE(Dino): Update per-frame uniform buffer. */
-	this->m_LightUniformDescriptor.light = this->m_Light;
+	this->m_DirectionalLightUniformDescriptor.light = this->m_DirectionalLight;
 	this->UpdateFrameUniforms ();
 
 	this->ResetBlendState();
@@ -981,9 +1017,6 @@ DirectX11Renderer::RenderAllInSet(DirectX11RenderableMap * pMap, size_t &numShad
 					auto vpm									= XMMatrixTranspose(cameraTransform * cwp);
 					XMStoreFloat4x4(&this->m_FrameUniforms.ViewProjectionMatrix, vpm);
 					
-					cwp = XMLoadFloat4x4 (&cameraViewProjectionMatrix);
-					auto mat = cameraTransform * cwp;
-					//XMStoreFloat4x4 (&this->m_FrameUniforms.CameraViewProjectionMatrix, mat);
 
 					this->m_FrameUniforms.Projection			= this->m_CameraProjection;
 					this->m_FrameUniforms.Camera				= this->m_CameraView;
@@ -1042,25 +1075,21 @@ DirectX11Renderer::DeRegisterTexture(CORE_ID textureId)
 void
 DirectX11Renderer::ReloadLightBuffer()
 {
-	DirectionalLight * pAsArray = this->m_Lights.data();
-	size_t numLights = this->m_Lights.size();
+	auto pAsArray					= this->m_Lights.data();
+	size_t numLights				= this->m_Lights.size();
 
 	D3D11_SUBRESOURCE_DATA resourceData;
-	resourceData.SysMemPitch = (UINT) (numLights * DirectionalLight::GetSize());
-	resourceData.SysMemSlicePitch = (UINT) DirectionalLight::GetSize();
-	resourceData.pSysMem = &this->m_Light;
+	resourceData.SysMemPitch		= (UINT) (numLights * DirectionalLight::GetSize());
+	resourceData.SysMemSlicePitch	= (UINT) DirectionalLight::GetSize();
+	resourceData.pSysMem			= &this->m_DirectionalLight;
 
 	if (this->m_pFrameUniformStructuredBuffer)
 		delete this->m_pFrameUniformStructuredBuffer;
 	this->m_pFrameUniformStructuredBuffer = DirectX11Buffer::CreateStructuredBuffer(this->m_pDevice, numLights, DirectionalLight::GetSize(), true, false, &resourceData);
 
-	ID3D11Buffer *pBuffers[] = { this->m_pObjectUniformBuffer->GetRawPointer(), this->m_pFrameUniformStructuredBuffer->GetRawPointer() };
+	//UpdateUniformBuffer (m_pFrameUniformStructuredBuffer, pAsArray, PIX_SHADER_SLOT_LIGHT_STRUCTS, SHADER_TYPE_PIXEL);
 
-	auto ptr = this->m_pFrameUniformStructuredBuffer->GetRawPointer();
-	this->m_pDeviceContext->UpdateSubresource(ptr, 0, 0, pAsArray, 0, 0);
-	this->m_pDeviceContext->PSSetConstantBuffers (2, 1, &ptr);
-
-	this->UpdateFrameUniforms();
+	//this->UpdateFrameUniforms();
 }
 
 void
