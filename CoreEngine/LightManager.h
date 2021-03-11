@@ -7,8 +7,7 @@
 #include <assert.h>
 #include <vector>
 
-using namespace std;
-
+using std::vector;
 class LightManager
 {
 private:

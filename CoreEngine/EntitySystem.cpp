@@ -25,7 +25,7 @@ EntitySystem::RegisterEntity(Entity * pEntity)
 	{
 		pEntity->m_Identifier = ++EntitySystem::s_NextEntityIdentifier;
 
-		auto pair = make_pair(pEntity->m_Identifier, pEntity);
+		auto pair = std::make_pair(pEntity->m_Identifier, pEntity);
 		this->m_Entities.insert(pair);
 
 		EntityRegisteredEventData * pEntityRegisteredEventData = new EntityRegisteredEventData();

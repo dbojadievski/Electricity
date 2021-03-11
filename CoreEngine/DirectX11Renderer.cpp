@@ -30,6 +30,10 @@ extern HWND g_Window;
 using namespace fastdelegate;
 
 
+using std::string;
+using std::wstringstream;
+using std::wstring;
+
 VEC4 DefaultForward     = VEC4(0.0f, 0.0f, 1.0f, 0.0f);
 VEC4 DefaultRight       = VEC4(1.0f, 0.0f, 0.0f, 0.0f);
 VEC4 CameraForward      = VEC4(0.0f, 0.0f, 1.0f, 0.0f);
@@ -1043,7 +1047,7 @@ DirectX11Renderer::RegisterShader(DirectX11Shader * pShader)
 
 	auto vShader = pShader->GetVertexShader();
 	auto pixShader = pShader->GetPixelShader();
-	pair<CORE_ID, DirectX11Shader *> pair = make_pair(shaderId, pShader);
+	pair<CORE_ID, DirectX11Shader *> pair = std::make_pair(shaderId, pShader);
 	this->m_ShaderMap.emplace(pair);
 }
 
@@ -1060,7 +1064,7 @@ DirectX11Renderer::RegisterTexture(DirectX11Texture2D * pTexture)
 {
 	assert(pTexture);
 	assert(pTexture->m_Identifier);
-	pair<CORE_ID, DirectX11Texture2D *> pair = make_pair(pTexture->m_Identifier, pTexture);
+	pair<CORE_ID, DirectX11Texture2D *> pair = std::make_pair(pTexture->m_Identifier, pTexture);
 	this->m_TextureMap.emplace(pair);
 }
 
@@ -1234,7 +1238,7 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 				// Material not loaded. Load it. 
 				pMaterial			= new Material ();
 				Material::FromDescriptor (pMaterialDesc, pMaterial);
-				auto pair			= make_pair (matId, pMaterial);
+				auto pair			= std::make_pair (matId, pMaterial);
 				this->m_MaterialMap.insert (pair);
 			}
 			else
@@ -1296,7 +1300,7 @@ DirectX11Renderer::OnEntityComponentRegistered (IEventData * pEvent)
 							pComponent->GetMaterial ();
 							auto pRenderable	= new DirectX11Renderable(pMeshData, pDxTex, pDxShader, false);
 							this->m_Renderables.push_back(pRenderable);
-							auto pair = make_pair(pModel->GetIdentifier(), pRenderable);
+							auto pair = std::make_pair(pModel->GetIdentifier(), pRenderable);
 							this->m_ModelToRenderableMap.insert(pair);
 							this->GetRenderablesByMesh(pMesh, &renderables);
 
@@ -1507,7 +1511,7 @@ DirectX11Renderer::LoadMaterial (AssetDescriptor * pDescriptor)
 	Material * pMaterial				= new Material ();
 	Material::FromDescriptor (pMaterialDesc, pMaterial);
 
-	auto pair							= make_pair (id, pMaterial);
+	auto pair							= std::make_pair (id, pMaterial);
 	this->m_MaterialMap.insert (pair);
 	retVal								= ERR_OK;
 	return retVal;

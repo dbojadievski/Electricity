@@ -5,8 +5,7 @@
 #include "CoreTypes.h"
 #include "Math.h"
 
-using namespace std;
-
+using std::string;
 class MaterialAssetDescriptor : public AssetDescriptor
 {
 private:

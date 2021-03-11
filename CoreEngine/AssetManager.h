@@ -14,6 +14,11 @@
 
 using namespace tinyxml2;
 
+
+using std::map;
+using std::vector;
+using std::string;
+
 typedef map<CORE_ASSET_TYPE, CORE_ID>            AssetIdMap;
 typedef map<CORE_ID, AssetDescriptor *>          AssetMap;
 typedef map<CORE_ID, ShaderAssetDescriptor *>    ShaderMap;

@@ -4,7 +4,7 @@
 #include <vector>
 #include "GameObject.h"
 
-using namespace std;
+using std::vector;
 struct SceneLoadedEventData : EventDataBase 
 {
 	vector<Entity *> * m_pEntities;

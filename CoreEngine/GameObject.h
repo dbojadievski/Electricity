@@ -5,8 +5,11 @@
 
 #include "CoreTypes.h"
 #include "IComponent.h"
+#include <string>
 
-using namespace std;
+using std::string;
+using std::vector;
+using std::map;
 
 typedef map<EComponentType, ComponentList *> ComponentMap;
 

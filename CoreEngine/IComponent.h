@@ -2,7 +2,10 @@
 
 #include <vector>
 #include "CoreTypes.h"
-using namespace std;
+#include <string>
+
+using std::string;
+using std::vector;
 
 enum EComponentType
 {

@@ -6,7 +6,6 @@
 #include "TransformComponent.h"
 
 //#include "AssetLoader.h"
-using namespace std;
 
 void
 Console::OnEntityCreateHandler(ConsoleCommandParameterList * pParams) const

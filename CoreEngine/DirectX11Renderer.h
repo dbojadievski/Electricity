@@ -196,7 +196,7 @@ private:
 		static UINT GetSize ()
 		{
 			UINT size = 0;
-			size += HemisphericLight::GetSize ();
+			size += (UINT) HemisphericLight::GetSize ();
 			return size;
 		}
 	};

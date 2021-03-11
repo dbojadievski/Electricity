@@ -7,6 +7,12 @@
 
 #include <list>
 
+using std::list;
+using std::string;
+using std::pair;
+using std::map;
+using std::queue;
+
 typedef std::map<CORE_STRING, CVar *> CVarMap;
 typedef std::map<string, ConsoleCommand *> ConsoleCommandMap;
 typedef pair<ConsoleCommand *, ConsoleCommandParameterList *> ConsoleCommandQueueEntry;

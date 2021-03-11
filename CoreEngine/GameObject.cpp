@@ -13,8 +13,9 @@
 #include "CoreTypes.h"
 #include "IComponent.h"
 #include "GameObject.h"
+#include <string.h>
 
-using namespace std;
+using std::string;
 
 CORE_ID
 GameObject::GetIdentifier() const

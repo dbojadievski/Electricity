@@ -8,7 +8,7 @@
 #include <map>
 #include <assert.h>
 
-using namespace std;
+using std::string;
 
 enum EConsoleCommandParameterType
 {

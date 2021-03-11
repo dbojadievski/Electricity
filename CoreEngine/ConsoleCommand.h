@@ -4,7 +4,8 @@
 #include <vector>
 #include "ConsoleCommandParameter.h"
 
-typedef vector<ConsoleCommandParameterBase *> ConsoleCommandParameterList;
+using std::vector;
+typedef vector<class ConsoleCommandParameterBase *> ConsoleCommandParameterList;
 typedef fastdelegate::FastDelegate1<ConsoleCommandParameterList *> CommandHandlerDelegate;
 
 class ConsoleCommand

@@ -4,7 +4,7 @@
 #include "Math.h"
 #include "MaterialDescriptor.h"
 
-using namespace std;
+using std::string;
 
 class Material
 {

@@ -2,9 +2,9 @@
 #include "CoreError.h"
 #include "Mesh.h"
 #include "Math.h"
-
-using namespace std;
 #include <vector>
+
+using std::vector;
 class SceneNode
 {
 private:

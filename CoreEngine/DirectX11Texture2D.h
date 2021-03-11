@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <map>
 
-using namespace std;
+using std::map;
 class DirectX11Texture2D
 {
 

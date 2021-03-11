@@ -4,7 +4,8 @@
 #include <string>
 
 #include "Mesh.h"
-using namespace std;
+
+using std::string;
 
 class MeshAssetDescriptor : public AssetDescriptor
 {

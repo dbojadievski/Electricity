@@ -29,8 +29,8 @@
 #include "EntityEvents.h"
 using namespace fastdelegate;
 
-using namespace std;
-namespace fs = std::experimental::filesystem;
+using std::string;
+namespace fs = std::filesystem;
 using namespace fs;
 using namespace tinyxml2;
 
@@ -249,7 +249,7 @@ AssetManager::RegisterMaterial (MaterialAssetDescriptor * pDesc)
 {
 	assert (pDesc);
 	CORE_ID id = pDesc->GetIdentifier ();
-	auto pair = make_pair (id, pDesc);
+	auto pair = std::make_pair (id, pDesc);
 	this->m_MaterialMap.insert (pair);
 	this->m_CurrentIdentifiers.insert_or_assign (ASSET_TYPE_MATERIAL, id);
 }
@@ -259,7 +259,7 @@ AssetManager::RegisterTexture (TextureAssetDescriptor * pDesc)
 {
 	assert (pDesc);
 	CORE_ID id = pDesc->GetIdentifier ();
-	auto pair = make_pair (id, pDesc);
+	auto pair = std::make_pair (id, pDesc);
 	this->m_TextureMap.insert (pair);
 	this->m_CurrentIdentifiers.insert_or_assign (CORE_ASSET_TYPE::ASSET_TYPE_TEXTURE, id);
 }
@@ -269,7 +269,7 @@ AssetManager::RegisterMesh (MeshAssetDescriptor * pMesh)
 {
 	assert (pMesh);
 	CORE_ID id = pMesh->GetIdentifier ();
-	auto pair = make_pair (id, pMesh);
+	auto pair = std::make_pair (id, pMesh);
 	this->m_MeshMap.insert (pair);
 	this->m_CurrentIdentifiers.insert_or_assign (ASSET_TYPE_MESH, id);
 }
@@ -279,7 +279,7 @@ AssetManager::RegisterShader (ShaderAssetDescriptor * pDesc)
 {
 	assert (pDesc);
 	CORE_ID id = pDesc->GetIdentifier ();
-	auto pair = make_pair (id, pDesc);
+	auto pair = std::make_pair (id, pDesc);
 	this->m_ShaderMap.insert (pair);
 	this->m_CurrentIdentifiers.insert_or_assign (CORE_ASSET_TYPE::ASSET_TYPE_SHADER, id);
 }
@@ -289,7 +289,7 @@ AssetManager::RegisterPass(ShaderPassDescriptor * pDesc)
 {
 	assert(pDesc);
 	CORE_ID id = pDesc->GetIdentifier();
-	auto pair = make_pair(id, pDesc);
+	auto pair = std::make_pair(id, pDesc);
 	this->m_ShaderPassMap.insert(pair);
 	this->m_CurrentIdentifiers.insert_or_assign(ASSET_TYPE_PASS, id);
 }
@@ -299,7 +299,7 @@ AssetManager::RegisterModel (ModelAssetDescriptor * pDesc)
 {
 	assert (pDesc);
 	CORE_ID id = pDesc->GetIdentifier ();
-	auto pair = make_pair (id, pDesc);
+	auto pair = std::make_pair (id, pDesc);
 	this->m_ModelMap.insert (pair);
 	this->m_CurrentIdentifiers.insert_or_assign (CORE_ASSET_TYPE::ASSET_TYPE_MODEL, id);
 }
@@ -442,7 +442,7 @@ AssetManager::RegisterMaterials (XMLNode * pXmlMaterialsList)
 					auto pElemPow		= pElem->FirstChildElement ("specularPower");
 					if (pElemPow)
 					{
-						CORE_REAL pow = ::atof(pElemPow->Attribute ("val", "0"));
+						CORE_REAL pow = (CORE_REAL) ::atof(pElemPow->Attribute ("val", "0"));
 						pMat->SetSpecularPower (pow);
 					}
 										
@@ -461,10 +461,10 @@ void AssetManager::ExtractVectorByName (const string& name, tinyxml2::XMLElement
 {
 	if (pElem)
 	{
-		pRetVal->x = ::atof (pElem->Attribute ("r"));
-		pRetVal->y = ::atof (pElem->Attribute ("g"));
-		pRetVal->z = ::atof (pElem->Attribute ("b"));
-		pRetVal->w = ::atof (pElem->Attribute ("a"));
+		pRetVal->x = (CORE_REAL)::atof (pElem->Attribute ("r"));
+		pRetVal->y = (CORE_REAL)::atof (pElem->Attribute ("g"));
+		pRetVal->z = (CORE_REAL)::atof (pElem->Attribute ("b"));
+		pRetVal->w = (CORE_REAL)::atof (pElem->Attribute ("a"));
 	}
 }
 
@@ -739,7 +739,7 @@ AssetManager::LoadShader(ShaderAssetDescriptor * pShaderDescriptor)
 			string shaderPath = pShaderDescriptor->GetPath();
 			string shaderSource = ReadFile(shaderPath);
 			ShaderAssetDescriptorExtended * pEx = new ShaderAssetDescriptorExtended(name, shaderPath, identifier);
-			auto pair = make_pair(identifier, pEx);
+			auto pair = std::make_pair(identifier, pEx);
 			this->m_LoadedShaderMap.insert(pair);
 
 			AssetLoadedEventData * pAssetLoadedEventData = new AssetLoadedEventData(pShaderDescriptor);
@@ -767,7 +767,7 @@ AssetManager::LoadPass(ShaderPassDescriptor * pPassDescriptor)
 	if (!isPassLoaded)
 	{
 		CORE_ID identifier = pPassDescriptor->GetIdentifier();
-		this->m_LoadedPassMap.insert(make_pair(identifier, pPassDescriptor));
+		this->m_LoadedPassMap.insert(std::make_pair(identifier, pPassDescriptor));
 		AssetLoadedEventData * pEvent = new AssetLoadedEventData(pPassDescriptor);
 		this->m_pEventManager->VQueueEvent(pEvent);
 		isPassLoaded = true;
@@ -798,7 +798,7 @@ AssetManager::LoadTexture (TextureAssetDescriptor * pTextureDescriptor)
             string texData = ReadFile (texPath);
 
 			
-			this->m_LoadedTextureMap.insert(make_pair(identifier, pTextureDescriptor));
+			this->m_LoadedTextureMap.insert(std::make_pair(identifier, pTextureDescriptor));
             AssetLoadedEventData * pAssetLoadedEventData = new AssetLoadedEventData (pTextureDescriptor);
             this->m_pEventManager->VTriggerEvent (pAssetLoadedEventData);
         }
@@ -833,7 +833,7 @@ AssetManager::LoadMesh (MeshAssetDescriptor * pMeshDescriptor)
                 assert (pMesh);
 				pMesh->SetName(pMeshDescriptor->GetName());
 				pMesh->GetMesh()->m_Name = pMesh->GetName();
-                auto pair = make_pair (identifier, pMesh);
+                auto pair = std::make_pair (identifier, pMesh);
                 this->m_LoadedMeshes.insert (pair);
 
 				auto pAssetLoadedEventData			= new AssetLoadedEventData(pMesh);
@@ -923,7 +923,7 @@ AssetManager::LoadModel (ModelAssetDescriptor * pModelDesc)
 				pDescEx->AddPass(pPass);
 			}
 
-			auto pair				= make_pair(id, pDescEx);
+			auto pair				= std::make_pair(id, pDescEx);
 			this->m_LoadedModelMap.insert(pair);
 
 			AssetLoadedEventData *pEvent = new AssetLoadedEventData(pDescEx);

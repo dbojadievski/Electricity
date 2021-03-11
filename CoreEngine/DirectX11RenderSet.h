@@ -5,8 +5,7 @@
 
 #include <map>
 #include <assert.h>
-using namespace std;
-
+using std::string;
 
 typedef vector<DirectX11Renderable *> DirectX11RenderableList;
 typedef map<CORE_ID, DirectX11RenderableList *> DirectX11RenderablesPerTextureSet;

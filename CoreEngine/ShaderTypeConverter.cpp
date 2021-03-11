@@ -4,7 +4,8 @@
 
 #include <string>
 #include <algorithm>
-using namespace std;
+
+using std::string;
 
 CORE_SHADER_TYPE
 ConvertStringToShaderType (const char * pStr)

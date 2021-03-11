@@ -3,7 +3,7 @@
 #include <string>
 #include "Console.h"
 //#include "tinyxml2.h"
-using namespace std;
+using std::string;
 //using namespace tinyxml2;
 
 #include "IComponent.h"

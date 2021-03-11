@@ -24,7 +24,7 @@ DirectX11RenderSet::Insert(DirectX11Renderable * pRenderable)
 	{
 		/* It would seem no renderables currently use this shader. */
 		pPerTextureSet = new DirectX11RenderablesPerTextureSet();
-		auto pair = make_pair(shaderId, pPerTextureSet);
+		auto pair = std::make_pair(shaderId, pPerTextureSet);
 		pMap->insert(pair);
 	}
 	else
@@ -37,7 +37,7 @@ DirectX11RenderSet::Insert(DirectX11Renderable * pRenderable)
 	if (forTexIter == pPerTextureSet->end())
 	{
 		pRenderableList = new DirectX11RenderableList();
-		auto pair = make_pair(textureId, pRenderableList);
+		auto pair = std::make_pair(textureId, pRenderableList);
 		pPerTextureSet->insert(pair);
 	}
 	else

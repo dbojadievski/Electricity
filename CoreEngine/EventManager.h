@@ -15,7 +15,8 @@
 #include <list>
 #include <map>
 
-using namespace std;
+using std::list;
+using std::map;
 const unsigned int EVENT_MANAGER_NUM_QUEUES = 2;
 
 /*

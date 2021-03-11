@@ -1,7 +1,7 @@
 #pragma once
 #include "CoreHeaders.h"
 #include <string>
-using namespace std;
+using std::string;
 
 enum CORE_ASSET_TYPE
 {

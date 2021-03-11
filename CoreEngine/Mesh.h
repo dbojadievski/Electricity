@@ -4,9 +4,10 @@
 #include "Math.h"
 #include "CoreError.h"
 #include <vector>
+#include <string>
 
-using namespace std;
-
+using std::vector;
+using std::string;
 enum EMeshType
 {
 	MESH_TYPE_TRIANGLE,

@@ -4,8 +4,7 @@
 #include "AssetDescriptor.h"
 
 #include <string>
-using namespace std;
-
+using std::string;
 class ShaderAssetDescriptor : public AssetDescriptor
 {
     string                  m_EntryPoint;
